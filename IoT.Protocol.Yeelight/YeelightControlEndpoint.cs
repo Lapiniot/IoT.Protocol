@@ -9,7 +9,7 @@ using IoT.Protocol.Net.Tcp;
 
 namespace IoT.Protocol.Yeelight
 {
-    public class YeelightControlEndpoint : DispatchingEndpoint<JsonObject, JsonValue, byte[], string, long>
+    public class YeelightControlEndpoint : DispatchingEndpoint<JsonObject, JsonValue, JsonValue, JsonValue, long>
     {
         private long counter;
 
@@ -23,31 +23,22 @@ namespace IoT.Protocol.Yeelight
 
         protected override TimeSpan CommandTimeout { get; } = TimeSpan.FromSeconds(10);
 
-        protected override Task<(long, byte[])> CreateRequestAsync(JsonObject message, CancellationToken cancellationToken)
+        protected override Task<(long, JsonValue)> CreateRequestAsync(JsonObject message, CancellationToken cancellationToken)
         {
             var id = Interlocked.Increment(ref counter);
 
             message["id"] = id;
 
-            using(var stream = new MemoryStream())
-            {
-                message.SerializeTo(stream);
-
-                stream.WriteByte(0x0d);
-                stream.WriteByte(0x0a);
-                stream.Flush();
-
-                return Task.FromResult((id, stream.ToArray()));
-            }
+            return Task.FromResult((id, (JsonValue)message));
         }
 
-        protected override bool TryParseResponse(IPEndPoint remoteEndPoint, string responseMessage, out long id, out JsonValue response)
+        protected override bool TryParseResponse(IPEndPoint remoteEndPoint, JsonValue responseMessage, out long id, out JsonValue response)
         {
             id = 0;
 
             response = null;
 
-            if(JsonValue.Parse(responseMessage) is JsonObject json &&
+            if(responseMessage is JsonObject json &&
                json.TryGetValue("id", out var value) && value.JsonType == JsonType.Number)
             {
                 id = value;
@@ -60,11 +51,11 @@ namespace IoT.Protocol.Yeelight
             return false;
         }
 
-        #region Overrides of DispatchingMessenger<byte[],string>
+        #region Overrides of DispatchingMessenger<JsonValue, JsonValue>
 
-        protected override INetMessenger<byte[], string> CreateNetMessenger()
+        protected override INetMessenger<JsonValue, JsonValue> CreateNetMessenger()
         {
-            return new TcpMessenger(Endpoint);
+            return new TcpJsonMessenger(Endpoint);
         }
 
         #endregion
