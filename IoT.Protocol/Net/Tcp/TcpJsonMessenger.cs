@@ -45,7 +45,6 @@ namespace IoT.Protocol.Net.Tcp
         {
             string line = await reader.ReadLineAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            Trace.TraceInformation("New line received: "+line);
             return (endpoint, JsonValue.Parse(line));
         }
 

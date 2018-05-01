@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Common;
 using System.IO;
 using System.Json;
 using System.Net;
@@ -9,14 +11,17 @@ using IoT.Protocol.Net.Tcp;
 
 namespace IoT.Protocol.Yeelight
 {
-    public class YeelightControlEndpoint : DispatchingEndpoint<JsonObject, JsonValue, JsonValue, JsonValue, long>
+    public class YeelightControlEndpoint : DispatchingEndpoint<JsonObject, JsonValue, JsonValue, JsonValue, long>,
+        IObservable<JsonObject>
     {
         private long counter;
+        private ObservableContainer<JsonObject> container;
 
         public YeelightControlEndpoint(uint deviceId, Uri location) :
             base(new IPEndPoint(IPAddress.Parse(location.Host), location.Port))
         {
             DeviceId = deviceId;
+            container = new ObservableContainer<JsonObject>();
         }
 
         public uint DeviceId { get; }
@@ -38,14 +43,21 @@ namespace IoT.Protocol.Yeelight
 
             response = null;
 
-            if(responseMessage is JsonObject json &&
-               json.TryGetValue("id", out var value) && value.JsonType == JsonType.Number)
+            if(responseMessage is JsonObject json)
             {
-                id = value;
+                if(json.TryGetValue("id", out var value) && value.JsonType == JsonType.Number)
+                {
+                    id = value;
 
-                response = json;
+                    response = json;
 
-                return true;
+                    return true;
+                }
+                if(json.TryGetValue("method", out var m) && m == "props" &&
+                    json.TryGetValue("params", out var j) && j is JsonObject props)
+                {
+                    container.Notify(props);
+                }
             }
 
             return false;
@@ -59,5 +71,20 @@ namespace IoT.Protocol.Yeelight
         }
 
         #endregion
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if(disposing)
+            {
+                container.Dispose();
+            }
+        }
+
+        public IDisposable Subscribe(IObserver<JsonObject> observer)
+        {
+            return container.Subscribe(observer);
+        }
     }
 }
