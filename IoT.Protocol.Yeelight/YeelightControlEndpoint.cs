@@ -89,7 +89,7 @@ namespace IoT.Protocol.Yeelight
 
             public async Task<(IPEndPoint RemoteEP, string Message)> ReceiveAsync(CancellationToken cancellationToken)
             {
-                return (endpoint, await reader.ReadLineAsync().WaitAndUnwrapAsync(cancellationToken).ConfigureAwait(false));
+                return (endpoint, await reader.ReadLineAsync().WaitAsync(cancellationToken).ConfigureAwait(false));
             }
 
             public Task SendAsync(byte[] message, CancellationToken cancellationToken)

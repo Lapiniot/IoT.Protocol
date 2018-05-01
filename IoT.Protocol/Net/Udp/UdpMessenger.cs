@@ -14,7 +14,7 @@ namespace IoT.Protocol.Net.Udp
 
         public Task SendAsync(byte[] message, CancellationToken cancellationToken)
         {
-            return Client.SendAsync(message, message.Length).WaitAndUnwrapAsync(cancellationToken);
+            return Client.SendAsync(message, message.Length).WaitAsync(cancellationToken);
         }
 
         #endregion

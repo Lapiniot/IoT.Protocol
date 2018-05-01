@@ -152,7 +152,7 @@ namespace IoT.Protocol.Udp
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await client.SendAsync(datagram, datagram.Length, GroupEndpoint).WaitAndUnwrapAsync(cancellationToken)
+                await client.SendAsync(datagram, datagram.Length, GroupEndpoint).WaitAsync(cancellationToken)
                     .ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -179,10 +179,10 @@ namespace IoT.Protocol.Udp
             {
                 var datagram = GetDiscoveryDatagram();
 
-                await client.SendAsync(datagram, datagram.Length, endpont).WaitAndUnwrapAsync(cancellationToken)
+                await client.SendAsync(datagram, datagram.Length, endpont).WaitAsync(cancellationToken)
                     .ConfigureAwait(false);
 
-                var result = await client.ReceiveAsync().WaitAndUnwrapAsync(cancellationToken).ConfigureAwait(false);
+                var result = await client.ReceiveAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 return ParseResponse(result.Buffer, result.RemoteEndPoint);
             }

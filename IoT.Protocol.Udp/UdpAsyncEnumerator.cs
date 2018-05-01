@@ -48,7 +48,7 @@ namespace IoT.Protocol.Udp
         /// </exception>
         public override async Task<TThing> GetNextAsync(CancellationToken cancellationToken)
         {
-            var result = await client.ReceiveAsync().WaitAndUnwrapAsync(cancellationToken).ConfigureAwait(false);
+            var result = await client.ReceiveAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
 
             return factory(result.Buffer, result.RemoteEndPoint);
         }

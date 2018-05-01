@@ -30,7 +30,7 @@ namespace IoT.Protocol.Net.Udp
 
         public async Task<(IPEndPoint RemoteEP, byte[] Message)> ReceiveAsync(CancellationToken cancellationToken)
         {
-            var result = await Client.ReceiveAsync().WaitAndUnwrapAsync(cancellationToken).ConfigureAwait(false);
+            var result = await Client.ReceiveAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
 
             return (result.RemoteEndPoint, result.Buffer);
         }
