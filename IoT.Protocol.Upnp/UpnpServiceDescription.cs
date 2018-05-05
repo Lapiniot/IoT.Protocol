@@ -4,12 +4,13 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using IoT.Protocol.Upnp.Metadata;
 
 namespace IoT.Protocol.Upnp
 {
     public class UpnpServiceDescription
     {
-        private static XNamespace NS = "urn:schemas-upnp-org:device-1-0";
+
         internal UpnpServiceDescription(string serviceType, string serviceId, Uri metadataUri, Uri controlUri, Uri eventSubscribeUri)
         {
             this.ServiceType = serviceType;
@@ -25,19 +26,9 @@ namespace IoT.Protocol.Upnp
         public Uri ControlUri { get; }
         public Uri EventSubscribeUri { get; }
 
-        public async Task<UpnpServiceMetadata> GetMetadataAsync(CancellationToken cancellationToken)
+        public async Task<ServiceMetadata> GetMetadataAsync(CancellationToken cancellationToken = default)
         {
-            using(var client = new HttpClient())
-            using(var response = await client.GetAsync(MetadataUri, cancellationToken))
-            using(var stream = await response.Content.ReadAsStreamAsync())
-            {
-                var xdoc = XDocument.Load(stream);
-
-                var actions = xdoc.Root.Element(NS + "actionList").Elements(NS + "action").
-                    Select(a=>new UpnpServiceActionMetadata()).ToArray();
-
-                return new UpnpServiceMetadata(actions);
-            }
+            return await ServiceMetadata.LoadAsync(MetadataUri, cancellationToken);
         }
     }
 }
