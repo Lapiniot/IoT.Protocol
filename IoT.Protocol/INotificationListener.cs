@@ -1,7 +1,7 @@
 namespace IoT.Protocol
 {
-    public interface INotificationListener<TNotification>
+    public interface INotificationListener<in TNotification>
     {
-         void Notify(TNotification notification);
+        void Notify(TNotification notification);
     }
 }

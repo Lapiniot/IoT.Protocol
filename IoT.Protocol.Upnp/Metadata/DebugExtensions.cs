@@ -19,9 +19,14 @@ namespace IoT.Protocol.Upnp.Metadata
             var outArgs = action.Arguments.Where(a => a.Direction == "out").ToArray();
             var inArgs = action.Arguments.Where(a => a.Direction == "in").ToArray();
             if(outArgs.Length > 0)
+            {
                 DumpPrototype(textWriter, outArgs, n => n);
+            }
             else
+            {
                 textWriter.Write("void");
+            }
+
             textWriter.Write(" ");
             textWriter.Write(action.Name);
             DumpPrototype(textWriter, inArgs, n => n.Substring(0, 1).ToLower() + n.Substring(1));
@@ -31,7 +36,7 @@ namespace IoT.Protocol.Upnp.Metadata
         private static void DumpPrototype(TextWriter tw, Argument[] args, Func<string, string> nameHandler)
         {
             tw.Write("(");
-            for(int i = 0; i < args.Length; i++)
+            for(var i = 0; i < args.Length; i++)
             {
                 if(i != 0) tw.Write(", ");
                 var arg = args[i];
@@ -39,6 +44,7 @@ namespace IoT.Protocol.Upnp.Metadata
                 tw.Write(" ");
                 tw.Write(nameHandler(arg.Name));
             }
+
             tw.Write(")");
         }
     }

@@ -1,24 +1,20 @@
 using System;
 using System.Dynamic;
-using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using IoT.Protocol.Upnp.Metadata;
 
 namespace IoT.Protocol.Upnp
 {
     public class UpnpServiceDescription
     {
-
         internal UpnpServiceDescription(string serviceType, string serviceId, Uri metadataUri, Uri controlUri, Uri eventSubscribeUri)
         {
-            this.ServiceType = serviceType;
-            this.ServiceId = serviceId;
-            this.MetadataUri = metadataUri;
-            this.ControlUri = controlUri;
-            this.EventSubscribeUri = eventSubscribeUri;
+            ServiceType = serviceType;
+            ServiceId = serviceId;
+            MetadataUri = metadataUri;
+            ControlUri = controlUri;
+            EventSubscribeUri = eventSubscribeUri;
         }
 
         public string ServiceType { get; }

@@ -9,7 +9,8 @@ namespace IoT.Protocol.Lumi
 {
     public class LumiEventListener : UdpMessageListener, IObservable<(string Command, string Sid, JsonObject Data, JsonObject Message)>
     {
-        private ObservableContainer<(string, string, JsonObject, JsonObject)> container;
+        private readonly ObservableContainer<(string, string, JsonObject, JsonObject)> container;
+
         public LumiEventListener(IPEndPoint groupEndpoint) : base(groupEndpoint)
         {
             container = new ObservableContainer<(string, string, JsonObject, JsonObject)>();
@@ -25,7 +26,7 @@ namespace IoT.Protocol.Lumi
             var message = (JsonObject)JsonExtensions.Deserialize(bytes);
 
             if(message.TryGetValue("sid", out var sid) && message.TryGetValue("cmd", out var cmd) &&
-                message.TryGetValue("data", out var v) && JsonValue.Parse(v) is JsonObject data)
+               message.TryGetValue("data", out var v) && JsonValue.Parse(v) is JsonObject data)
             {
                 container.Notify((cmd, sid, data, message));
             }
@@ -34,7 +35,7 @@ namespace IoT.Protocol.Lumi
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            
+
             if(disposing) container.Dispose();
         }
     }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using static System.Xml.XmlNodeType;
 
@@ -14,23 +13,23 @@ namespace IoT.Protocol.Soap
         private const string NS = "http://schemas.xmlsoap.org/soap/envelope/";
         private const string Prefix = "s";
 
-        public string Action { get; }
-        public string Schema { get; }
-        public IDictionary<string, object> Arguments { get; }
-
         public SoapEnvelope(string action, string schema, IDictionary<string, object> args = null)
         {
-            if(string.IsNullOrWhiteSpace(action)) throw new System.ArgumentException(CannotBeEmptyErrorMessage, nameof(action));
-            if(string.IsNullOrWhiteSpace(schema)) throw new System.ArgumentException(CannotBeEmptyErrorMessage, nameof(schema));
+            if(string.IsNullOrWhiteSpace(action)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(action));
+            if(string.IsNullOrWhiteSpace(schema)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(schema));
 
             Schema = schema;
             Arguments = args ?? new Dictionary<string, object>();
             Action = action;
         }
 
+        public string Action { get; }
+        public string Schema { get; }
+        public IDictionary<string, object> Arguments { get; }
+
         public void Serialize(Stream stream, Encoding encoding = null)
         {
-            using(XmlWriter w = XmlWriter.Create(stream, new XmlWriterSettings() { Encoding = encoding ?? Encoding.UTF8 }))
+            using(var w = XmlWriter.Create(stream, new XmlWriterSettings {Encoding = encoding ?? Encoding.UTF8}))
             {
                 w.WriteStartElement(Prefix, "Envelope", NS);
                 w.WriteAttributeString(Prefix, "encodingStyle", NS, "http://schemas.xmlsoap.org/soap/encoding/");
@@ -43,16 +42,19 @@ namespace IoT.Protocol.Soap
                         w.WriteElementString(null, p.Key, null, Convert.ToString(p.Value));
                     }
                 }
+
                 w.WriteEndElement();
                 w.WriteEndElement();
                 w.WriteEndElement();
-            };
+            }
         }
 
         public static SoapEnvelope Deserialize(Stream stream)
         {
             using(var sr = new StreamReader(stream, Encoding.UTF8))
+            {
                 return Deserialize(sr);
+            }
         }
 
         public static SoapEnvelope Deserialize(TextReader textReader)
@@ -78,9 +80,16 @@ namespace IoT.Protocol.Soap
                                 {
                                     switch(r.NodeType)
                                     {
-                                        case Element: argName = r.LocalName; break;
-                                        case EndElement: argName = null; break;
-                                        case Text: case CDATA: if(argName != null) args[argName] = r.Value; break;
+                                        case Element:
+                                            argName = r.LocalName;
+                                            break;
+                                        case EndElement:
+                                            argName = null;
+                                            break;
+                                        case Text:
+                                        case CDATA:
+                                            if(argName != null) args[argName] = r.Value;
+                                            break;
                                     }
                                 }
                             }

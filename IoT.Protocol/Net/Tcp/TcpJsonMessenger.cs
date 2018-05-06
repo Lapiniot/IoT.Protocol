@@ -1,13 +1,10 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 using System.Json;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using IoT.Protocol.Net;
 
 namespace IoT.Protocol.Net.Tcp
 {
@@ -15,8 +12,8 @@ namespace IoT.Protocol.Net.Tcp
     {
         private readonly TcpClient client;
         private readonly IPEndPoint endpoint;
-        private readonly StreamReader reader;
         private readonly NetworkStream netStream;
+        private readonly StreamReader reader;
 
         public TcpJsonMessenger(IPEndPoint endpoint)
         {
@@ -39,11 +36,22 @@ namespace IoT.Protocol.Net.Tcp
             }
         }
 
+        #region Implementation of IDisposable
+
+        public void Dispose()
+        {
+            reader.Dispose();
+            netStream.Dispose();
+            client.Dispose();
+        }
+
+        #endregion
+
         #region INetMessenger<JsonValue, JsonValue>
 
         public async Task<(IPEndPoint RemoteEP, JsonValue Message)> ReceiveAsync(CancellationToken cancellationToken)
         {
-            string line = await reader.ReadLineAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
+            var line = await reader.ReadLineAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
 
             return (endpoint, JsonValue.Parse(line));
         }
@@ -58,17 +66,6 @@ namespace IoT.Protocol.Net.Tcp
             message.SerializeTo(netStream);
             netStream.WriteByte(0x0d);
             netStream.WriteByte(0x0a);
-        }
-
-        #endregion
-
-        #region Implementation of IDisposable
-
-        public void Dispose()
-        {
-            reader.Dispose();
-            netStream.Dispose();
-            client.Dispose();
         }
 
         #endregion

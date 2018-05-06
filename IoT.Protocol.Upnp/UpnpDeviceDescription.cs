@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -10,15 +11,15 @@ namespace IoT.Protocol.Upnp
 {
     public class UpnpDeviceDescription
     {
-        private static XNamespace NS = "urn:schemas-upnp-org:device-1-0";
-        private Uri baseUri;
+        private static readonly XNamespace NS = "urn:schemas-upnp-org:device-1-0";
+
         internal UpnpDeviceDescription(Uri baseUri, UpnpServiceDescription[] services, string udn, string deviceType,
             string friendlyName, string manufacturer, string modelDescription, string modelName, string modelNumber)
         {
             if(string.IsNullOrWhiteSpace(udn)) throw new ArgumentException(nameof(udn));
             if(string.IsNullOrWhiteSpace(deviceType)) throw new ArgumentException(nameof(deviceType));
 
-            this.baseUri = baseUri ?? throw new ArgumentNullException(nameof(baseUri));
+            BaseUri = baseUri ?? throw new ArgumentNullException(nameof(baseUri));
             Services = services ?? throw new ArgumentNullException(nameof(services));
             Udn = udn;
             DeviceType = deviceType;
@@ -29,6 +30,7 @@ namespace IoT.Protocol.Upnp
             ModelNumber = modelNumber;
         }
 
+        public Uri BaseUri { get; }
         public UpnpServiceDescription[] Services { get; }
         public string Udn { get; }
         public string DeviceType { get; }
@@ -50,14 +52,13 @@ namespace IoT.Protocol.Upnp
 
                 var dev = xdoc.Root.Element(NS + "device");
 
-                var services = dev.Element(NS + "serviceList").Elements(NS + "service").
-                    Select(s => new UpnpServiceDescription(
-                        s.Element(NS + "serviceType").Value,
-                        s.Element(NS + "serviceId").Value,
-                        new Uri(baseUri, s.Element(NS + "SCPDURL").Value),
-                        new Uri(baseUri, s.Element(NS + "controlURL").Value),
-                        new Uri(baseUri, s.Element(NS + "eventSubURL").Value)
-                    )).ToArray();
+                var services = dev.Element(NS + "serviceList").Elements(NS + "service").Select(s => new UpnpServiceDescription(
+                    s.Element(NS + "serviceType").Value,
+                    s.Element(NS + "serviceId").Value,
+                    new Uri(baseUri, s.Element(NS + "SCPDURL").Value),
+                    new Uri(baseUri, s.Element(NS + "controlURL").Value),
+                    new Uri(baseUri, s.Element(NS + "eventSubURL").Value)
+                )).ToArray();
 
                 return new UpnpDeviceDescription(baseUri, services,
                     dev.Element(NS + "UDN")?.Value,
@@ -67,7 +68,7 @@ namespace IoT.Protocol.Upnp
                     dev.Element(NS + "modelDescription")?.Value,
                     dev.Element(NS + "modelName").Value,
                     dev.Element(NS + "modelNumber")?.Value);
-            };
+            }
         }
     }
 }

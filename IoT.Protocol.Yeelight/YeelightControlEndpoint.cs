@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Common;
-using System.IO;
 using System.Json;
 using System.Net;
 using System.Threading;
@@ -14,8 +12,8 @@ namespace IoT.Protocol.Yeelight
     public class YeelightControlEndpoint : DispatchingEndpoint<JsonObject, JsonValue, JsonValue, JsonValue, long>,
         IObservable<JsonObject>
     {
+        private readonly ObservableContainer<JsonObject> container;
         private long counter;
-        private ObservableContainer<JsonObject> container;
 
         public YeelightControlEndpoint(uint deviceId, Uri location) :
             base(new IPEndPoint(IPAddress.Parse(location.Host), location.Port))
@@ -27,6 +25,11 @@ namespace IoT.Protocol.Yeelight
         public uint DeviceId { get; }
 
         protected override TimeSpan CommandTimeout { get; } = TimeSpan.FromSeconds(10);
+
+        public IDisposable Subscribe(IObserver<JsonObject> observer)
+        {
+            return container.Subscribe(observer);
+        }
 
         protected override Task<(long, JsonValue)> CreateRequestAsync(JsonObject message, CancellationToken cancellationToken)
         {
@@ -53,8 +56,9 @@ namespace IoT.Protocol.Yeelight
 
                     return true;
                 }
+
                 if(json.TryGetValue("method", out var m) && m == "props" &&
-                    json.TryGetValue("params", out var j) && j is JsonObject props)
+                   json.TryGetValue("params", out var j) && j is JsonObject props)
                 {
                     container.Notify(props);
                 }
@@ -80,11 +84,6 @@ namespace IoT.Protocol.Yeelight
             {
                 container.Dispose();
             }
-        }
-
-        public IDisposable Subscribe(IObserver<JsonObject> observer)
-        {
-            return container.Subscribe(observer);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace IoT.Protocol.Upnp.Metadata
 {
     public class StateVariable
     {
-        private static IDictionary<string, Type> map = new Dictionary<string, Type>()
+        private static readonly IDictionary<string, Type> Map = new Dictionary<string, Type>
         {
             {"ui1", typeof(byte)},
             {"ui2", typeof(ushort)},
@@ -32,7 +32,7 @@ namespace IoT.Protocol.Upnp.Metadata
             {"bin.base64", typeof(string)},
             {"bin.hex", typeof(string)},
             {"uri", typeof(Uri)},
-            {"uuid", typeof(string)},
+            {"uuid", typeof(string)}
         };
 
         internal StateVariable(string name, string dataTypeName, string defaultValue, bool sendsEvent,
@@ -44,7 +44,7 @@ namespace IoT.Protocol.Upnp.Metadata
             SendsEvent = sendsEvent;
             AllowedValues = allowedValues;
             ValueRange = valueRange;
-            DataType = map[dataTypeName];
+            DataType = Map[dataTypeName];
         }
 
         public string Name { get; }
