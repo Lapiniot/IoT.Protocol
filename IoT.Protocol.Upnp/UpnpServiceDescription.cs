@@ -9,9 +9,8 @@ namespace IoT.Protocol.Upnp
 {
     public class UpnpServiceDescription
     {
-        internal UpnpServiceDescription(string deviceId, string serviceType, string serviceId, Uri metadataUri, Uri controlUri, Uri eventSubscribeUri)
+        internal UpnpServiceDescription(string serviceType, string serviceId, Uri metadataUri, Uri controlUri, Uri eventSubscribeUri)
         {
-            DeviceId = deviceId;
             ServiceType = serviceType;
             ServiceId = serviceId;
             MetadataUri = metadataUri;
@@ -19,7 +18,6 @@ namespace IoT.Protocol.Upnp
             EventSubscribeUri = eventSubscribeUri;
         }
 
-        public string DeviceId { get; }
         public string ServiceType { get; }
         public string ServiceId { get; }
         public Uri MetadataUri { get; }
