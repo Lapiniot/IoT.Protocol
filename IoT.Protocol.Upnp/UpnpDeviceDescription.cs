@@ -61,7 +61,7 @@ namespace IoT.Protocol.Upnp
                 )).ToArray();
 
                 return new UpnpDeviceDescription(baseUri, services,
-                    dev.Element(NS + "UDN")?.Value,
+                    dev.Element(NS + "UDN").Value,
                     dev.Element(NS + "deviceType").Value,
                     dev.Element(NS + "friendlyName").Value,
                     dev.Element(NS + "manufacturer").Value,

@@ -2,14 +2,16 @@ using System;
 using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
+using IoT.Protocol.Soap;
 using IoT.Protocol.Upnp.Metadata;
 
 namespace IoT.Protocol.Upnp
 {
     public class UpnpServiceDescription
     {
-        internal UpnpServiceDescription(string serviceType, string serviceId, Uri metadataUri, Uri controlUri, Uri eventSubscribeUri)
+        internal UpnpServiceDescription(string deviceId, string serviceType, string serviceId, Uri metadataUri, Uri controlUri, Uri eventSubscribeUri)
         {
+            DeviceId = deviceId;
             ServiceType = serviceType;
             ServiceId = serviceId;
             MetadataUri = metadataUri;
@@ -17,6 +19,7 @@ namespace IoT.Protocol.Upnp
             EventSubscribeUri = eventSubscribeUri;
         }
 
+        public string DeviceId { get; }
         public string ServiceType { get; }
         public string ServiceId { get; }
         public Uri MetadataUri { get; }
@@ -31,6 +34,11 @@ namespace IoT.Protocol.Upnp
         public dynamic GreateDynamicProxy()
         {
             return new ExpandoObject();
+        }
+
+        public UpnpControlEndpoint CreateControlPoint()
+        {
+            return new UpnpControlEndpoint(ControlUri, ServiceType);
         }
     }
 }

@@ -8,11 +8,11 @@ using IoT.Protocol.Udp;
 
 namespace IoT.Protocol.Upnp
 {
-    public class UpnpEnumerator : UdpBroadcastEnumerator<IDictionary<string, string>>
+    public class SsdpEnumerator : UdpBroadcastEnumerator<SsdpReply>
     {
         private readonly string searchTarget;
 
-        public UpnpEnumerator(IPEndPoint groupEndpoint, string searchTarget = SearchTargets.All) :
+        public SsdpEnumerator(IPEndPoint groupEndpoint, string searchTarget = SearchTargets.All) :
             base(groupEndpoint)
         {
             if(string.IsNullOrEmpty(searchTarget))
@@ -23,13 +23,13 @@ namespace IoT.Protocol.Upnp
             this.searchTarget = searchTarget;
         }
 
-        public UpnpEnumerator(string searchTarget = SearchTargets.All) :
+        public SsdpEnumerator(string searchTarget = SearchTargets.All) :
             this(new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900), searchTarget)
         {
             this.searchTarget = searchTarget;
         }
 
-        protected override IDictionary<string, string> ParseResponse(byte[] buffer, IPEndPoint remoteEp)
+        protected override SsdpReply ParseResponse(byte[] buffer, IPEndPoint remoteEp)
         {
             using(var stream = new MemoryStream(buffer))
             {
@@ -37,7 +37,7 @@ namespace IoT.Protocol.Upnp
                 {
                     if(reader.ReadLine() == "HTTP/1.1 200 OK")
                     {
-                        var data = new Dictionary<string, string>();
+                        var reply = new SsdpReply();
 
                         while(!reader.EndOfStream)
                         {
@@ -47,11 +47,11 @@ namespace IoT.Protocol.Upnp
                             {
                                 var index = line.IndexOf(": ", StringComparison.Ordinal);
 
-                                if(index > 0) data[line.Substring(0, index)] = line.Substring(index + 2);
+                                if(index > 0) reply.Add(line.Substring(0, index), line.Substring(index + 2));
                             }
                         }
 
-                        return data;
+                        return reply;
                     }
 
                     throw new ApplicationException("Not a SSDP success response");
@@ -63,7 +63,7 @@ namespace IoT.Protocol.Upnp
         {
             using(var stream = new MemoryStream())
             {
-                using(var writer = new StreamWriter(stream, Encoding.ASCII, 2048) {NewLine = "\r\n"})
+                using(var writer = new StreamWriter(stream, Encoding.ASCII, 2048) { NewLine = "\r\n" })
                 {
                     writer.WriteLine("M-SEARCH * HTTP/1.1");
                     writer.WriteLine("HOST: {0}:{1}", GroupEndpoint.Address, GroupEndpoint.Port);
@@ -84,12 +84,6 @@ namespace IoT.Protocol.Upnp
             client.Ttl = 4;
 
             return client;
-        }
-
-        public static class SearchTargets
-        {
-            public const string All = "ssdp:all";
-            public const string RootDevice = "upnp:rootdevice";
         }
     }
 }

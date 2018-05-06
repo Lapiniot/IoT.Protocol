@@ -7,35 +7,35 @@ using System.Threading.Tasks;
 
 namespace IoT.Protocol
 {
-    public abstract class ConvertingEnumerator<T1, T2> : IThingEnumeratorAsync<T2>
+    public abstract class ConvertingEnumerator<TThing1, TThing2> : IThingEnumeratorAsync<TThing2>
     {
-        protected IThingEnumeratorAsync<T1> Enumerator;
+        protected IThingEnumeratorAsync<TThing1> Enumerator;
 
-        protected ConvertingEnumerator(IThingEnumeratorAsync<T1> enumerator)
+        protected ConvertingEnumerator(IThingEnumeratorAsync<TThing1> enumerator)
         {
             Enumerator = enumerator ?? throw new ArgumentNullException(nameof(enumerator));
         }
 
-        public IEnumerable<T2> Enumerate(CancellationToken cancellationToken = default)
+        public IEnumerable<TThing2> Enumerate(CancellationToken cancellationToken = default)
         {
             return Enumerator.Enumerate(cancellationToken).Select(Convert);
         }
 
-        public T2 Discover(IPEndPoint endpont, CancellationToken cancellationToken = default)
+        public TThing2 Discover(IPEndPoint endpont, CancellationToken cancellationToken = default)
         {
             return Convert(Enumerator.Discover(endpont, cancellationToken));
         }
 
-        public async Task<AsyncEnumerator<T2>> GetEnumeratorAsync(CancellationToken cancellationToken = default)
+        public async Task<AsyncEnumerator<TThing2>> GetEnumeratorAsync(CancellationToken cancellationToken = default)
         {
             return (await Enumerator.GetEnumeratorAsync(cancellationToken)).Map(Convert);
         }
 
-        public async Task<T2> DiscoverAsync(IPEndPoint endpont, CancellationToken cancellationToken = default)
+        public async Task<TThing2> DiscoverAsync(IPEndPoint endpont, CancellationToken cancellationToken = default)
         {
             return Convert(await Enumerator.DiscoverAsync(endpont, cancellationToken));
         }
 
-        public abstract T2 Convert(T1 thing);
+        public abstract TThing2 Convert(TThing1 thing);
     }
 }
