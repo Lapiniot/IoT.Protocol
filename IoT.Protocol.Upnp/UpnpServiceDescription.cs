@@ -1,4 +1,5 @@
 using System;
+using System.Dynamic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -29,6 +30,11 @@ namespace IoT.Protocol.Upnp
         public async Task<ServiceMetadata> GetMetadataAsync(CancellationToken cancellationToken = default)
         {
             return await ServiceMetadata.LoadAsync(MetadataUri, cancellationToken);
+        }
+
+        public dynamic GreateDynamicProxy()
+        {
+            return new ExpandoObject();
         }
     }
 }

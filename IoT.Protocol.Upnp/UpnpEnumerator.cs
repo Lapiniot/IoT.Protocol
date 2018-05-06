@@ -37,7 +37,7 @@ namespace IoT.Protocol.Upnp
                 {
                     if(reader.ReadLine() == "HTTP/1.1 200 OK")
                     {
-                        var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                        var data = new Dictionary<string, string>();
 
                         while(!reader.EndOfStream)
                         {
