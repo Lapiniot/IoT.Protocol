@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml;
+using static System.String;
 using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Soap
@@ -15,8 +16,8 @@ namespace IoT.Protocol.Soap
 
         public SoapEnvelope(string action, string schema, IDictionary<string, object> args = null)
         {
-            if(string.IsNullOrWhiteSpace(action)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(action));
-            if(string.IsNullOrWhiteSpace(schema)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(schema));
+            if(IsNullOrWhiteSpace(action)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(action));
+            if(IsNullOrWhiteSpace(schema)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(schema));
 
             Schema = schema;
             Arguments = args ?? new Dictionary<string, object>();
@@ -39,7 +40,7 @@ namespace IoT.Protocol.Soap
                 {
                     foreach(var p in Arguments)
                     {
-                        w.WriteElementString(null, p.Key, null, Convert.ToString(p.Value));
+                        w.WriteElementString(Empty, p.Key, Empty, Convert.ToString(p.Value));
                     }
                 }
 

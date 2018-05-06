@@ -58,7 +58,7 @@ namespace IoT.Protocol.Net.Tcp
 
         public Task SendAsync(JsonValue message, CancellationToken cancellationToken)
         {
-            return Task.Run(() => SendMessage(message)).WaitAsync(cancellationToken);
+            return Task.Run(() => SendMessage(message), cancellationToken).WaitAsync(cancellationToken);
         }
 
         private void SendMessage(JsonValue message)

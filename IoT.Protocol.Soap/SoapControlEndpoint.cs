@@ -72,7 +72,7 @@ namespace IoT.Protocol.Soap
                     Content = new StreamContent(stream) {Headers = {{"Content-Length", stream.Length.ToString()}, {"Content-Type", "text/xml; charset=\"utf-8\""}}}
                 })
                 {
-                    using(var response = await httpClient.SendAsync(request))
+                    using(var response = await httpClient.SendAsync(request, cancellationToken))
                     {
                         response.EnsureSuccessStatusCode();
 
