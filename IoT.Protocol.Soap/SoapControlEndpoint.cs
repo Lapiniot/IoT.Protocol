@@ -44,10 +44,10 @@ namespace IoT.Protocol.Soap
                 {
                     if(!connected)
                     {
-                        httpClient = new HttpClient(new HttpClientHandler { AutomaticDecompression = GZip }, true)
+                        httpClient = new HttpClient(new HttpClientHandler {AutomaticDecompression = GZip}, true)
                         {
                             BaseAddress = baseUri,
-                            DefaultRequestHeaders = { { "Accept-Encoding", "gzip" } }
+                            DefaultRequestHeaders = {{"Accept-Encoding", "gzip"}}
                         };
                         connected = true;
                     }
@@ -68,8 +68,8 @@ namespace IoT.Protocol.Soap
                 {
                     Method = HttpMethod.Post,
                     Version = new Version(1, 1),
-                    Headers = { { "SOAPACTION", soapAction } },
-                    Content = new StreamContent(stream) { Headers = { { "Content-Length", stream.Length.ToString() }, { "Content-Type", "text/xml; charset=\"utf-8\"" } } }
+                    Headers = {{"SOAPACTION", soapAction}},
+                    Content = new StreamContent(stream) {Headers = {{"Content-Length", stream.Length.ToString()}, {"Content-Type", "text/xml; charset=\"utf-8\""}}}
                 })
                 {
                     using(var response = await httpClient.SendAsync(request, cancellationToken))

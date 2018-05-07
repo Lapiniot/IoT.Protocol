@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -63,7 +62,7 @@ namespace IoT.Protocol.Upnp
         {
             using(var stream = new MemoryStream())
             {
-                using(var writer = new StreamWriter(stream, Encoding.ASCII, 2048) { NewLine = "\r\n" })
+                using(var writer = new StreamWriter(stream, Encoding.ASCII, 2048) {NewLine = "\r\n"})
                 {
                     writer.WriteLine("M-SEARCH * HTTP/1.1");
                     writer.WriteLine("HOST: {0}:{1}", GroupEndpoint.Address, GroupEndpoint.Port);

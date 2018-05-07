@@ -2,7 +2,6 @@ using System;
 using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
-using IoT.Protocol.Soap;
 using IoT.Protocol.Upnp.Metadata;
 
 namespace IoT.Protocol.Upnp
