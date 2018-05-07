@@ -20,11 +20,9 @@ namespace IoT.Protocol.Net.Udp
         {
             if(!disposed)
             {
-                disposed = true;
-
-                Client.Dispose();
-
+                Client?.Dispose();
                 Client = null;
+                disposed = true;
             }
         }
 

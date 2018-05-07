@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <ProjectReference Include="..\IoT.Device\IoT.Device.csproj" />
     <ProjectReference Include="..\IoT.Protocol\IoT.Protocol.csproj" />
   </ItemGroup>
   <Import Project="../common.props" />

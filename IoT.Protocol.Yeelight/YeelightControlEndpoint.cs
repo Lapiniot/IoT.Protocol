@@ -11,14 +11,14 @@ namespace IoT.Protocol.Yeelight
     public class YeelightControlEndpoint : DispatchingEndpoint<JsonObject, JsonValue, JsonValue, JsonValue, long>,
         IObservable<JsonObject>
     {
-        private readonly ObservableContainer<JsonObject> container;
+        private readonly ObserversContainer<JsonObject> observers;
         private long counter;
 
         public YeelightControlEndpoint(uint deviceId, Uri location) :
             base(new IPEndPoint(IPAddress.Parse(location.Host), location.Port))
         {
             DeviceId = deviceId;
-            container = new ObservableContainer<JsonObject>();
+            observers = new ObserversContainer<JsonObject>();
         }
 
         public uint DeviceId { get; }
@@ -27,7 +27,7 @@ namespace IoT.Protocol.Yeelight
 
         public IDisposable Subscribe(IObserver<JsonObject> observer)
         {
-            return container.Subscribe(observer);
+            return observers.Subscribe(observer);
         }
 
         protected override Task<(long, JsonValue)> CreateRequestAsync(JsonObject message, CancellationToken cancellationToken)
@@ -59,7 +59,7 @@ namespace IoT.Protocol.Yeelight
                 if(json.TryGetValue("method", out var m) && m == "props" &&
                    json.TryGetValue("params", out var j) && j is JsonObject props)
                 {
-                    container.Notify(props);
+                    observers.Notify(props);
                 }
             }
 
@@ -81,7 +81,7 @@ namespace IoT.Protocol.Yeelight
 
             if(disposing)
             {
-                container.Dispose();
+                observers.Dispose();
             }
         }
     }

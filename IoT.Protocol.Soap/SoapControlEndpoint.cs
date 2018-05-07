@@ -4,15 +4,14 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using IoT.Device;
 using static System.Net.DecompressionMethods;
 
 namespace IoT.Protocol.Soap
 {
-    public class SoapControlEndpoint : IControlEndpoint<SoapEnvelope, SoapEnvelope>
+    public class SoapControlEndpoint : ConnectedObject, IControlEndpoint<SoapEnvelope, SoapEnvelope>
     {
         private readonly Uri baseUri;
-        private readonly object syncRoot = new object();
-        private bool connected;
         private HttpClient httpClient;
 
         public SoapControlEndpoint(Uri baseAddress)
@@ -20,43 +19,11 @@ namespace IoT.Protocol.Soap
             baseUri = baseAddress;
         }
 
-        public void Close()
-        {
-            if(connected)
-            {
-                lock(syncRoot)
-                {
-                    if(connected)
-                    {
-                        httpClient.Dispose();
-                        httpClient = null;
-                        connected = false;
-                    }
-                }
-            }
-        }
-
-        public void Connect()
-        {
-            if(!connected)
-            {
-                lock(syncRoot)
-                {
-                    if(!connected)
-                    {
-                        httpClient = new HttpClient(new HttpClientHandler {AutomaticDecompression = GZip}, true)
-                        {
-                            BaseAddress = baseUri,
-                            DefaultRequestHeaders = {{"Accept-Encoding", "gzip"}}
-                        };
-                        connected = true;
-                    }
-                }
-            }
-        }
-
         public async Task<SoapEnvelope> InvokeAsync(SoapEnvelope message, CancellationToken cancellationToken = default)
         {
+            CheckDisposed();
+            CheckConnected();
+
             var soapAction = "\"" + message.Schema + "#" + message.Action + "\"";
 
             using(var stream = new MemoryStream())
@@ -97,28 +64,19 @@ namespace IoT.Protocol.Soap
             }
         }
 
-        #region IDisposable Support
-
-        private bool disposed; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
+        protected override void OnConnect()
         {
-            if(!disposed)
+            httpClient = new HttpClient(new HttpClientHandler {AutomaticDecompression = GZip}, true)
             {
-                if(disposing)
-                {
-                    Close();
-                }
-
-                disposed = true;
-            }
+                BaseAddress = baseUri,
+                DefaultRequestHeaders = {{"Accept-Encoding", "gzip"}}
+            };
         }
 
-        public void Dispose()
+        protected override void OnClose()
         {
-            Dispose(true);
+            httpClient.Dispose();
+            httpClient = null;
         }
-
-        #endregion
     }
 }

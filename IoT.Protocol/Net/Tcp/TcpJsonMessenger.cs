@@ -10,10 +10,10 @@ namespace IoT.Protocol.Net.Tcp
 {
     public class TcpJsonMessenger : INetMessenger<JsonValue, JsonValue>
     {
-        private readonly TcpClient client;
+        private TcpClient client;
         private readonly IPEndPoint endpoint;
-        private readonly NetworkStream netStream;
-        private readonly StreamReader reader;
+        private NetworkStream netStream;
+        private StreamReader reader;
 
         public TcpJsonMessenger(IPEndPoint endpoint)
         {
@@ -40,9 +40,14 @@ namespace IoT.Protocol.Net.Tcp
 
         public void Dispose()
         {
-            reader.Dispose();
-            netStream.Dispose();
-            client.Dispose();
+            reader?.Dispose();
+            reader = null;
+
+            netStream?.Dispose();
+            netStream = null;
+
+            client?.Dispose();
+            client = null;
         }
 
         #endregion
