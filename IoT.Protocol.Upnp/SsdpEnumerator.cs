@@ -11,7 +11,7 @@ namespace IoT.Protocol.Upnp
     {
         private readonly string searchTarget;
 
-        public SsdpEnumerator(IPEndPoint groupEndpoint, string searchTarget = SearchTargets.All) :
+        public SsdpEnumerator(IPEndPoint groupEndpoint, string searchTarget = UpnpServices.All) :
             base(groupEndpoint)
         {
             if(string.IsNullOrEmpty(searchTarget))
@@ -22,7 +22,7 @@ namespace IoT.Protocol.Upnp
             this.searchTarget = searchTarget;
         }
 
-        public SsdpEnumerator(string searchTarget = SearchTargets.All) :
+        public SsdpEnumerator(string searchTarget = UpnpServices.All) :
             this(new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900), searchTarget)
         {
             this.searchTarget = searchTarget;

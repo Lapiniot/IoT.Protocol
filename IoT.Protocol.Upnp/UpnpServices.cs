@@ -1,6 +1,6 @@
 namespace IoT.Protocol.Upnp
 {
-    public static class SearchTargets
+    public static class UpnpServices
     {
         public const string All = "ssdp:all";
         public const string RootDevice = "upnp:rootdevice";
