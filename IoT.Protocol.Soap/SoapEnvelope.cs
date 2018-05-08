@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using static System.String;
@@ -24,9 +25,19 @@ namespace IoT.Protocol.Soap
             Action = action;
         }
 
+        public SoapEnvelope(string action, string schema, params (string name, object value)[] args) :
+            this(action, schema, args.ToDictionary(a => a.name, a => a.value))
+        {
+        }
+
         public string Action { get; }
         public string Schema { get; }
         public IDictionary<string, object> Arguments { get; }
+
+        public override string ToString()
+        {
+            return $"{Schema}#{Action}: {{{Join(", ", Arguments.Select(a => $"{a.Key} = {a.Value}"))}}}";
+        }
 
         public void Serialize(Stream stream, Encoding encoding = null)
         {

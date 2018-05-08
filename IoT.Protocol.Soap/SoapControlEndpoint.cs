@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using static System.Net.DecompressionMethods;
+using static System.Net.Http.HttpMethod;
 
 namespace IoT.Protocol.Soap
 {
@@ -18,49 +19,53 @@ namespace IoT.Protocol.Soap
             baseUri = baseAddress;
         }
 
-        public async Task<SoapEnvelope> InvokeAsync(SoapEnvelope message, CancellationToken cancellationToken = default)
+        public Task<SoapEnvelope> InvokeAsync(SoapEnvelope message, CancellationToken cancellationToken = default)
+        {
+            return InvokeAsync(null, message, cancellationToken);
+        }
+
+        public async Task<SoapEnvelope> InvokeAsync(Uri actionUri, SoapEnvelope message, CancellationToken cancellationToken = default)
         {
             CheckDisposed();
             CheckConnected();
+            if(actionUri != null && actionUri.IsAbsoluteUri) throw new ArgumentException("Invalid uri type. Must be valid relative uri.");
 
-            var soapAction = "\"" + message.Schema + "#" + message.Action + "\"";
-
-            using(var stream = new MemoryStream())
+            using(var request = CreateRequestMessage(actionUri, message))
             {
-                message.Serialize(stream, Encoding.UTF8);
-                stream.Seek(0, SeekOrigin.Begin);
+                using(var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false))
+                {
+                    response.EnsureSuccessStatusCode();
 
-                using(var request = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    Version = new Version(1, 1),
-                    Headers = {{"SOAPACTION", soapAction}},
-                    Content = new StreamContent(stream) {Headers = {{"Content-Length", stream.Length.ToString()}, {"Content-Type", "text/xml; charset=\"utf-8\""}}}
-                })
-                {
-                    using(var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false))
+                    var charSet = response.Content.Headers.ContentType?.CharSet?.Trim('"');
+
+                    var encoding = charSet != null ? Encoding.GetEncoding(charSet) : Encoding.UTF8;
+
+                    using(var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                    using(var readerWithEncoding = new StreamReader(responseStream, encoding))
                     {
-                        response.EnsureSuccessStatusCode();
+                        var envelope = SoapEnvelope.Deserialize(readerWithEncoding);
 
-                        var charSet = response.Content.Headers.ContentType?.CharSet?.Trim('"');
-
-                        var encoding = charSet != null ? Encoding.GetEncoding(charSet) : Encoding.UTF8;
-
-                        using(var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                        using(var readerWithEncoding = new StreamReader(responseStream, encoding))
+                        if(envelope.Action != message.Action + "Response")
                         {
-                            var envelope = SoapEnvelope.Deserialize(readerWithEncoding);
-
-                            if(envelope.Action != message.Action + "Response")
-                            {
-                                throw new InvalidDataException("Invalid SOAP action response");
-                            }
-
-                            return envelope;
+                            throw new InvalidDataException("Invalid SOAP action response");
                         }
+
+                        return envelope;
                     }
                 }
             }
+        }
+
+        private HttpRequestMessage CreateRequestMessage(Uri actionUri, SoapEnvelope message)
+        {
+            return new HttpRequestMessage
+            {
+                RequestUri = actionUri,
+                Method = Post,
+                Version = new Version(1, 1),
+                Headers = {{"SOAPACTION", $"\"{message.Schema}#{message.Action}\""}},
+                Content = new SoapHttpContent(message)
+            };
         }
 
         protected override void OnConnect()

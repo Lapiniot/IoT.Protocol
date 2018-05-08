@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace IoT.Protocol.Net
 {
     public abstract class DispatchingEndpoint<TRequest, TResponse, TRequestMessage, TResponseMessage, TKey> :
-        DispatchingListener<TRequestMessage, TResponseMessage>, IControlEndpoint<TRequest, TResponse>
+        DispatchingListener<TRequestMessage, TResponseMessage>, IConnectedEndpoint<TRequest, TResponse>
     {
         private readonly ConcurrentDictionary<TKey, TaskCompletionSource<TResponse>> completions =
             new ConcurrentDictionary<TKey, TaskCompletionSource<TResponse>>();
