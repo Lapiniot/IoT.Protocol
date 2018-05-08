@@ -19,7 +19,7 @@ namespace IoT.Protocol.Soap
 
         public string Schema { get; }
 
-        public Task<SoapEnvelope> InvokeAsync(string action, IDictionary<string, object> args, CancellationToken cancellationToken)
+        public Task<SoapEnvelope> InvokeAsync(string action, IDictionary<string, object> args, CancellationToken cancellationToken = default)
         {
             return target.InvokeAsync(relativeUri, new SoapEnvelope(action, Schema, args), cancellationToken);
         }
