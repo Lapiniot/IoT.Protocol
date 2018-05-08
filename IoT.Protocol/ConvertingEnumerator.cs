@@ -28,12 +28,12 @@ namespace IoT.Protocol
 
         public async Task<AsyncEnumerator<TThing2>> GetEnumeratorAsync(CancellationToken cancellationToken = default)
         {
-            return (await Enumerator.GetEnumeratorAsync(cancellationToken)).Map(Convert);
+            return (await Enumerator.GetEnumeratorAsync(cancellationToken).ConfigureAwait(false)).Map(Convert);
         }
 
         public async Task<TThing2> DiscoverAsync(IPEndPoint endpont, CancellationToken cancellationToken = default)
         {
-            return Convert(await Enumerator.DiscoverAsync(endpont, cancellationToken));
+            return Convert(await Enumerator.DiscoverAsync(endpont, cancellationToken).ConfigureAwait(false));
         }
 
         public abstract TThing2 Convert(TThing1 thing);

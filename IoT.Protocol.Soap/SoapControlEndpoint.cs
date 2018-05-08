@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using IoT.Device;
 using static System.Net.DecompressionMethods;
 
 namespace IoT.Protocol.Soap
@@ -39,7 +38,7 @@ namespace IoT.Protocol.Soap
                     Content = new StreamContent(stream) {Headers = {{"Content-Length", stream.Length.ToString()}, {"Content-Type", "text/xml; charset=\"utf-8\""}}}
                 })
                 {
-                    using(var response = await httpClient.SendAsync(request, cancellationToken))
+                    using(var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false))
                     {
                         response.EnsureSuccessStatusCode();
 
@@ -47,7 +46,7 @@ namespace IoT.Protocol.Soap
 
                         var encoding = charSet != null ? Encoding.GetEncoding(charSet) : Encoding.UTF8;
 
-                        using(var responseStream = await response.Content.ReadAsStreamAsync())
+                        using(var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                         using(var readerWithEncoding = new StreamReader(responseStream, encoding))
                         {
                             var envelope = SoapEnvelope.Deserialize(readerWithEncoding);

@@ -16,7 +16,7 @@ namespace IoT.Protocol.Net
             {
                 try
                 {
-                    var result = await ReceiveAsync(cancellationToken);
+                    var result = await ReceiveAsync(cancellationToken).ConfigureAwait(false);
 
                     OnDataAvailable(result.RemoteEP, result.Message);
                 }

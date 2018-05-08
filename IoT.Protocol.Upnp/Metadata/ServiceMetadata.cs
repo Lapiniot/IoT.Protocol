@@ -27,8 +27,8 @@ namespace IoT.Protocol.Upnp.Metadata
         public static async Task<ServiceMetadata> LoadAsync(Uri location, CancellationToken cancellationToken)
         {
             using(var client = new HttpClient())
-            using(var response = await client.GetAsync(location, cancellationToken))
-            using(var stream = await response.Content.ReadAsStreamAsync())
+            using(var response = await client.GetAsync(location, cancellationToken).ConfigureAwait(false))
+            using(var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
             {
                 var xdoc = XDocument.Load(stream);
 

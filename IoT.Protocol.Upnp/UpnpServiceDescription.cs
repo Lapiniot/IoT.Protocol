@@ -23,9 +23,9 @@ namespace IoT.Protocol.Upnp
         public Uri ControlUri { get; }
         public Uri EventSubscribeUri { get; }
 
-        public async Task<ServiceMetadata> GetMetadataAsync(CancellationToken cancellationToken = default)
+        public Task<ServiceMetadata> GetMetadataAsync(CancellationToken cancellationToken = default)
         {
-            return await ServiceMetadata.LoadAsync(MetadataUri, cancellationToken);
+            return ServiceMetadata.LoadAsync(MetadataUri, cancellationToken);
         }
 
         public dynamic GreateDynamicProxy()

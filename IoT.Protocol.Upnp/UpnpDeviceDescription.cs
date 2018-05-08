@@ -43,8 +43,8 @@ namespace IoT.Protocol.Upnp
         public static async Task<UpnpDeviceDescription> LoadAsync(Uri location, CancellationToken cancellationToken)
         {
             using(var client = new HttpClient())
-            using(var response = await client.GetAsync(location, cancellationToken))
-            using(var stream = await response.Content.ReadAsStreamAsync())
+            using(var response = await client.GetAsync(location, cancellationToken).ConfigureAwait(false))
+            using(var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
             {
                 var xdoc = XDocument.Load(stream);
 

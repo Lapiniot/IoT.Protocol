@@ -25,7 +25,7 @@ namespace IoT.Protocol.Net
         {
             var completionSource = new TaskCompletionSource<TResponse>(cancellationToken);
 
-            var (id, datagram) = await CreateRequestAsync(message, cancellationToken);
+            var (id, datagram) = await CreateRequestAsync(message, cancellationToken).ConfigureAwait(false);
 
             try
             {
