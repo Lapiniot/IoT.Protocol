@@ -24,7 +24,7 @@ namespace IoT.Protocol.Soap
             return InvokeAsync(null, message, cancellationToken);
         }
 
-        public async Task<SoapEnvelope> InvokeAsync(Uri actionUri, SoapEnvelope message, CancellationToken cancellationToken = default)
+        protected internal async Task<SoapEnvelope> InvokeAsync(Uri actionUri, SoapEnvelope message, CancellationToken cancellationToken = default)
         {
             CheckDisposed();
             CheckConnected();
