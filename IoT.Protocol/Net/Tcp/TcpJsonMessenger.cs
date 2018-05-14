@@ -10,8 +10,8 @@ namespace IoT.Protocol.Net.Tcp
 {
     public class TcpJsonMessenger : INetMessenger<JsonValue, JsonValue>
     {
-        private TcpClient client;
         private readonly IPEndPoint endpoint;
+        private TcpClient client;
         private NetworkStream netStream;
         private StreamReader reader;
 

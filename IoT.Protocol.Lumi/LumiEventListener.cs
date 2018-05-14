@@ -11,8 +11,8 @@ namespace IoT.Protocol.Lumi
 {
     public class LumiEventListener : MessageListener<byte[]>, IObservable<(string Command, string Sid, JsonObject Data, JsonObject Message)>
     {
-        private readonly ObserversContainer<(string, string, JsonObject, JsonObject)> observers;
         private readonly IPEndPoint endpoint;
+        private readonly ObserversContainer<(string, string, JsonObject, JsonObject)> observers;
         private UdpMessageReceiver receiver;
 
         public LumiEventListener(IPEndPoint groupEndpoint)
