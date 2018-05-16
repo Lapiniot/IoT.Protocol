@@ -15,24 +15,26 @@ namespace IoT.Protocol.Soap
         private const string NS = "http://schemas.xmlsoap.org/soap/envelope/";
         private const string Prefix = "s";
 
-        public SoapEnvelope(string action, string schema, IDictionary<string, object> args = null)
+        public SoapEnvelope(string action, string schema, IDictionary<string, string> args = null)
         {
             if(IsNullOrWhiteSpace(action)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(action));
             if(IsNullOrWhiteSpace(schema)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(schema));
 
             Schema = schema;
-            Arguments = args ?? new Dictionary<string, object>();
+            Arguments = args ?? new Dictionary<string, string>();
             Action = action;
         }
 
         public SoapEnvelope(string action, string schema, params (string name, object value)[] args) :
-            this(action, schema, args.ToDictionary(a => a.name, a => a.value))
+            this(action, schema, args.ToDictionary(a => a.name, a => Convert.ToString(a.value)))
         {
         }
 
         public string Action { get; }
         public string Schema { get; }
-        public IDictionary<string, object> Arguments { get; }
+        public IDictionary<string, string> Arguments { get; }
+
+        public string this[string name] { get { return Arguments[name]; } }
 
         public override string ToString()
         {
@@ -41,7 +43,7 @@ namespace IoT.Protocol.Soap
 
         public void Serialize(Stream stream, Encoding encoding = null)
         {
-            using(var w = XmlWriter.Create(stream, new XmlWriterSettings {Encoding = encoding ?? Encoding.UTF8}))
+            using(var w = XmlWriter.Create(stream, new XmlWriterSettings { Encoding = encoding ?? Encoding.UTF8 }))
             {
                 w.WriteStartElement(Prefix, "Envelope", NS);
                 w.WriteAttributeString(Prefix, "encodingStyle", NS, "http://schemas.xmlsoap.org/soap/encoding/");
@@ -83,7 +85,7 @@ namespace IoT.Protocol.Soap
 
                             var name = r.LocalName;
                             var schema = r.NamespaceURI;
-                            var args = new Dictionary<string, object>();
+                            var args = new Dictionary<string, string>();
 
                             if(!r.IsEmptyElement)
                             {

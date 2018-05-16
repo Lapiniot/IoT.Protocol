@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,9 +20,14 @@ namespace IoT.Protocol.Soap
 
         public string Schema { get; }
 
-        public Task<SoapEnvelope> InvokeAsync(string action, IDictionary<string, object> args, CancellationToken cancellationToken = default)
+        public async Task<IDictionary<string, string>> InvokeAsync(string action, IDictionary<string, string> args, CancellationToken cancellationToken = default)
         {
-            return target.InvokeAsync(relativeUri, new SoapEnvelope(action, Schema, args), cancellationToken);
+            return (await target.InvokeAsync(relativeUri, new SoapEnvelope(action, Schema, args), cancellationToken).ConfigureAwait(false)).Arguments;
+        }
+
+        public async Task<IDictionary<string, string>> InvokeAsync(string action, CancellationToken cancellationToken = default, params (string, object)[] args)
+        {
+            return (await target.InvokeAsync(relativeUri, new SoapEnvelope(action, Schema, args), cancellationToken).ConfigureAwait(false)).Arguments;
         }
     }
 }
