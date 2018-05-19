@@ -12,7 +12,7 @@ namespace IoT.Protocol.Udp
     /// Base abstaract class for IoT devices enumerator which uses network discovery via UDP datagram broadcasting
     /// </summary>
     /// <typeparam name="TThing">Type of the 'thing' discoverable by concrete implementations</typeparam>
-    public abstract class UdpBroadcastEnumerator<TThing> : IThingEnumeratorAsync<TThing>
+    public abstract class UdpBroadcastEnumerator<TThing> : IThingEnumerator<TThing>
     {
         protected readonly IPEndPoint GroupEndpoint;
 
@@ -133,39 +133,6 @@ namespace IoT.Protocol.Udp
         #endregion
 
         #region IThingEnumeratorAsync<TThing> implementation
-
-        /// <summary>
-        /// Start enumerating asynchronously.
-        /// </summary>
-        /// <param name="cancellationToken">Cancellation token to control external cancellation</param>
-        /// <returns>Instance of <see cref="System.Threading.AsyncEnumerator{T}" /></returns>
-        /// <exception cref="OperationCanceledException">
-        /// On cancellation requested via <paramref name="cancellationToken" />
-        /// </exception>
-        public async Task<AsyncEnumerator<TThing>> GetEnumeratorAsync(CancellationToken cancellationToken)
-        {
-            var client = CreateUdpClient(true);
-
-            try
-            {
-                var datagram = GetDiscoveryDatagram();
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await client.SendAsync(datagram, datagram.Length, GroupEndpoint).WaitAsync(cancellationToken)
-                    .ConfigureAwait(false);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                return new UdpAsyncEnumerator<TThing>(client, ParseResponse);
-            }
-            catch
-            {
-                client.Dispose();
-
-                throw;
-            }
-        }
 
         /// <summary>
         /// Provides generic abstract peer-to-peer discovery for single device hosted at the <paramref name="endpont" />
