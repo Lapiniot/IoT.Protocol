@@ -9,15 +9,22 @@ namespace IoT.Protocol.Net
 {
     public static class SocketExtensions
     {
-        public static async Task<int> SendAsync(this Socket socket, byte[] bytes, int offset, int size, CancellationToken cancellationToken)
+        public delegate IAsyncResult AsyncBeginHandler(byte[] bytes, int offset, int size, SocketFlags flags, AsyncCallback callback, object state);
+
+        public delegate T AsyncEndHandler<out T>(IAsyncResult asyncResult);
+
+        private static async Task<T> FromAsync<T>(Socket socket, byte[] bytes, int offset, int size, IPEndPoint remotEndPoint,
+            AsyncBeginHandler beginMethod, AsyncEndHandler<T> endMethod, CancellationToken cancellationToken)
         {
-            var completionSource = new TaskCompletionSource<int>();
+            var completionSource = new TaskCompletionSource<T>();
 
             using(completionSource.Bind(cancellationToken))
             {
                 try
                 {
-                    socket.BeginSend(bytes, offset, size, None, OnSendComplete, new AsyncState<int>(socket, completionSource));
+                    var asyncState = new AsyncStateBag<T>(socket, remotEndPoint, completionSource, endMethod);
+
+                    beginMethod(bytes, offset, size, None, asyncState.AsyncCallback, asyncState);
                 }
                 catch(Exception exception)
                 {
@@ -28,23 +35,34 @@ namespace IoT.Protocol.Net
             }
         }
 
-        public static async Task<int> SendToAsync(this Socket socket, byte[] bytes, int offset, int size, EndPoint remoteEndPoint, CancellationToken cancellationToken)
+        private class AsyncStateBag<T>
         {
-            var completionSource = new TaskCompletionSource<int>();
+            public AsyncStateBag(Socket socket, IPEndPoint endPoint, TaskCompletionSource<T> completionSource, AsyncEndHandler<T> endMethod) =>
+                (Socket, EndPoint, CompletionSource, EndMethod) = (socket, endPoint, completionSource, endMethod);
 
-            using(completionSource.Bind(cancellationToken))
+            private AsyncEndHandler<T> EndMethod { get; }
+            private TaskCompletionSource<T> CompletionSource { get; }
+            public Socket Socket { get; }
+            public IPEndPoint EndPoint { get; }
+
+            public void AsyncCallback(IAsyncResult ar)
             {
                 try
                 {
-                    socket.BeginSendTo(bytes, offset, size, None, remoteEndPoint, OnSendToComplete, new AsyncState<int>(socket, completionSource));
+                    CompletionSource.TrySetResult(EndMethod(ar));
                 }
                 catch(Exception exception)
                 {
-                    completionSource.TrySetException(exception);
+                    CompletionSource.TrySetException(exception);
                 }
-
-                return await completionSource.Task.ConfigureAwait(false);
             }
+        }
+
+        #region SendAsync overloads
+
+        public static Task<int> SendAsync(this Socket socket, byte[] bytes, int offset, int size, CancellationToken cancellationToken)
+        {
+            return FromAsync(socket, bytes, offset, size, null, socket.BeginSend, socket.EndSend, cancellationToken);
         }
 
         public static Task<int> SendAsync(this Socket socket, byte[] bytes, CancellationToken cancellationToken)
@@ -52,28 +70,39 @@ namespace IoT.Protocol.Net
             return SendAsync(socket, bytes, 0, bytes.Length, cancellationToken);
         }
 
-        public static Task<int> SendToAsync(this Socket socket, byte[] bytes, EndPoint remoteEndPoint, CancellationToken cancellationToken)
+        #endregion
+
+        #region SendToAsync overloads
+
+        public static Task<int> SendToAsync(this Socket socket, byte[] bytes, int offset, int size, IPEndPoint remoteEndPoint, CancellationToken cancellationToken)
+        {
+            return FromAsync(socket, bytes, offset, size, remoteEndPoint, BeginSendTo, EndSendTo, cancellationToken);
+        }
+
+        public static Task<int> SendToAsync(this Socket socket, byte[] bytes, IPEndPoint remoteEndPoint, CancellationToken cancellationToken)
         {
             return SendToAsync(socket, bytes, 0, bytes.Length, remoteEndPoint, cancellationToken);
         }
 
-        public static async Task<int> ReceiveAsync(this Socket socket, byte[] bytes, int offset, int size, CancellationToken cancellationToken)
+        private static IAsyncResult BeginSendTo(byte[] bytes, int offset, int size, SocketFlags flags, AsyncCallback callback, object state)
         {
-            var completionSource = new TaskCompletionSource<int>();
+            var asyncState = (AsyncStateBag<int>)state;
 
-            using(completionSource.Bind(cancellationToken))
-            {
-                try
-                {
-                    socket.BeginReceive(bytes, offset, size, None, OnReceiveComplete, new AsyncState<int>(socket, completionSource));
-                }
-                catch(Exception exception)
-                {
-                    completionSource.TrySetException(exception);
-                }
+            return asyncState.Socket.BeginSendTo(bytes, offset, size, flags, asyncState.EndPoint, callback, state);
+        }
 
-                return await completionSource.Task.ConfigureAwait(false);
-            }
+        private static int EndSendTo(IAsyncResult asyncResult)
+        {
+            return ((AsyncStateBag<int>)asyncResult.AsyncState).Socket.EndSendTo(asyncResult);
+        }
+
+        #endregion
+
+        #region ReceiveAsync overloads
+
+        public static Task<int> ReceiveAsync(this Socket socket, byte[] bytes, int offset, int size, CancellationToken cancellationToken)
+        {
+            return FromAsync(socket, bytes, offset, size, null, socket.BeginReceive, socket.EndReceive, cancellationToken);
         }
 
         public static Task<int> ReceiveAsync(this Socket socket, byte[] bytes, CancellationToken cancellationToken)
@@ -81,25 +110,14 @@ namespace IoT.Protocol.Net
             return ReceiveAsync(socket, bytes, 0, bytes.Length, cancellationToken);
         }
 
-        public static async Task<(int Size, IPEndPoint RemoteEndPoint)> ReceiveFromAsync(this Socket socket, byte[] bytes, int offset, int size,
+        #endregion
+
+        #region ReceiveFromAsync overloads 
+
+        public static Task<(int Size, IPEndPoint RemoteEndPoint)> ReceiveFromAsync(this Socket socket, byte[] bytes, int offset, int size,
             IPEndPoint endPoint, CancellationToken cancellationToken)
         {
-            var completionSource = new TaskCompletionSource<(int, IPEndPoint)>();
-
-            using(completionSource.Bind(cancellationToken))
-            {
-                try
-                {
-                    EndPoint remoteEp = endPoint;
-                    socket.BeginReceiveFrom(bytes, offset, size, None, ref remoteEp, OnReceiveFromComplete, new AsyncState<(int, IPEndPoint)>(socket, completionSource, endPoint));
-                }
-                catch(Exception exception)
-                {
-                    completionSource.TrySetException(exception);
-                }
-
-                return await completionSource.Task.ConfigureAwait(false);
-            }
+            return FromAsync(socket, bytes, offset, size, endPoint, BeginReceiveFrom, EndReceiveFrom, cancellationToken);
         }
 
         public static Task<(int Size, IPEndPoint RemoteEndPoint)> ReceiveFromAsync(this Socket socket, byte[] bytes, IPEndPoint endPoint, CancellationToken cancellationToken)
@@ -107,80 +125,20 @@ namespace IoT.Protocol.Net
             return ReceiveFromAsync(socket, bytes, 0, bytes.Length, endPoint, cancellationToken);
         }
 
-        private static void OnSendComplete(IAsyncResult asyncResult)
+        private static IAsyncResult BeginReceiveFrom(byte[] bytes, int offset, int size, SocketFlags flags, AsyncCallback callback, object state)
         {
-            var state = (AsyncState<int>)asyncResult.AsyncState;
-
-            state.TryComplete(asyncResult, socket => socket.EndSend);
+            var asyncState = (AsyncStateBag<(int, IPEndPoint)>)state;
+            EndPoint e = asyncState.EndPoint;
+            return asyncState.Socket.BeginReceiveFrom(bytes, offset, size, flags, ref e, callback, state);
         }
 
-        private static void OnSendToComplete(IAsyncResult asyncResult)
+        private static (int Size, IPEndPoint RemoteEndPoint) EndReceiveFrom(IAsyncResult result)
         {
-            var state = (AsyncState<int>)asyncResult.AsyncState;
-
-            state.TryComplete(asyncResult, socket => socket.EndSendTo);
+            var asyncState = (AsyncStateBag<(int, IPEndPoint)>)result.AsyncState;
+            EndPoint endPoint = asyncState.EndPoint;
+            return (asyncState.Socket.EndReceiveFrom(result, ref endPoint), (IPEndPoint)endPoint);
         }
 
-        private static void OnReceiveComplete(IAsyncResult asyncResult)
-        {
-            var state = (AsyncState<int>)asyncResult.AsyncState;
-
-            state.TryComplete(asyncResult, socket => socket.EndReceive);
-        }
-
-        private static void OnReceiveFromComplete(IAsyncResult asyncResult)
-        {
-            var state = (AsyncState<(int Size, IPEndPoint RemoteEndPoint)>)asyncResult.AsyncState;
-
-            state.TryComplete(asyncResult, OnComplete);
-
-            (int Size, IPEndPoint RemoteEndPoint) OnComplete(Socket socket, IAsyncResult ar, IPEndPoint endPoint)
-            {
-                EndPoint ep = endPoint;
-                return (socket.EndReceiveFrom(ar, ref ep), (IPEndPoint)ep);
-            }
-        }
-
-        private class AsyncState<T>
-        {
-            public AsyncState(Socket socket, TaskCompletionSource<T> completionSource)
-            {
-                Socket = socket;
-                CompletionSource = completionSource;
-            }
-
-            public AsyncState(Socket socket, TaskCompletionSource<T> completionSource, IPEndPoint endPoint) : this(socket, completionSource)
-            {
-                EndPoint = endPoint;
-            }
-
-            private IPEndPoint EndPoint { get; }
-            private Socket Socket { get; }
-            private TaskCompletionSource<T> CompletionSource { get; }
-
-            public void TryComplete(IAsyncResult asyncResult, Func<Socket, Func<IAsyncResult, T>> selector)
-            {
-                try
-                {
-                    CompletionSource.TrySetResult(selector(Socket)(asyncResult));
-                }
-                catch(Exception exception)
-                {
-                    CompletionSource.TrySetException(exception);
-                }
-            }
-
-            public void TryComplete(IAsyncResult asyncResult, Func<Socket, IAsyncResult, IPEndPoint, T> selector)
-            {
-                try
-                {
-                    CompletionSource.TrySetResult(selector(Socket, asyncResult, EndPoint));
-                }
-                catch(Exception exception)
-                {
-                    CompletionSource.TrySetException(exception);
-                }
-            }
-        }
+        #endregion
     }
 }
