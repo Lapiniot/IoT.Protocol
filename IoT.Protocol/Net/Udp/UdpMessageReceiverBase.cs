@@ -11,10 +11,7 @@ namespace IoT.Protocol.Net.Udp
         protected UdpClient Client;
         private bool disposed;
 
-        protected UdpMessageReceiverBase(UdpClient client)
-        {
-            Client = client ?? throw new ArgumentNullException(nameof(client));
-        }
+        protected UdpMessageReceiverBase(UdpClient client) => Client = client ?? throw new ArgumentNullException(nameof(client));
 
         public void Dispose()
         {

@@ -14,10 +14,7 @@ namespace IoT.Protocol.Soap
         private readonly Uri baseUri;
         private HttpClient httpClient;
 
-        public SoapControlEndpoint(Uri baseAddress)
-        {
-            baseUri = baseAddress;
-        }
+        public SoapControlEndpoint(Uri baseAddress) => baseUri = baseAddress;
 
         public Task<SoapEnvelope> InvokeAsync(SoapEnvelope message, CancellationToken cancellationToken = default)
         {

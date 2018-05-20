@@ -9,10 +9,7 @@ namespace IoT.Protocol
     {
         protected IThingEnumerator<TThing1> Enumerator;
 
-        protected ConvertingEnumerator(IThingEnumerator<TThing1> enumerator)
-        {
-            Enumerator = enumerator ?? throw new ArgumentNullException(nameof(enumerator));
-        }
+        protected ConvertingEnumerator(IThingEnumerator<TThing1> enumerator) => Enumerator = enumerator ?? throw new ArgumentNullException(nameof(enumerator));
 
         public IEnumerable<TThing2> Enumerate(CancellationToken cancellationToken = default)
         {

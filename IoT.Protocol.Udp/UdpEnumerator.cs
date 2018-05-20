@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using IoT.Protocol.Net;
 
@@ -13,13 +14,13 @@ namespace IoT.Protocol.Udp
     /// <typeparam name="TThing">Type of the 'thing' discoverable by concrete implementations</typeparam>
     public abstract class UdpEnumerator<TThing> : IThingEnumerator<TThing>
     {
-        private readonly CreateSocketHandler handler;
+        private readonly CreateSocketHandler createSocket;
         protected readonly IPEndPoint RemoteEndPoint;
 
         protected UdpEnumerator(IPAddress address, int port, CreateSocketHandler createSocketHandler)
         {
             RemoteEndPoint = new IPEndPoint(address, port);
-            handler = createSocketHandler;
+            createSocket = createSocketHandler;
         }
 
         /// <summary>
@@ -29,7 +30,7 @@ namespace IoT.Protocol.Udp
         /// <returns>Enumerable sequence of IoT devices that responded to discovery message </returns>
         public IEnumerable<TThing> Enumerate(CancellationToken cancellationToken = default)
         {
-            using(var socket = handler())
+            using(var socket = createSocket())
             {
                 if(cancellationToken.IsCancellationRequested) yield break;
 
@@ -53,6 +54,7 @@ namespace IoT.Protocol.Udp
                     }
                     catch(OperationCanceledException)
                     {
+                        socket.Shutdown(SocketShutdown.Both);
                         yield break;
                     }
                     catch(Exception exception)

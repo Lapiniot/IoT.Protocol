@@ -14,10 +14,7 @@ namespace IoT.Protocol.Net
 
         protected IPEndPoint Endpoint;
 
-        protected DispatchingEndpoint(IPEndPoint endpoint)
-        {
-            Endpoint = endpoint;
-        }
+        protected DispatchingEndpoint(IPEndPoint endpoint) => Endpoint = endpoint;
 
         protected abstract TimeSpan CommandTimeout { get; }
 

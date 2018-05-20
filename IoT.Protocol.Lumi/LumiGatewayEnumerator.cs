@@ -8,10 +8,7 @@ namespace IoT.Protocol.Lumi
     {
         private readonly byte[] whoisMessage;
 
-        public LumiEnumerator() : base(IPAddress.Parse("224.0.0.50"), 4321)
-        {
-            whoisMessage = new JsonObject {{"cmd", "whois"}}.Serialize();
-        }
+        public LumiEnumerator() : base(IPAddress.Parse("224.0.0.50"), 4321) => whoisMessage = new JsonObject {{"cmd", "whois"}}.Serialize();
 
         protected override byte[] CreateBuffer()
         {
