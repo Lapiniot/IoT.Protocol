@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace IoT.Protocol
 {
@@ -19,11 +17,6 @@ namespace IoT.Protocol
         public IEnumerable<TThing2> Enumerate(CancellationToken cancellationToken = default)
         {
             return Enumerator.Enumerate(cancellationToken).Select(Convert);
-        }
-
-        public TThing2 Discover(IPEndPoint endpont, CancellationToken cancellationToken = default)
-        {
-            return Convert(Enumerator.Discover(endpont, cancellationToken));
         }
 
         public abstract TThing2 Convert(TThing1 thing);
