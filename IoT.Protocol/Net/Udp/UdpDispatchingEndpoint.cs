@@ -6,7 +6,7 @@ namespace IoT.Protocol.Net.Udp
     /// Base abstract type for IoT device controlled via UDP datagram messaging with dispatching queue support.
     /// </summary>
     public abstract class UdpDispatchingEndpoint<TRequest, TResponse, TKey> :
-        DispatchingEndpoint<TRequest, TResponse, byte[], byte[], TKey>
+        DispatchingEndpoint<TRequest, TResponse, TKey>
     {
         protected UdpDispatchingEndpoint(IPEndPoint endpoint) : base(endpoint)
         {
@@ -14,7 +14,7 @@ namespace IoT.Protocol.Net.Udp
 
         #region Overrides of DispatchingMessenger<byte[],byte[]>
 
-        protected override INetMessenger<byte[], byte[]> CreateNetMessenger()
+        protected override INetMessenger CreateNetMessenger()
         {
             return new UdpMessenger(Endpoint);
         }

@@ -8,7 +8,7 @@ using IoT.Protocol.Net.Tcp;
 
 namespace IoT.Protocol.Yeelight
 {
-    public class YeelightControlEndpoint : DispatchingEndpoint<JsonObject, JsonValue, JsonValue, JsonValue, long>,
+    public class YeelightControlEndpoint : DispatchingEndpoint<JsonObject, JsonValue, long>,
         IObservable<JsonObject>
     {
         private readonly ObserversContainer<JsonObject> observers;
@@ -30,22 +30,24 @@ namespace IoT.Protocol.Yeelight
             return observers.Subscribe(observer);
         }
 
-        protected override Task<(long, JsonValue)> CreateRequestAsync(JsonObject message, CancellationToken cancellationToken)
+        protected override Task<(long, byte[])> CreateRequestAsync(JsonObject message, CancellationToken cancellationToken)
         {
             var id = Interlocked.Increment(ref counter);
 
             message["id"] = id;
 
-            return Task.FromResult((id, (JsonValue)message));
+            throw new NotImplementedException();
+            //return Task.FromResult((id, message));
         }
 
-        protected override bool TryParseResponse(IPEndPoint remoteEndPoint, JsonValue responseMessage, out long id, out JsonValue response)
+        protected override bool TryParseResponse(IPEndPoint remoteEndPoint, byte[] bytes, out long id, out JsonValue response)
         {
-            id = 0;
+            throw new NotImplementedException();
+            /*id = 0;
 
             response = null;
 
-            if(responseMessage is JsonObject json)
+            if(bytes is JsonObject json)
             {
                 if(json.TryGetValue("id", out var value) && value.JsonType == JsonType.Number)
                 {
@@ -63,12 +65,12 @@ namespace IoT.Protocol.Yeelight
                 }
             }
 
-            return false;
+            return false;*/
         }
 
         #region Overrides of DispatchingMessenger<JsonValue, JsonValue>
 
-        protected override INetMessenger<JsonValue, JsonValue> CreateNetMessenger()
+        protected override INetMessenger CreateNetMessenger()
         {
             return new TcpJsonMessenger(Endpoint);
         }

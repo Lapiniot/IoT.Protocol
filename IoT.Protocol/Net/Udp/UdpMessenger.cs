@@ -4,17 +4,17 @@ using System.Threading.Tasks;
 
 namespace IoT.Protocol.Net.Udp
 {
-    public sealed class UdpMessenger : UdpMessageReceiver, INetMessenger<byte[], byte[]>
+    public sealed class UdpMessenger : UdpMessageReceiver, INetMessenger
     {
         public UdpMessenger(IPEndPoint endpoint) : base(endpoint)
         {
         }
+        
+        #region Implementation of INetMessenger
 
-        #region Implementation of INetMessenger<in byte[],byte[]>
-
-        public Task SendAsync(byte[] message, CancellationToken cancellationToken)
+        public Task SendAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            return Client.SendAsync(message, message.Length).WaitAsync(cancellationToken);
+            throw new System.NotImplementedException();
         }
 
         #endregion

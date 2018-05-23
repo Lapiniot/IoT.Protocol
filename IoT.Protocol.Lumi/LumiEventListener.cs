@@ -9,11 +9,11 @@ using ILumiObserver = System.IObserver<(string Command, string Sid, System.Json.
 
 namespace IoT.Protocol.Lumi
 {
-    public class LumiEventListener : MessageListener<byte[]>, IObservable<(string Command, string Sid, JsonObject Data, JsonObject Message)>
+    public class LumiEventListener : DataListener, IObservable<(string Command, string Sid, JsonObject Data, JsonObject Message)>
     {
         private readonly IPEndPoint endpoint;
         private readonly ObserversContainer<(string, string, JsonObject, JsonObject)> observers;
-        private UdpMessageReceiver receiver;
+        private UdpMulticastMessageReceiver receiver;
 
         public LumiEventListener(IPEndPoint groupEndpoint)
         {
@@ -26,7 +26,7 @@ namespace IoT.Protocol.Lumi
             return observers.Subscribe(observer);
         }
 
-        protected override void OnDataAvailable(IPEndPoint remoteEndPoint, byte[] bytes)
+        protected override void OnDataAvailable(IPEndPoint remoteEndPoint, byte[] bytes, int size)
         {
             var message = (JsonObject)JsonExtensions.Deserialize(bytes);
 
@@ -37,12 +37,12 @@ namespace IoT.Protocol.Lumi
             }
         }
 
-        protected override Task<(IPEndPoint RemoteEP, byte[] Message)> ReceiveAsync(CancellationToken cancellationToken)
+        protected override Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
         {
             CheckDisposed();
             CheckConnected();
 
-            return receiver.ReceiveAsync(cancellationToken);
+            return receiver.ReceiveAsync(buffer, cancellationToken);
         }
 
         protected override void Dispose(bool disposing)
@@ -55,11 +55,11 @@ namespace IoT.Protocol.Lumi
             }
         }
 
-        #region Overrides of MessageListener<byte[]>
+        #region Overrides of DataListener
 
         protected override void OnConnect()
         {
-            receiver = new UdpMessageReceiver(endpoint);
+            receiver = new UdpMulticastMessageReceiver(endpoint);
 
             base.OnConnect();
         }

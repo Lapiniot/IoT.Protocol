@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace IoT.Protocol.Net.Tcp
 {
-    public class TcpJsonMessenger : INetMessenger<JsonValue, JsonValue>
+    public class TcpJsonMessenger : INetMessenger
     {
         private readonly IPEndPoint endpoint;
         private TcpClient client;
@@ -52,18 +52,16 @@ namespace IoT.Protocol.Net.Tcp
 
         #endregion
 
-        #region INetMessenger<JsonValue, JsonValue>
+        #region INetMessenger
 
-        public async Task<(IPEndPoint RemoteEP, JsonValue Message)> ReceiveAsync(CancellationToken cancellationToken)
+        public Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            var line = await reader.ReadLineAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            return (endpoint, JsonValue.Parse(line));
+            throw new System.NotImplementedException();
         }
 
-        public Task SendAsync(JsonValue message, CancellationToken cancellationToken)
+        public Task SendAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            return Task.Run(() => SendMessage(message), cancellationToken).WaitAsync(cancellationToken);
+            throw new System.NotImplementedException();
         }
 
         private void SendMessage(JsonValue message)

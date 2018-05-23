@@ -9,13 +9,13 @@ namespace IoT.Protocol.Net.Udp
         {
         }
 
-        private static UdpClient CreateClient(IPEndPoint endpoint)
+        private static Socket CreateClient(IPEndPoint endpoint)
         {
-            var client = new UdpClient {EnableBroadcast = false};
+            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-            client.Connect(endpoint);
+            socket.Connect(endpoint);
 
-            return client;
+            return socket;
         }
     }
 }

@@ -3,31 +3,30 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using IoT.Protocol.Net;
 
 namespace IoT.Protocol.Net.Udp
 {
-    public abstract class UdpMessageReceiverBase : INetMessageReceiver<byte[]>
+    public abstract class UdpMessageReceiverBase : IMessageReceiver
     {
-        protected UdpClient Client;
+        protected Socket Socket;
         private bool disposed;
 
-        protected UdpMessageReceiverBase(UdpClient client) => Client = client ?? throw new ArgumentNullException(nameof(client));
+        protected UdpMessageReceiverBase(Socket socket) => Socket = socket ?? throw new ArgumentNullException(nameof(socket));
 
         public void Dispose()
         {
             if(!disposed)
             {
-                Client?.Dispose();
-                Client = null;
+                Socket?.Dispose();
+                Socket = null;
                 disposed = true;
             }
         }
 
-        public async Task<(IPEndPoint RemoteEP, byte[] Message)> ReceiveAsync(CancellationToken cancellationToken)
+        public Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            var result = await Client.ReceiveAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            return (result.RemoteEndPoint, result.Buffer);
+            throw new NotImplementedException();
         }
     }
 }

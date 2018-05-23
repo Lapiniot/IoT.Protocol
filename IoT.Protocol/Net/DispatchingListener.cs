@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace IoT.Protocol.Net
 {
-    public abstract class DispatchingListener<TRequestMessage, TResponseMessage> : MessageListener<TResponseMessage>
+    public abstract class DispatchingListener : DataListener
     {
-        private INetMessenger<TRequestMessage, TResponseMessage> messenger;
+        private INetMessenger messenger;
 
-        public Task SendAsync(TRequestMessage message, CancellationToken cancellationToken)
+        public Task SendAsync(byte[] message, CancellationToken cancellationToken)
         {
             CheckDisposed();
             CheckConnected();
@@ -16,16 +16,13 @@ namespace IoT.Protocol.Net
             return messenger.SendAsync(message, cancellationToken);
         }
 
-        protected abstract INetMessenger<TRequestMessage, TResponseMessage> CreateNetMessenger();
+        protected abstract INetMessenger CreateNetMessenger();
 
-        #region Overrides of MessageListener<TResponseMessage>
+        #region Overrides of DataListener
 
-        protected override Task<(IPEndPoint RemoteEP, TResponseMessage Message)> ReceiveAsync(CancellationToken cancellationToken)
+        protected override Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            CheckDisposed();
-            CheckConnected();
-
-            return messenger.ReceiveAsync(cancellationToken);
+            return messenger.ReceiveAsync(buffer, cancellationToken);
         }
 
         protected override void OnConnect()
