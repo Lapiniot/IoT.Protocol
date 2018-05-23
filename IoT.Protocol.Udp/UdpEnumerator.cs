@@ -23,6 +23,9 @@ namespace IoT.Protocol.Udp
             createSocket = createSocketHandler;
         }
 
+        protected abstract int MaxRequestSize { get; }
+        protected abstract int MaxResponseSize { get; }
+
         /// <summary>
         /// Enumerates network devices by sending discovery datagrams
         /// </summary>
@@ -32,13 +35,20 @@ namespace IoT.Protocol.Udp
         {
             using(var socket = createSocket())
             {
+                socket.ReceiveBufferSize = MaxRequestSize;
+                socket.SendBufferSize = MaxResponseSize;
+
                 if(cancellationToken.IsCancellationRequested) yield break;
 
-                socket.SendToAsync(GetDiscoveryDatagram(), RemoteEndPoint, cancellationToken).GetAwaiter().GetResult();
+                var datagram = GetDiscoveryDatagram();
+
+                if(datagram.Length > MaxRequestSize) throw new InvalidOperationException($"Discovery datagram is larger than {nameof(MaxRequestSize)} = {MaxRequestSize} configured buffer size");
+
+                socket.SendToAsync(datagram, RemoteEndPoint, cancellationToken).GetAwaiter().GetResult();
 
                 if(cancellationToken.IsCancellationRequested) yield break;
 
-                var buffer = CreateBuffer();
+                var buffer = new byte[MaxResponseSize];
 
                 while(!cancellationToken.IsCancellationRequested)
                 {
@@ -70,17 +80,15 @@ namespace IoT.Protocol.Udp
             }
         }
 
-        protected abstract byte[] CreateBuffer();
-
         /// <summary>
         /// Factory method to create IoT device instance by parsing discovery response datagram bytes
         /// </summary>
-        /// <param name="buffer">Buffer containing discovery response bytes</param>
-        /// <param name="size">Size of the valid data in the buffer (in bytes)</param>
+        /// <param name="buffer">Buffer containing message</param>
+        /// <param name="size">Size of the valid data in the buffer</param>
         /// <param name="remoteEp">Responder's endpoint information</param>
         /// <returns>
         /// Instance of type
-        /// <typeparam name="TThing"></typeparam>
+        /// <typeparam name="TThing" />
         /// </returns>
         protected abstract TThing ParseResponse(byte[] buffer, int size, IPEndPoint remoteEp);
 
