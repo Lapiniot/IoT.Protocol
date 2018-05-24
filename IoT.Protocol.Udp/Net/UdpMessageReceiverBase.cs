@@ -3,9 +3,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using IoT.Protocol.Net;
+using IoT.Protocol.Interfaces;
 
-namespace IoT.Protocol.Net.Udp
+namespace IoT.Protocol.Udp.Net
 {
     public abstract class UdpMessageReceiverBase : IMessageReceiver
     {

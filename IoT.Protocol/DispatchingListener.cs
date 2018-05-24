@@ -1,8 +1,9 @@
 ﻿using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using IoT.Protocol.Interfaces;
 
-namespace IoT.Protocol.Net
+namespace IoT.Protocol
 {
     public abstract class DispatchingListener : DataListener
     {
@@ -20,8 +21,11 @@ namespace IoT.Protocol.Net
 
         #region Overrides of DataListener
 
-        protected override Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
+        public override Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
         {
+            CheckDisposed();
+            CheckConnected();
+
             return messenger.ReceiveAsync(buffer, cancellationToken);
         }
 

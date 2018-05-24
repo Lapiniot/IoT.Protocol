@@ -1,24 +1,23 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Json;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using IoT.Protocol.Interfaces;
 
-namespace IoT.Protocol.Net.Tcp
+namespace IoT.Protocol.Yeelight
 {
     public class TcpJsonMessenger : INetMessenger
     {
-        private readonly IPEndPoint endpoint;
         private TcpClient client;
         private NetworkStream netStream;
         private StreamReader reader;
 
         public TcpJsonMessenger(IPEndPoint endpoint)
         {
-            this.endpoint = endpoint;
-
             try
             {
                 client = new TcpClient();
@@ -56,12 +55,12 @@ namespace IoT.Protocol.Net.Tcp
 
         public Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public Task SendAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         private void SendMessage(JsonValue message)

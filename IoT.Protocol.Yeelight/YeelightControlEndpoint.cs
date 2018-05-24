@@ -3,8 +3,7 @@ using System.Json;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using IoT.Protocol.Net;
-using IoT.Protocol.Net.Tcp;
+using IoT.Protocol.Interfaces;
 
 namespace IoT.Protocol.Yeelight
 {
@@ -40,7 +39,7 @@ namespace IoT.Protocol.Yeelight
             //return Task.FromResult((id, message));
         }
 
-        protected override bool TryParseResponse(IPEndPoint remoteEndPoint, byte[] bytes, out long id, out JsonValue response)
+        protected override bool TryParseResponse(IPEndPoint remoteEndPoint, byte[] bytes, int size, out long id, out JsonValue response)
         {
             throw new NotImplementedException();
             /*id = 0;

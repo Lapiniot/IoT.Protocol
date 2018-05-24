@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace IoT.Protocol.Net
+namespace IoT.Protocol.Interfaces
 {
     /// <summary>
     /// Provides a possibility to send data to the remote endpoint
@@ -10,9 +10,9 @@ namespace IoT.Protocol.Net
     public interface IMessageSender : IDisposable
     {
         /// <summary>
-        /// Sends <paramref name="message" /> to the remote endpoint asynchronously
+        /// Sends <paramref name="buffer" /> to the remote endpoint asynchronously
         /// </summary>
-        /// <param name="buffer">Message to send</param>
+        /// <param name="buffer">Message buffer to send</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task that can be awaited</returns>
         Task SendAsync(byte[] buffer, CancellationToken cancellationToken);

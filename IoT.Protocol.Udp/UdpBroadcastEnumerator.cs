@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using IoT.Protocol.Net;
+using System.Net.Sockets;
 
 namespace IoT.Protocol.Udp
 {
@@ -12,7 +12,7 @@ namespace IoT.Protocol.Udp
         /// <summary>
         /// Type initializer
         /// </summary>
-        protected UdpBroadcastEnumerator(int port) : base(IPAddress.Broadcast, port, SocketHandlers.UdpBroadcast)
+        protected UdpBroadcastEnumerator(int port) : base(IPAddress.Broadcast, port, SocketsFactory.UdpBroadcast)
         {
         }
     }

@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using IoT.Protocol.Interfaces;
 using static System.Net.DecompressionMethods;
 using static System.Net.Http.HttpMethod;
 

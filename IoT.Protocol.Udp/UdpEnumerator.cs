@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using IoT.Protocol.Net;
+using IoT.Protocol.Interfaces;
 
 namespace IoT.Protocol.Udp
 {
@@ -14,13 +14,13 @@ namespace IoT.Protocol.Udp
     /// <typeparam name="TThing">Type of the 'thing' discoverable by concrete implementations</typeparam>
     public abstract class UdpEnumerator<TThing> : IThingEnumerator<TThing>
     {
-        private readonly CreateSocketHandler createSocket;
+        private readonly CreateSocketFactory createSocket;
         protected readonly IPEndPoint RemoteEndPoint;
 
-        protected UdpEnumerator(IPAddress address, int port, CreateSocketHandler createSocketHandler)
+        protected UdpEnumerator(IPAddress address, int port, CreateSocketFactory createSocketFactory)
         {
             RemoteEndPoint = new IPEndPoint(address, port);
-            createSocket = createSocketHandler;
+            createSocket = createSocketFactory;
         }
 
         protected abstract int MaxRequestSize { get; }

@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace IoT.Protocol
+namespace IoT.Protocol.Interfaces
 {
     public interface IControlEndpoint<in TRequest, TResponse>
     {

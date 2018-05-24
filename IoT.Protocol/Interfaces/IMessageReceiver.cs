@@ -3,7 +3,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace IoT.Protocol.Net
+namespace IoT.Protocol.Interfaces
 {
     /// <summary>
     /// Provides a posibility to receive messages from remote endpoint

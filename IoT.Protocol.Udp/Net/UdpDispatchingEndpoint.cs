@@ -1,6 +1,7 @@
 ﻿using System.Net;
+using IoT.Protocol.Interfaces;
 
-namespace IoT.Protocol.Net.Udp
+namespace IoT.Protocol.Udp.Net
 {
     /// <summary>
     /// Base abstract type for IoT device controlled via UDP datagram messaging with dispatching queue support.

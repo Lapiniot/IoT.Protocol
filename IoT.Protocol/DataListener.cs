@@ -4,15 +4,16 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace IoT.Protocol.Net
+namespace IoT.Protocol
 {
     public abstract class DataListener : DataReceiver
     {
         private CancellationTokenSource cancellationTokenSource;
+        protected int ReceiveBufferSize = 2048;
 
         private async Task DispatchAsync(CancellationToken cancellationToken)
         {
-            var buffer = new byte[2048];
+            var buffer = new byte[ReceiveBufferSize];
 
             while(!cancellationToken.IsCancellationRequested)
             {
@@ -37,8 +38,9 @@ namespace IoT.Protocol.Net
         /// Process response datagram bytes
         /// </summary>
         /// <param name="remoteEndpoint">Remote endpoint of the data sender</param>
-        /// <param name="bytes">Raw datagram bytes</param>
-        protected abstract void OnDataAvailable(IPEndPoint remoteEndpoint, byte[] bytes, int size);
+        /// <param name="buffer">Raw datagram bytes</param>
+        /// <param name="size">Size of the actually valid data written to the <paramref name="buffer" /></param>
+        protected abstract void OnDataAvailable(IPEndPoint remoteEndpoint, byte[] buffer, int size);
 
         #region Overrides of MessageReceiver<TMessage>
 

@@ -3,8 +3,9 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using IoT.Protocol.Interfaces;
 
-namespace IoT.Protocol.Net
+namespace IoT.Protocol
 {
     public abstract class DispatchingEndpoint<TRequest, TResponse, TKey> :
         DispatchingListener, IConnectedEndpoint<TRequest, TResponse>
@@ -42,13 +43,13 @@ namespace IoT.Protocol.Net
             }
         }
 
-        protected abstract bool TryParseResponse(IPEndPoint remoteEndPoint, byte[] buffer, out TKey id, out TResponse response);
+        protected abstract bool TryParseResponse(IPEndPoint remoteEndPoint, byte[] buffer, int size, out TKey id, out TResponse response);
 
         protected abstract Task<(TKey, byte[])> CreateRequestAsync(TRequest message, CancellationToken cancellationToken);
 
         protected override void OnDataAvailable(IPEndPoint remoteEndpoint, byte[] buffer, int size)
         {
-            if(TryParseResponse(remoteEndpoint, buffer, out var id, out var response))
+            if(TryParseResponse(remoteEndpoint, buffer, size, out var id, out var response))
             {
                 if(completions.TryRemove(id, out var completionSource))
                 {

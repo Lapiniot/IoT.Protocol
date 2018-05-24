@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IoT.Protocol
+namespace IoT.Protocol.Interfaces
 {
     public interface IConnectedEndpoint<in TRequest, TResponse> :
         IControlEndpoint<TRequest, TResponse>,

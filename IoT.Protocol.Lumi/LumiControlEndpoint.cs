@@ -3,7 +3,7 @@ using System.Json;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using IoT.Protocol.Net.Udp;
+using IoT.Protocol.Udp.Net;
 
 namespace IoT.Protocol.Lumi
 {
@@ -15,7 +15,7 @@ namespace IoT.Protocol.Lumi
 
         protected override TimeSpan CommandTimeout { get; } = TimeSpan.FromSeconds(10);
 
-        protected override bool TryParseResponse(IPEndPoint remoteEndPoint, byte[] datagram, out string id, out JsonObject response)
+        protected override bool TryParseResponse(IPEndPoint remoteEndPoint, byte[] datagram, int size, out string id, out JsonObject response)
         {
             var json = JsonExtensions.Deserialize(datagram);
 

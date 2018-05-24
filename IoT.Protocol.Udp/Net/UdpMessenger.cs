@@ -1,8 +1,9 @@
 ﻿using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using IoT.Protocol.Interfaces;
 
-namespace IoT.Protocol.Net.Udp
+namespace IoT.Protocol.Udp.Net
 {
     public sealed class UdpMessenger : UdpMessageReceiver, INetMessenger
     {
