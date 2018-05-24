@@ -39,7 +39,7 @@ namespace IoT.Protocol.Yeelight
             //return Task.FromResult((id, message));
         }
 
-        protected override bool TryParseResponse(IPEndPoint remoteEndPoint, byte[] bytes, int size, out long id, out JsonValue response)
+        protected override bool TryParseResponse(byte[] bytes, int size, IPEndPoint remoteEndPoint, out long id, out JsonValue response)
         {
             throw new NotImplementedException();
             /*id = 0;

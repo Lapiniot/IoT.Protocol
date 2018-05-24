@@ -43,13 +43,13 @@ namespace IoT.Protocol
             }
         }
 
-        protected abstract bool TryParseResponse(IPEndPoint remoteEndPoint, byte[] buffer, int size, out TKey id, out TResponse response);
+        protected abstract bool TryParseResponse(byte[] buffer, int size, IPEndPoint remoteEndPoint, out TKey id, out TResponse response);
 
         protected abstract Task<(TKey, byte[])> CreateRequestAsync(TRequest message, CancellationToken cancellationToken);
 
         protected override void OnDataAvailable(IPEndPoint remoteEndpoint, byte[] buffer, int size)
         {
-            if(TryParseResponse(remoteEndpoint, buffer, size, out var id, out var response))
+            if(TryParseResponse(buffer, size, remoteEndpoint, out var id, out var response))
             {
                 if(completions.TryRemove(id, out var completionSource))
                 {

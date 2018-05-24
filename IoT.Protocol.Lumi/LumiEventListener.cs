@@ -27,7 +27,7 @@ namespace IoT.Protocol.Lumi
 
         protected override void OnDataAvailable(IPEndPoint remoteEndPoint, byte[] buffer, int size)
         {
-            var message = (JsonObject)JsonExtensions.Deserialize(buffer);
+            var message = (JsonObject)JsonExtensions.Deserialize(buffer, 0, size);
 
             if(message.TryGetValue("sid", out var sid) && message.TryGetValue("cmd", out var cmd) &&
                message.TryGetValue("data", out var v) && JsonValue.Parse(v) is JsonObject data)

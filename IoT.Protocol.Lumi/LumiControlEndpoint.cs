@@ -7,7 +7,7 @@ using IoT.Protocol.Udp.Net;
 
 namespace IoT.Protocol.Lumi
 {
-    public class LumiControlEndpoint : UdpDispatchingEndpoint<JsonObject, JsonObject, string>
+    public sealed class LumiControlEndpoint : UdpDispatchingEndpoint<JsonObject, JsonObject, string>
     {
         public LumiControlEndpoint(IPEndPoint endpoint) : base(endpoint)
         {
@@ -15,10 +15,9 @@ namespace IoT.Protocol.Lumi
 
         protected override TimeSpan CommandTimeout { get; } = TimeSpan.FromSeconds(10);
 
-        protected override bool TryParseResponse(IPEndPoint remoteEndPoint, byte[] datagram, int size, out string id, out JsonObject response)
+        protected override bool TryParseResponse(byte[] buffer, int size, IPEndPoint remoteEndPoint, out string id, out JsonObject response)
         {
-            var json = JsonExtensions.Deserialize(datagram);
-
+            var json = JsonExtensions.Deserialize(buffer, 0, size);
             if(json is JsonObject jObject && jObject.TryGetValue("cmd", out var cmd) && jObject.TryGetValue("sid", out var sid))
             {
                 id = GetCommandKey(GetCmdName(cmd), sid);
