@@ -1,24 +1,23 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IoT.Protocol.Udp.Net
 {
     public sealed class UdpMulticastMessageReceiver : UdpMessageReceiverBase
     {
-        public UdpMulticastMessageReceiver(IPEndPoint endpoint) : base(CreateMulticastSocket(endpoint))
+        private readonly IPEndPoint endpoint;
+
+        public UdpMulticastMessageReceiver(IPEndPoint endpoint) : base(Sockets.Udp.Multicast.Listener(endpoint)) => this.endpoint = endpoint;
+
+        #region Overrides of UdpMessageReceiverBase
+
+        public override Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
         {
+            return Socket.ReceiveFromAsync(buffer, endpoint, cancellationToken);
         }
 
-        private static Socket CreateMulticastSocket(IPEndPoint endpoint)
-        {
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-
-            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(endpoint.Address));
-            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 64);
-
-            return socket;
-        }
+        #endregion
     }
 }

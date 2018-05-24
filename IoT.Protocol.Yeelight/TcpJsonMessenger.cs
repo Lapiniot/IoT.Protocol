@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Json;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -63,12 +62,12 @@ namespace IoT.Protocol.Yeelight
             throw new NotImplementedException();
         }
 
-        private void SendMessage(JsonValue message)
-        {
-            message.SerializeTo(netStream);
-            netStream.WriteByte(0x0d);
-            netStream.WriteByte(0x0a);
-        }
+        //private void SendMessage(JsonValue message)
+        //{
+        //    message.SerializeTo(netStream);
+        //    netStream.WriteByte(0x0d);
+        //    netStream.WriteByte(0x0a);
+        //}
 
         #endregion
     }

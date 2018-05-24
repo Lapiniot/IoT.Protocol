@@ -12,7 +12,7 @@ namespace IoT.Protocol.Udp
         /// <summary>
         /// Type initializer
         /// </summary>
-        protected UdpBroadcastEnumerator(int port) : base(IPAddress.Broadcast, port, SocketsFactory.UdpBroadcast)
+        protected UdpBroadcastEnumerator(int port) : base(IPAddress.Broadcast, port, Sockets.Udp.Broadcast)
         {
         }
     }

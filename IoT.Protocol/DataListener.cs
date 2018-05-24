@@ -9,7 +9,8 @@ namespace IoT.Protocol
     public abstract class DataListener : DataReceiver
     {
         private CancellationTokenSource cancellationTokenSource;
-        protected int ReceiveBufferSize = 2048;
+
+        protected int ReceiveBufferSize = 0x8000;
 
         private async Task DispatchAsync(CancellationToken cancellationToken)
         {

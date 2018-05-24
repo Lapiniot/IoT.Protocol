@@ -1,5 +1,5 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Interfaces;
@@ -16,7 +16,7 @@ namespace IoT.Protocol.Udp.Net
 
         public Task SendAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Socket.SendAsync(buffer, cancellationToken);
         }
 
         #endregion
