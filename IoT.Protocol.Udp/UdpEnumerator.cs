@@ -23,8 +23,8 @@ namespace IoT.Protocol.Udp
             createSocket = createSocketFactory;
         }
 
-        protected abstract int MaxRequestSize { get; }
-        protected abstract int MaxResponseSize { get; }
+        protected abstract int SendBufferSize { get; }
+        protected abstract int ReceiveBufferSize { get; }
 
         /// <summary>
         /// Enumerates network devices by sending discovery datagrams
@@ -35,20 +35,20 @@ namespace IoT.Protocol.Udp
         {
             using(var socket = createSocket())
             {
-                socket.ReceiveBufferSize = MaxRequestSize;
-                socket.SendBufferSize = MaxResponseSize;
+                socket.ReceiveBufferSize = ReceiveBufferSize;
+                socket.SendBufferSize = SendBufferSize;
 
                 if(cancellationToken.IsCancellationRequested) yield break;
 
                 var datagram = GetDiscoveryDatagram();
 
-                if(datagram.Length > MaxRequestSize) throw new InvalidOperationException($"Discovery datagram is larger than {nameof(MaxRequestSize)} = {MaxRequestSize} configured buffer size");
+                if(datagram.Length > SendBufferSize) throw new InvalidOperationException($"Discovery datagram is larger than {nameof(SendBufferSize)} = {SendBufferSize} configured buffer size");
 
                 socket.SendToAsync(datagram, RemoteEndPoint, cancellationToken).GetAwaiter().GetResult();
 
                 if(cancellationToken.IsCancellationRequested) yield break;
 
-                var buffer = new byte[MaxResponseSize];
+                var buffer = new byte[ReceiveBufferSize];
 
                 while(!cancellationToken.IsCancellationRequested)
                 {

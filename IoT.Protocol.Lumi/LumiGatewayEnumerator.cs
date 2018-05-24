@@ -18,9 +18,9 @@ namespace IoT.Protocol.Lumi
                 0x73, 0x22, 0x7D
             };
 
-        protected override int MaxRequestSize { get; } = 0x10;
+        protected override int SendBufferSize { get; } = 0x10;
 
-        protected override int MaxResponseSize { get; } = 0x100;
+        protected override int ReceiveBufferSize { get; } = 0x100;
 
         protected override (IPAddress Address, ushort Port, string Sid) ParseResponse(byte[] buffer, int size, IPEndPoint remoteEp)
         {

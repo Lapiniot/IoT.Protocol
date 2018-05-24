@@ -19,9 +19,9 @@ namespace IoT.Protocol.Upnp
             this.searchTarget = searchTarget;
         }
 
-        protected override int MaxRequestSize { get; } = 0x100;
+        protected override int SendBufferSize { get; } = 0x100;
 
-        protected override int MaxResponseSize { get; } = 0x400;
+        protected override int ReceiveBufferSize { get; } = 0x400;
 
         protected SsdpReply ParseResponse(Span<byte> buffer, IPEndPoint remoteEp)
         {
