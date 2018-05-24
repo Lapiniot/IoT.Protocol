@@ -34,7 +34,10 @@ namespace IoT.Protocol.Soap
         public string Schema { get; }
         public IDictionary<string, string> Arguments { get; }
 
-        public string this[string name] { get { return Arguments[name]; } }
+        public string this[string name]
+        {
+            get { return Arguments[name]; }
+        }
 
         public override string ToString()
         {
@@ -43,7 +46,7 @@ namespace IoT.Protocol.Soap
 
         public void Serialize(Stream stream, Encoding encoding = null)
         {
-            using(var w = XmlWriter.Create(stream, new XmlWriterSettings { Encoding = encoding ?? Encoding.UTF8 }))
+            using(var w = XmlWriter.Create(stream, new XmlWriterSettings {Encoding = encoding ?? Encoding.UTF8}))
             {
                 w.WriteStartElement(Prefix, "Envelope", NS);
                 w.WriteAttributeString(Prefix, "encodingStyle", NS, "http://schemas.xmlsoap.org/soap/encoding/");

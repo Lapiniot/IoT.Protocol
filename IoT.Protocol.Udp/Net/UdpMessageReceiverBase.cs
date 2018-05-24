@@ -9,8 +9,8 @@ namespace IoT.Protocol.Udp.Net
 {
     public abstract class UdpMessageReceiverBase : IMessageReceiver
     {
-        protected Socket Socket;
         private bool disposed;
+        protected Socket Socket;
 
         protected UdpMessageReceiverBase(Socket socket) => Socket = socket ?? throw new ArgumentNullException(nameof(socket));
 
