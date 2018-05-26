@@ -15,12 +15,18 @@ namespace IoT.Protocol.Udp
     public abstract class UdpEnumerator<TThing> : IThingEnumerator<TThing>
     {
         private readonly CreateSocketFactory createSocket;
-        protected readonly IPEndPoint RemoteEndPoint;
+        protected readonly IPEndPoint ReceiveFromEndpoint;
+        protected readonly IPEndPoint SendToEndpoint;
 
-        protected UdpEnumerator(IPAddress address, int port, CreateSocketFactory createSocketFactory)
+        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint, IPEndPoint receiveFromEndpoint)
         {
-            RemoteEndPoint = new IPEndPoint(address, port);
+            SendToEndpoint = sendToEndpoint;
             createSocket = createSocketFactory;
+            ReceiveFromEndpoint = receiveFromEndpoint;
+        }
+
+        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint) : this(createSocketFactory, sendToEndpoint, Sockets.EndPoint.Any)
+        {
         }
 
         protected abstract int SendBufferSize { get; }
@@ -44,7 +50,7 @@ namespace IoT.Protocol.Udp
 
                 if(datagram.Length > SendBufferSize) throw new InvalidOperationException($"Discovery datagram is larger than {nameof(SendBufferSize)} = {SendBufferSize} configured buffer size");
 
-                socket.SendToAsync(datagram, RemoteEndPoint, cancellationToken).GetAwaiter().GetResult();
+                socket.SendToAsync(datagram, SendToEndpoint, cancellationToken).GetAwaiter().GetResult();
 
                 if(cancellationToken.IsCancellationRequested) yield break;
 
@@ -56,7 +62,7 @@ namespace IoT.Protocol.Udp
 
                     try
                     {
-                        var result = socket.ReceiveFromAsync(buffer, RemoteEndPoint, cancellationToken).GetAwaiter().GetResult();
+                        var result = socket.ReceiveFromAsync(buffer, ReceiveFromEndpoint, cancellationToken).GetAwaiter().GetResult();
 
                         if(cancellationToken.IsCancellationRequested) yield break;
 

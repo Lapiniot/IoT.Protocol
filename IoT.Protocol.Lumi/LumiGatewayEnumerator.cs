@@ -1,14 +1,15 @@
 using System.Json;
 using System.Net;
+using System.Net.Sockets;
 using IoT.Protocol.Udp;
 
 namespace IoT.Protocol.Lumi
 {
-    public class LumiEnumerator : UdpMulticastEnumerator<(IPAddress Address, ushort Port, string Sid)>
+    public class LumiEnumerator : UdpEnumerator<(IPAddress Address, ushort Port, string Sid)>
     {
         private readonly byte[] whoisMessage;
 
-        public LumiEnumerator() : base(IPAddress.Parse("224.0.0.50"), 4321) =>
+        public LumiEnumerator() : base(Sockets.Udp.Multicast.Sender, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321)) =>
             // {"cmd":"whois"}
             whoisMessage = new byte[]
             {
