@@ -36,12 +36,14 @@ namespace IoT.Protocol.Lumi
             }
         }
 
-        public override Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
+        public override async Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
         {
             CheckDisposed();
             CheckConnected();
 
-            return receiver.ReceiveAsync(buffer, cancellationToken);
+            var valueTask = receiver.ReceiveAsync(buffer, cancellationToken);
+
+            return valueTask.IsCompleted ? valueTask.Result : await valueTask.ConfigureAwait(false);
         }
 
         protected override void Dispose(bool disposing)

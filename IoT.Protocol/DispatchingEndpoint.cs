@@ -19,7 +19,7 @@ namespace IoT.Protocol
 
         protected abstract TimeSpan CommandTimeout { get; }
 
-        public virtual async Task<TResponse> InvokeAsync(TRequest message, CancellationToken cancellationToken)
+        public async Task<TResponse> InvokeAsync(TRequest message, CancellationToken cancellationToken)
         {
             var completionSource = new TaskCompletionSource<TResponse>(cancellationToken);
 
@@ -29,7 +29,7 @@ namespace IoT.Protocol
             {
                 completions.TryAdd(id, completionSource);
 
-                await SendAsync(datagram, cancellationToken).ConfigureAwait(false);
+                await SendAsync(datagram, 0, datagram.Length, cancellationToken).ConfigureAwait(false);
 
                 using(var timeoutSource = new CancellationTokenSource(CommandTimeout))
                 using(completionSource.Bind(cancellationToken, timeoutSource.Token))

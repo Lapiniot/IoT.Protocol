@@ -15,6 +15,6 @@ namespace IoT.Protocol.Interfaces
         /// <param name="buffer">Message buffer to send</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task that can be awaited</returns>
-        Task SendAsync(byte[] buffer, CancellationToken cancellationToken);
+        Task SendAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken);
     }
 }

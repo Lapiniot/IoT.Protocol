@@ -13,9 +13,9 @@ namespace IoT.Protocol.Udp.Net
 
         #region Overrides of UdpMessageReceiverBase
 
-        public override Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
+        public override async ValueTask<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            return Socket.ReceiveFromAsync(buffer, endpoint, cancellationToken);
+            return await Socket.ReceiveFromAsync(buffer, endpoint, cancellationToken);
         }
 
         #endregion

@@ -14,9 +14,9 @@ namespace IoT.Protocol.Udp.Net
 
         #region Implementation of INetMessenger
 
-        public Task SendAsync(byte[] buffer, CancellationToken cancellationToken)
+        public Task SendAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
         {
-            return Socket.SendAsync(buffer, cancellationToken);
+            return Socket.SendAsync(buffer, offset, size, cancellationToken);
         }
 
         #endregion

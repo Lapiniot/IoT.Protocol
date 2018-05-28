@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Json;
 using System.Net;
 using System.Threading;
@@ -35,18 +36,24 @@ namespace IoT.Protocol.Yeelight
 
             message["id"] = id;
 
-            throw new NotImplementedException();
-            //return Task.FromResult((id, message));
+            using(var ms = new MemoryStream())
+            {
+                message.SerializeTo(ms);
+                ms.WriteByte(0x0d);
+                ms.WriteByte(0x0a);
+                return Task.FromResult((id, ms.ToArray()));
+            }
         }
 
         protected override bool TryParseResponse(byte[] bytes, int size, IPEndPoint remoteEndPoint, out long id, out JsonValue response)
         {
-            throw new NotImplementedException();
-            /*id = 0;
+            var message = JsonExtensions.Deserialize(bytes, 0, size);
+            
+            id = 0;
 
             response = null;
 
-            if(bytes is JsonObject json)
+            if(message is JsonObject json)
             {
                 if(json.TryGetValue("id", out var value) && value.JsonType == JsonType.Number)
                 {
@@ -64,14 +71,14 @@ namespace IoT.Protocol.Yeelight
                 }
             }
 
-            return false;*/
+            return false;
         }
 
         #region Overrides of DispatchingMessenger<JsonValue, JsonValue>
 
         protected override INetMessenger CreateNetMessenger()
         {
-            return new TcpJsonMessenger(Endpoint);
+            return new TcpLineMessenger(Endpoint);
         }
 
         #endregion

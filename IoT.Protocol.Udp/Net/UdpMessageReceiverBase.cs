@@ -24,6 +24,6 @@ namespace IoT.Protocol.Udp.Net
             }
         }
 
-        public abstract Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken);
+        public abstract ValueTask<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken);
     }
 }

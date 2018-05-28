@@ -9,24 +9,26 @@ namespace IoT.Protocol
     {
         private INetMessenger messenger;
 
-        public Task SendAsync(byte[] message, CancellationToken cancellationToken)
+        public Task SendAsync(byte[] message, int offset, int size, CancellationToken cancellationToken)
         {
             CheckDisposed();
             CheckConnected();
 
-            return messenger.SendAsync(message, cancellationToken);
+            return messenger.SendAsync(message, offset, size, cancellationToken);
         }
 
         protected abstract INetMessenger CreateNetMessenger();
 
         #region Overrides of DataListener
 
-        public override Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
+        public override async Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
         {
             CheckDisposed();
             CheckConnected();
 
-            return messenger.ReceiveAsync(buffer, cancellationToken);
+            var valueTask = messenger.ReceiveAsync(buffer, cancellationToken);
+
+            return valueTask.IsCompleted ? valueTask.Result : await valueTask.ConfigureAwait(false);
         }
 
         protected override void OnConnect()

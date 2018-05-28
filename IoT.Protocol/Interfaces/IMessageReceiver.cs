@@ -13,6 +13,6 @@ namespace IoT.Protocol.Interfaces
         /// <summary>
         /// Receives data from the remote endpoint asynchronously
         /// </summary>
-        Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken);
+        ValueTask<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken);
     }
 }
