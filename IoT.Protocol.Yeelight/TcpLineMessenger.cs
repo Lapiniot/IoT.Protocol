@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Interfaces;
@@ -13,12 +9,10 @@ namespace IoT.Protocol.Yeelight
 {
     public class TcpLineMessenger : INetMessenger
     {
-        private const byte CR = 0x0d;
-        private const byte LF = 0x0a;
+        private readonly byte[] endOfLineMarker = {0x0d, 0x0a};
 
-        private byte[] eol = { CR, LF };
-        private Socket socket;
         private readonly IPEndPoint endpoint;
+        private readonly Socket socket;
 
         private Memory<byte> reminder;
 
@@ -33,6 +27,7 @@ namespace IoT.Protocol.Yeelight
             catch
             {
                 socket?.Dispose();
+                throw;
             }
         }
 
@@ -40,7 +35,7 @@ namespace IoT.Protocol.Yeelight
 
         public void Dispose()
         {
-            socket?.Dispose();
+            socket.Dispose();
         }
 
         #endregion
@@ -54,7 +49,7 @@ namespace IoT.Protocol.Yeelight
 
             if(reminder.Length > 0)
             {
-                if(ContainsEOL(reminder, out var i))
+                if(reminder.TryFindEolMarker(out var i))
                 {
                     reminder.Slice(0, i).CopyTo(window);
                     reminder = reminder.Slice(i + 2);
@@ -69,35 +64,27 @@ namespace IoT.Protocol.Yeelight
 
             do
             {
-                var size = await socket.ReceiveAsync(window, SocketFlags.None, cancellationToken);
+                var size = await socket.ReceiveAsync(window, SocketFlags.None, cancellationToken).ConfigureAwait(false);
                 var received = window.Slice(0, size);
 
-                if(ContainsEOL(received, out var i))
+                if(received.TryFindEolMarker(out var i))
                 {
                     total += i;
                     reminder = received.Slice(i + 2).ToArray();
                     return (total, endpoint);
                 }
-                else
-                {
-                    total += size;
-                    window = window.Slice(size);
-                }
 
+                total += size;
+                window = window.Slice(size);
             } while(true);
-        }
-
-        bool ContainsEOL(Memory<byte> memory, out int index)
-        {
-            return (index = memory.Span.IndexOf(CR)) > 0 && index < memory.Length - 1 && memory.Span[index + 1] == LF;
         }
 
         public async Task SendAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
         {
             await socket.SendAsync(buffer, offset, size, cancellationToken).ConfigureAwait(false);
-            if(!(buffer[offset + size - 2] == CR && buffer[offset + size - 1] == LF))
+            if(!(buffer[offset + size - 2] == 0x0d && buffer[offset + size - 1] == 0x0a))
             {
-                await socket.SendAsync(eol, 0, 2, cancellationToken).ConfigureAwait(false);
+                await socket.SendAsync(endOfLineMarker, 0, 2, cancellationToken).ConfigureAwait(false);
             }
         }
 

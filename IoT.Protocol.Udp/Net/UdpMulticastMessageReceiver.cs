@@ -15,7 +15,7 @@ namespace IoT.Protocol.Udp.Net
 
         public override async ValueTask<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            return await Socket.ReceiveFromAsync(buffer, endpoint, cancellationToken);
+            return await Socket.ReceiveFromAsync(buffer, endpoint, cancellationToken).ConfigureAwait(false);
         }
 
         #endregion
