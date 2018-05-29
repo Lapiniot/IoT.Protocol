@@ -6,8 +6,6 @@ namespace IoT.Protocol.Upnp
 {
     public class SsdpReply : Dictionary<string, string>
     {
-        private const byte CR = 0x0d;
-        private const byte LF = 0x0a;
         private const byte Colon = 0x3a;
         private const byte Space = 0x20;
 
@@ -37,15 +35,14 @@ namespace IoT.Protocol.Upnp
 
         public static SsdpReply Parse(Span<byte> buffer)
         {
-            var i = buffer.IndexOf(CR);
-
-            if(i > 0 && i < buffer.Length - 1 && buffer[i + 1] == LF && Encoding.ASCII.GetString(buffer.Slice(0, i++)) == "HTTP/1.1 200 OK")
+            var i = 0;
+            if((i = buffer.IndexOfEOL()) >= 0 && Encoding.ASCII.GetString(buffer.Slice(0, i++)) == "HTTP/1.1 200 OK")
             {
                 var reply = new SsdpReply();
 
-                for(var r = buffer.Slice(++i); (i = r.IndexOf(CR)) >= 0 && ++i < r.Length && r[i] == LF; r = r.Slice(++i))
+                for(var r = buffer.Slice(++i); (i = r.IndexOfEOL()) >= 0; r = r.Slice(++i))
                 {
-                    var line = r.Slice(0, i - 1);
+                    var line = r.Slice(0, i++);
                     var index = line.IndexOf(Colon);
 
                     if(index > 0)

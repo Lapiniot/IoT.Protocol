@@ -46,14 +46,14 @@ namespace IoT.Protocol.Yeelight
         {
             var window = buffer.AsMemory();
             var total = 0;
-
-            if(reminder.Length > 0)
+            var index = 0;
+            if(!reminder.IsEmpty)
             {
-                if(reminder.TryFindEolMarker(out var i))
+                if((index = reminder.Span.IndexOfEOL())>=0)
                 {
-                    reminder.Slice(0, i).CopyTo(window);
-                    reminder = reminder.Slice(i + 2);
-                    return (i, endpoint);
+                    reminder.Slice(0, index).CopyTo(window);
+                    reminder = reminder.Slice(index + 2);
+                    return (index, endpoint);
                 }
 
                 reminder.CopyTo(window);
@@ -62,21 +62,23 @@ namespace IoT.Protocol.Yeelight
                 reminder = Memory<byte>.Empty;
             }
 
-            do
+            while(!window.IsEmpty)
             {
                 var size = await socket.ReceiveAsync(window, SocketFlags.None, cancellationToken).ConfigureAwait(false);
                 var received = window.Slice(0, size);
 
-                if(received.TryFindEolMarker(out var i))
+                if((index = received.Span.IndexOfEOL())>=0)
                 {
-                    total += i;
-                    reminder = received.Slice(i + 2).ToArray();
+                    total += index;
+                    reminder = received.Slice(index + 2).ToArray();
                     return (total, endpoint);
                 }
 
                 total += size;
                 window = window.Slice(size);
-            } while(true);
+            }
+
+            throw new ArgumentException("Out of space in the " + nameof(buffer));
         }
 
         public async Task SendAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)

@@ -9,15 +9,10 @@ namespace IoT.Protocol
         private const byte LF = 0x0a;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryFindEolMarker(this Memory<byte> memory, out int index)
+        public static int IndexOfEOL(this Span<byte> span)
         {
-            return TryFindEolMarker(memory.Span, out index);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryFindEolMarker(this Span<byte> span, out int index)
-        {
-            return (index = span.IndexOf(CR)) > 0 && index < span.Length - 1 && span[index + 1] == LF;
+            var index = 0;
+            return (index = span.IndexOf(CR)) > 0 && index < span.Length - 1 && span[index + 1] == LF ? index : -1;
         }
     }
 }
