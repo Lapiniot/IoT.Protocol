@@ -25,7 +25,7 @@ namespace IoT.Protocol.Upnp
             userAgent = $"USER-AGENT: {nameof(SsdpEnumerator)}/{type.Assembly.GetName().Version} ({OSDescription.TrimEnd()})";
         }
 
-        protected override int SendBufferSize { get; } = 0x100;
+        protected override int SendBufferSize { get; } = 0x200;
 
         protected override int ReceiveBufferSize { get; } = 0x400;
 
