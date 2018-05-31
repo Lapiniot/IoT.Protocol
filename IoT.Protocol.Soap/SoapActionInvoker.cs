@@ -7,26 +7,28 @@ namespace IoT.Protocol.Soap
 {
     public class SoapActionInvoker
     {
-        private readonly Uri relativeUri;
+        private readonly Uri uri;
         private readonly SoapControlEndpoint target;
 
-        public SoapActionInvoker(SoapControlEndpoint endpoint, string path, string schema)
+        public SoapActionInvoker(SoapControlEndpoint endpoint, Uri controlUri, string schema)
         {
-            target = endpoint;
-            relativeUri = new Uri(path, UriKind.Relative);
-            Schema = schema;
+            target = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
+            uri = controlUri ?? throw new ArgumentNullException(nameof(controlUri));
+            Schema = schema ?? throw new ArgumentNullException(nameof(schema));
+
+            if(controlUri.IsAbsoluteUri) throw new ArgumentException("Must be valid uri relative to the base endpoint uri", nameof(controlUri));
         }
 
         public string Schema { get; }
 
         public async Task<IDictionary<string, string>> InvokeAsync(string action, IDictionary<string, string> args, CancellationToken cancellationToken = default)
         {
-            return (await target.InvokeAsync(relativeUri, new SoapEnvelope(action, Schema, args), cancellationToken).ConfigureAwait(false)).Arguments;
+            return (await target.InvokeAsync(uri, new SoapEnvelope(action, Schema, args), cancellationToken).ConfigureAwait(false)).Arguments;
         }
 
         public async Task<IDictionary<string, string>> InvokeAsync(string action, CancellationToken cancellationToken = default, params (string, object)[] args)
         {
-            return (await target.InvokeAsync(relativeUri, new SoapEnvelope(action, Schema, args), cancellationToken).ConfigureAwait(false)).Arguments;
+            return (await target.InvokeAsync(uri, new SoapEnvelope(action, Schema, args), cancellationToken).ConfigureAwait(false)).Arguments;
         }
     }
 }

@@ -61,17 +61,27 @@ namespace IoT.Protocol.Soap
                 RequestUri = actionUri,
                 Method = Post,
                 Version = new Version(1, 1),
-                Headers = {{"SOAPACTION", $"\"{message.Schema}#{message.Action}\""}},
+                Headers = { { "SOAPACTION", $"\"{message.Schema}#{message.Action}\"" } },
                 Content = new SoapHttpContent(message)
             };
         }
 
         protected override void OnConnect()
         {
-            httpClient = new HttpClient(new HttpClientHandler {AutomaticDecompression = GZip}, true)
+            var handler = new SocketsHttpHandler
+            {
+                AutomaticDecompression = GZip,
+                UseProxy = false,
+                Proxy = null,
+                UseCookies = false,
+                CookieContainer = null,
+                AllowAutoRedirect = false
+            };
+            
+            httpClient = new HttpClient(handler, true)
             {
                 BaseAddress = baseUri,
-                DefaultRequestHeaders = {{"Accept-Encoding", "gzip"}}
+                DefaultRequestHeaders = { { "Accept-Encoding", "gzip" } }
             };
         }
 
