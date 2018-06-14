@@ -70,7 +70,7 @@ namespace IoT.Protocol.Udp
                     }
                     catch(OperationCanceledException)
                     {
-                        socket.Shutdown(SocketShutdown.Both);
+                        //socket.Shutdown(SocketShutdown.Both);
                         yield break;
                     }
                     catch(Exception exception)

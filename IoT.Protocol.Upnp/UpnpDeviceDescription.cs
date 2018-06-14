@@ -13,13 +13,13 @@ namespace IoT.Protocol.Upnp
     {
         private static readonly XNamespace NS = "urn:schemas-upnp-org:device-1-0";
 
-        internal UpnpDeviceDescription(Uri baseUri, UpnpServiceDescription[] services, string udn, string deviceType,
+        internal UpnpDeviceDescription(Uri location, UpnpServiceDescription[] services, string udn, string deviceType,
             string friendlyName, string manufacturer, string modelDescription, string modelName, string modelNumber)
         {
             if(string.IsNullOrWhiteSpace(udn)) throw new ArgumentException(nameof(udn));
             if(string.IsNullOrWhiteSpace(deviceType)) throw new ArgumentException(nameof(deviceType));
 
-            BaseUri = baseUri ?? throw new ArgumentNullException(nameof(baseUri));
+            Location = location ?? throw new ArgumentNullException(nameof(location));
             Services = services ?? throw new ArgumentNullException(nameof(services));
             Udn = udn;
             DeviceType = deviceType;
@@ -30,7 +30,7 @@ namespace IoT.Protocol.Upnp
             ModelNumber = modelNumber;
         }
 
-        public Uri BaseUri { get; }
+        public Uri Location { get; }
         public UpnpServiceDescription[] Services { get; }
         public string Udn { get; }
         public string DeviceType { get; }
@@ -60,7 +60,7 @@ namespace IoT.Protocol.Upnp
                     new Uri(baseUri, s.Element(NS + "eventSubURL").Value)
                 )).ToArray();
 
-                return new UpnpDeviceDescription(baseUri, services,
+                return new UpnpDeviceDescription(location, services,
                     dev.Element(NS + "UDN").Value,
                     dev.Element(NS + "deviceType").Value,
                     dev.Element(NS + "friendlyName").Value,
