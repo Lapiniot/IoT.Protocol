@@ -13,7 +13,7 @@ namespace IoT.Protocol.Upnp
     {
         private static readonly XNamespace NS = "urn:schemas-upnp-org:device-1-0";
 
-        internal UpnpDeviceDescription(Uri location, UpnpServiceDescription[] services, string udn, string deviceType,
+        internal UpnpDeviceDescription(Uri location, UpnpServiceDescription[] services, Icon[] icons, string udn, string deviceType,
             string friendlyName, string manufacturer, string modelDescription, string modelName, string modelNumber)
         {
             if(string.IsNullOrWhiteSpace(udn)) throw new ArgumentException(nameof(udn));
@@ -21,6 +21,7 @@ namespace IoT.Protocol.Upnp
 
             Location = location ?? throw new ArgumentNullException(nameof(location));
             Services = services ?? throw new ArgumentNullException(nameof(services));
+            Icons = icons;
             Udn = udn;
             DeviceType = deviceType;
             FriendlyName = friendlyName;
@@ -32,6 +33,7 @@ namespace IoT.Protocol.Upnp
 
         public Uri Location { get; }
         public UpnpServiceDescription[] Services { get; }
+        public Icon[] Icons { get; }
         public string Udn { get; }
         public string DeviceType { get; }
         public string FriendlyName { get; }
@@ -60,7 +62,15 @@ namespace IoT.Protocol.Upnp
                     new Uri(baseUri, s.Element(NS + "eventSubURL").Value)
                 )).ToArray();
 
-                return new UpnpDeviceDescription(location, services,
+                var icons = dev.Element(NS + "iconList")?.Elements(NS + "icon").Select(i => new Icon(
+                    new Uri(baseUri, i.Element(NS + "url").Value),
+                    i.Element(NS + "mimetype").Value,
+                    int.Parse(i.Element(NS + "depth").Value),
+                    int.Parse(i.Element(NS + "width").Value),
+                    int.Parse(i.Element(NS + "height").Value)
+                ))?.ToArray();
+
+                return new UpnpDeviceDescription(location, services, icons ?? Array.Empty<Icon>(),
                     dev.Element(NS + "UDN").Value,
                     dev.Element(NS + "deviceType").Value,
                     dev.Element(NS + "friendlyName").Value,
@@ -69,6 +79,24 @@ namespace IoT.Protocol.Upnp
                     dev.Element(NS + "modelName").Value,
                     dev.Element(NS + "modelNumber")?.Value);
             }
+        }
+
+        public class Icon
+        {
+            public Icon(Uri uri, string mime, int depth, int width, int height)
+            {
+                Uri = uri;
+                Mime = mime;
+                Depth = depth;
+                Width = width;
+                Height = height;
+            }
+
+            public Uri Uri { get; set; }
+            public string Mime { get; set; }
+            public int Depth { get; set; }
+            public int Width { get; set; }
+            public int Height { get; set; }
         }
     }
 }
