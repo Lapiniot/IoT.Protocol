@@ -68,7 +68,7 @@ namespace IoT.Protocol.Upnp
                     int.Parse(i.Element(NS + "depth").Value),
                     int.Parse(i.Element(NS + "width").Value),
                     int.Parse(i.Element(NS + "height").Value)
-                ))?.ToArray();
+                )).ToArray();
 
                 return new UpnpDeviceDescription(location, services, icons ?? Array.Empty<Icon>(),
                     dev.Element(NS + "UDN").Value,
@@ -83,7 +83,7 @@ namespace IoT.Protocol.Upnp
 
         public class Icon
         {
-            public Icon(Uri uri, string mime, int depth, int width, int height)
+            internal Icon(Uri uri, string mime, int depth, int width, int height)
             {
                 Uri = uri;
                 Mime = mime;

@@ -46,10 +46,10 @@ namespace IoT.Protocol.Yeelight
         {
             var window = buffer.AsMemory();
             var total = 0;
-            var index = 0;
+            int index;
             if(!reminder.IsEmpty)
             {
-                if((index = reminder.Span.IndexOfEOL())>=0)
+                if((index = reminder.Span.IndexOfEOL()) >= 0)
                 {
                     reminder.Slice(0, index).CopyTo(window);
                     reminder = reminder.Slice(index + 2);
@@ -67,7 +67,7 @@ namespace IoT.Protocol.Yeelight
                 var size = await socket.ReceiveAsync(window, SocketFlags.None, cancellationToken).ConfigureAwait(false);
                 var received = window.Slice(0, size);
 
-                if((index = received.Span.IndexOfEOL())>=0)
+                if((index = received.Span.IndexOfEOL()) >= 0)
                 {
                     total += index;
                     reminder = received.Slice(index + 2).ToArray();

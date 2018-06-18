@@ -35,7 +35,7 @@ namespace IoT.Protocol.Upnp
 
         public static SsdpReply Parse(Span<byte> buffer)
         {
-            var i = 0;
+            int i;
             if((i = buffer.IndexOfEOL()) >= 0 && Encoding.ASCII.GetString(buffer.Slice(0, i++)) == "HTTP/1.1 200 OK")
             {
                 var reply = new SsdpReply();

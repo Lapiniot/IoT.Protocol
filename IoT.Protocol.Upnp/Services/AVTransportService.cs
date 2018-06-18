@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Soap;
-using IoT.Protocol.Upnp;
 
 namespace IoT.Protocol.Upnp.Services
 {
     public sealed class AVTransportService : SoapActionInvoker
     {
-        public AVTransportService(SoapControlEndpoint endpoint, string deviceId) : 
+        public AVTransportService(SoapControlEndpoint endpoint, string deviceId) :
             base(endpoint, new Uri($"{deviceId}-MR/upnp.org-AVTransport-1/control", UriKind.Relative), UpnpServices.AVTransport)
         {
         }

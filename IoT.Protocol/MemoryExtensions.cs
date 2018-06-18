@@ -11,7 +11,7 @@ namespace IoT.Protocol
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfEOL(this Span<byte> span)
         {
-            var index = 0;
+            int index;
             return (index = span.IndexOf(CR)) > 0 && index < span.Length - 1 && span[index + 1] == LF ? index : -1;
         }
     }

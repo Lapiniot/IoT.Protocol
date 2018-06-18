@@ -7,8 +7,8 @@ namespace IoT.Protocol.Soap
 {
     public class SoapActionInvoker
     {
-        private readonly Uri uri;
         private readonly SoapControlEndpoint target;
+        private readonly Uri uri;
 
         public SoapActionInvoker(SoapControlEndpoint endpoint, Uri controlUri, string schema)
         {

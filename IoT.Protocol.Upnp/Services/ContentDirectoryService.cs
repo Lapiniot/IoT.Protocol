@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Soap;
-using IoT.Protocol.Upnp;
 
 namespace IoT.Protocol.Upnp.Services
 {
