@@ -7,7 +7,10 @@ namespace IoT.Protocol.Upnp
 {
     public class UpnpControlEndpoint : SoapControlEndpoint
     {
-        public UpnpControlEndpoint(Uri baseAddress, string serviceType) : base(baseAddress) => ServiceType = serviceType;
+        public UpnpControlEndpoint(Uri baseAddress, string serviceType) : base(baseAddress)
+        {
+            ServiceType = serviceType;
+        }
 
         public string ServiceType { get; }
 

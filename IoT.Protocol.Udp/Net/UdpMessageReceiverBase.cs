@@ -12,7 +12,10 @@ namespace IoT.Protocol.Udp.Net
         private bool disposed;
         protected Socket Socket;
 
-        protected UdpMessageReceiverBase(Socket socket) => Socket = socket ?? throw new ArgumentNullException(nameof(socket));
+        protected UdpMessageReceiverBase(Socket socket)
+        {
+            Socket = socket ?? throw new ArgumentNullException(nameof(socket));
+        }
 
         public void Dispose()
         {

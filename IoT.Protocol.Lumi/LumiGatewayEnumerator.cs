@@ -9,8 +9,8 @@ namespace IoT.Protocol.Lumi
     {
         private readonly byte[] whoisMessage;
 
-        public LumiEnumerator() : base(Sockets.Udp.Multicast.Sender, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321)) =>
-            // {"cmd":"whois"}
+        public LumiEnumerator() : base(Sockets.Udp.Multicast.Sender, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321))
+        {
             whoisMessage = new byte[]
             {
                 0x7B, 0x22, 0x63, 0x6D,
@@ -18,6 +18,7 @@ namespace IoT.Protocol.Lumi
                 0x77, 0x68, 0x6F, 0x69,
                 0x73, 0x22, 0x7D
             };
+        }
 
         protected override int SendBufferSize { get; } = 0x10;
 

@@ -9,7 +9,10 @@ namespace IoT.Protocol.Udp.Net
     {
         private readonly IPEndPoint endpoint;
 
-        public UdpMulticastMessageReceiver(IPEndPoint endpoint) : base(Sockets.Udp.Multicast.Listener(endpoint)) => this.endpoint = endpoint;
+        public UdpMulticastMessageReceiver(IPEndPoint endpoint) : base(Sockets.Udp.Multicast.Listener(endpoint))
+        {
+            this.endpoint = endpoint;
+        }
 
         #region Overrides of UdpMessageReceiverBase
 

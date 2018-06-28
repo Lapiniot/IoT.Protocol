@@ -64,7 +64,10 @@ namespace IoT.Protocol.Yeelight
 
             while(!window.IsEmpty)
             {
-                var size = await socket.ReceiveAsync(window, SocketFlags.None, cancellationToken).ConfigureAwait(false);
+                var valueTask = socket.ReceiveAsync(window, SocketFlags.None, cancellationToken);
+
+                var size = valueTask.IsCompleted ? valueTask.Result : await valueTask.ConfigureAwait(false);
+
                 var received = window.Slice(0, size);
 
                 if((index = received.Span.IndexOfEOL()) >= 0)
