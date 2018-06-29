@@ -6,13 +6,8 @@ using static IoT.Protocol.Upnp.UpnpServices;
 
 namespace IoT.Protocol.Upnp.Services
 {
-    public sealed class ContentDirectoryService : ServiceContext
+    public sealed class ContentDirectoryService : SoapActionInvoker
     {
-        public ContentDirectoryService(SoapControlEndpoint endpoint, string deviceId) :
-            base(endpoint, new Uri($"{deviceId}-MS/upnp.org-ContentDirectory-1/control", UriKind.Relative), ContentDirectory)
-        {
-        }
-
         public ContentDirectoryService(SoapControlEndpoint endpoint, Uri controlUri) : base(endpoint, controlUri, ContentDirectory)
         {
         }
