@@ -48,7 +48,10 @@ namespace IoT.Protocol.Udp
 
                 var datagram = GetDiscoveryDatagram();
 
-                if(datagram.Length > SendBufferSize) throw new InvalidOperationException($"Discovery datagram is larger than {nameof(SendBufferSize)} = {SendBufferSize} configured buffer size");
+                if(datagram.Length > SendBufferSize)
+                {
+                    throw new InvalidOperationException($"Discovery datagram is larger than {nameof(SendBufferSize)} = {SendBufferSize} configured buffer size");
+                }
 
                 socket.SendToAsync(datagram, SendToEndpoint, cancellationToken).GetAwaiter().GetResult();
 

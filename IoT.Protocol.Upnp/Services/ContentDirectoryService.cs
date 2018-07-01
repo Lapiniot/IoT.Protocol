@@ -22,8 +22,8 @@ namespace IoT.Protocol.Upnp.Services
             return (await InvokeAsync("Browse", cancellationToken,
                     ("ObjectID", parent), ("BrowseFlag", "BrowseDirectChildren"),
                     ("Filter", filter ?? "*"), ("StartingIndex", index),
-                    ("RequestedCount", count), ("SortCriteria", sortCriteria ?? "")).
-                ConfigureAwait(false))["Result"];
+                    ("RequestedCount", count), ("SortCriteria", sortCriteria ?? ""))
+                .ConfigureAwait(false))["Result"];
         }
     }
 }
