@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Soap;
@@ -16,14 +17,15 @@ namespace IoT.Protocol.Upnp.Services
         {
         }
 
-        public async Task<string> BrowseAsync(string parent, string filter = null, uint index = 0, uint count = 50,
-            string sortCriteria = null, CancellationToken cancellationToken = default)
+        public async Task<IDictionary<string, string>> BrowseAsync(string parent, string filter = null,
+            string flags = null, string sortCriteria = null,
+            uint index = 0, uint count = 50, CancellationToken cancellationToken = default)
         {
-            return (await InvokeAsync("Browse", cancellationToken,
-                    ("ObjectID", parent), ("BrowseFlag", "BrowseDirectChildren"),
+            return await InvokeAsync("Browse", cancellationToken,
+                    ("ObjectID", parent), ("BrowseFlag", flags ?? "BrowseDirectChildren"),
                     ("Filter", filter ?? "*"), ("StartingIndex", index),
                     ("RequestedCount", count), ("SortCriteria", sortCriteria ?? ""))
-                .ConfigureAwait(false))["Result"];
+                .ConfigureAwait(false);
         }
     }
 }
