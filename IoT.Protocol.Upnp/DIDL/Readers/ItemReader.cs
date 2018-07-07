@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System.Collections.Generic;
+using System.Xml;
 using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Upnp.DIDL.Readers
@@ -33,6 +34,9 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                                 return true;
                             case "storageUsed":
                                 element.StorageUsed = reader.ReadElementContentAsInt();
+                                return true;
+                            case "albumArtURI":
+                                (element.AlbumArts ?? (element.AlbumArts = new List<string>())).Add(reader.ReadElementContentAsString());
                                 return true;
                         }
 

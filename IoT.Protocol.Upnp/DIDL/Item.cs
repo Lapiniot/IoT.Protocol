@@ -20,5 +20,6 @@ namespace IoT.Protocol.Upnp.DIDL
         public string Class { get; set; }
         public int? StorageUsed { get; set; }
         public Resource Resource { get; set; }
+        public List<string> AlbumArts { get; set; }
     }
 }

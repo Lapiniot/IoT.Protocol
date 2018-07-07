@@ -17,7 +17,6 @@ namespace IoT.Protocol.Upnp.DIDL
         public List<string> Producers { get; set; }
         public List<string> Publishers { get; set; }
         public List<string> Genres { get; set; }
-        public List<string> AlbumArts { get; set; }
         public string Album { get; set; }
         public string Genre { get; set; }
         public DateTime? Date { get; set; }
