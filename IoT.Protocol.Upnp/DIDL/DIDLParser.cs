@@ -10,9 +10,9 @@ namespace IoT.Protocol.Upnp.DIDL
     {
         private const string NS = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
 
-        public static IEnumerable<object> Parse(string content)
+        public static IEnumerable<Item> Parse(string content)
         {
-            var objects = new List<object>();
+            var objects = new List<Item>();
 
             using(var tr = new StringReader(content))
             using(var r = XmlReader.Create(tr))
@@ -34,7 +34,7 @@ namespace IoT.Protocol.Upnp.DIDL
             return objects;
         }
 
-        private static object ReadItem(XmlReader reader)
+        private static Item ReadItem(XmlReader reader)
         {
             if(reader.NamespaceURI == NS)
             {
