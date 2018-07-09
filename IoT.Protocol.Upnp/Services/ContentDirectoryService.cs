@@ -17,15 +17,14 @@ namespace IoT.Protocol.Upnp.Services
         {
         }
 
-        public async Task<IDictionary<string, string>> BrowseAsync(string parent, string filter = null,
+        public Task<IDictionary<string, string>> BrowseAsync(string parent, string filter = null,
             string flags = null, string sortCriteria = null,
             uint index = 0, uint count = 50, CancellationToken cancellationToken = default)
         {
-            return await InvokeAsync("Browse", cancellationToken,
-                    ("ObjectID", parent), ("BrowseFlag", flags ?? "BrowseDirectChildren"),
-                    ("Filter", filter ?? "*"), ("StartingIndex", index),
-                    ("RequestedCount", count), ("SortCriteria", sortCriteria ?? ""))
-                .ConfigureAwait(false);
+            return InvokeAsync("Browse", cancellationToken,
+                ("ObjectID", parent), ("BrowseFlag", flags ?? "BrowseDirectChildren"),
+                ("Filter", filter ?? "*"), ("StartingIndex", index),
+                ("RequestedCount", count), ("SortCriteria", sortCriteria ?? ""));
         }
     }
 }

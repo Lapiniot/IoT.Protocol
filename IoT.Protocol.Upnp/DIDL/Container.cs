@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace IoT.Protocol.Upnp.DIDL
+﻿namespace IoT.Protocol.Upnp.DIDL
 {
     public class Container : Item
     {
