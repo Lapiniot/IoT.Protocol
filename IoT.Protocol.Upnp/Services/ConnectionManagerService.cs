@@ -3,13 +3,20 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Soap;
+using static IoT.Protocol.Upnp.UpnpServices;
 
 namespace IoT.Protocol.Upnp.Services
 {
+    [ServiceSchema(ConnectionManager)]
     public class ConnectionManagerService : SoapActionInvoker
     {
-        public ConnectionManagerService(SoapControlEndpoint endpoint, string deviceId) :
-            base(endpoint, new Uri($"{deviceId}-MR/upnp.org-ConnectionManager-1/control", UriKind.Relative), UpnpServices.ConnectionManager)
+        public ConnectionManagerService(SoapControlEndpoint endpoint, Uri controlUri) :
+            base(endpoint, controlUri, ConnectionManager)
+        {
+        }
+
+        public ConnectionManagerService(SoapControlEndpoint endpoint) :
+            base(endpoint, ConnectionManager)
         {
         }
 
