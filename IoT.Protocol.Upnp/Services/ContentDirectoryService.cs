@@ -10,12 +10,12 @@ namespace IoT.Protocol.Upnp.Services
     [ServiceSchema(ContentDirectory)]
     public sealed class ContentDirectoryService : SoapActionInvoker
     {
-        public ContentDirectoryService(SoapControlEndpoint endpoint, Uri controlUri) : 
+        public ContentDirectoryService(SoapControlEndpoint endpoint, Uri controlUri) :
             base(endpoint, controlUri, ContentDirectory)
         {
         }
 
-        public ContentDirectoryService(SoapControlEndpoint endpoint) : 
+        public ContentDirectoryService(SoapControlEndpoint endpoint) :
             base(endpoint, ContentDirectory)
         {
         }

@@ -22,14 +22,14 @@ namespace IoT.Protocol.Upnp.Services
 
         public Task<IDictionary<string, string>> GetMediaInfoAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            //UInt32 NrTracks, 
-            //String MediaDuration, 
-            //String CurrentURI, 
-            //String CurrentURIMetaData, 
-            //String NextURI, 
-            //String NextURIMetaData, 
-            //String PlayMedium, 
-            //String RecordMedium, 
+            //UInt32 NrTracks,
+            //String MediaDuration,
+            //String CurrentURI,
+            //String CurrentURIMetaData,
+            //String NextURI,
+            //String NextURIMetaData,
+            //String PlayMedium,
+            //String RecordMedium,
             //String WriteStatus
             return InvokeAsync("GetMediaInfo", cancellationToken, ("InstanceID", instanceId));
         }
@@ -38,21 +38,21 @@ namespace IoT.Protocol.Upnp.Services
 
         public Task<IDictionary<string, string>> GetPositionInfoAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            //UInt32 Track, 
-            //String TrackDuration, 
-            //String TrackMetaData, 
-            //String TrackURI, 
-            //String RelTime, 
-            //String AbsTime, 
-            //Int32 RelCount, 
+            //UInt32 Track,
+            //String TrackDuration,
+            //String TrackMetaData,
+            //String TrackURI,
+            //String RelTime,
+            //String AbsTime,
+            //Int32 RelCount,
             //Int32 AbsCount
             return InvokeAsync("GetPositionInfo", cancellationToken, ("InstanceID", instanceId));
         }
 
         public Task<IDictionary<string, string>> GetTransportInfoAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            //String CurrentTransportState, 
-            //String CurrentTransportStatus, 
+            //String CurrentTransportState,
+            //String CurrentTransportStatus,
             //String CurrentSpeed
             return InvokeAsync("GetTransportInfo", cancellationToken, ("InstanceID", instanceId));
         }

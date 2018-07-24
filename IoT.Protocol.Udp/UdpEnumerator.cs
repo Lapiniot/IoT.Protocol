@@ -9,7 +9,7 @@ using IoT.Protocol.Interfaces;
 namespace IoT.Protocol.Udp
 {
     /// <summary>
-    /// Base abstaract class for IoT devices enumerator which uses network discovery via UDP
+    /// Base abstract class for IoT devices enumerator which uses network discovery via UDP
     /// </summary>
     /// <typeparam name="TThing">Type of the 'thing' discoverable by concrete implementations</typeparam>
     public abstract class UdpEnumerator<TThing> : IThingEnumerator<TThing>
@@ -35,7 +35,7 @@ namespace IoT.Protocol.Udp
         /// <summary>
         /// Enumerates network devices by sending discovery datagrams
         /// </summary>
-        /// <param name="cancellationToken">Cancelation token</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Enumerable sequence of IoT devices that responded to discovery message </returns>
         public IEnumerable<TThing> Enumerate(CancellationToken cancellationToken = default)
         {
@@ -94,7 +94,7 @@ namespace IoT.Protocol.Udp
         /// </summary>
         /// <param name="buffer">Buffer containing message</param>
         /// <param name="size">Size of the valid data in the buffer</param>
-        /// <param name="remoteEp">Responder's endpoint information</param>
+        /// <param name="remoteEp">Responder endpoint information</param>
         /// <returns>
         /// Instance of type
         /// <typeparam name="TThing" />

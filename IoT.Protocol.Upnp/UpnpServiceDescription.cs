@@ -1,5 +1,4 @@
 using System;
-using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Upnp.Metadata;
@@ -26,11 +25,6 @@ namespace IoT.Protocol.Upnp
         public Task<ServiceMetadata> GetMetadataAsync(CancellationToken cancellationToken = default)
         {
             return ServiceMetadata.LoadAsync(MetadataUri, cancellationToken);
-        }
-
-        public dynamic GreateDynamicProxy()
-        {
-            return new ExpandoObject();
         }
 
         public UpnpControlEndpoint CreateControlPoint()

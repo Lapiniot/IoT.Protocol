@@ -29,9 +29,9 @@ namespace IoT.Protocol.Upnp.Metadata
             using(var response = await client.GetAsync(location, cancellationToken).ConfigureAwait(false))
             using(var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
             {
-                var xdoc = XDocument.Load(stream);
+                var x = XDocument.Load(stream);
 
-                var stateTable = xdoc.Root.Element(NS + "serviceStateTable").Elements(NS + "stateVariable").ToDictionary(
+                var stateTable = x.Root.Element(NS + "serviceStateTable").Elements(NS + "stateVariable").ToDictionary(
                     sv => sv.Element(NS + "name").Value,
                     sv => new StateVariable(
                         sv.Element(NS + "name").Value,
@@ -41,7 +41,7 @@ namespace IoT.Protocol.Upnp.Metadata
                         sv.Element(NS + "allowedValueList")?.Elements(NS + "allowedValue").Select(av => av.Value).ToArray(),
                         CreateRange(sv.Element(NS + "allowedValueRange"))));
 
-                var actions = xdoc.Root.Element(NS + "actionList").Elements(NS + "action").Select(a => new ServiceAction(
+                var actions = x.Root.Element(NS + "actionList").Elements(NS + "action").Select(a => new ServiceAction(
                     a.Element(NS + "name").Value,
                     a.Element(NS + "argumentList").Elements(NS + "argument").Select(arg => new Argument(
                         arg.Element(NS + "name").Value,

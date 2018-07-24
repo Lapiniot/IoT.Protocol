@@ -48,11 +48,11 @@ namespace IoT.Protocol.Upnp
             using(var response = await client.GetAsync(location, cancellationToken).ConfigureAwait(false))
             using(var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
             {
-                var xdoc = XDocument.Load(stream);
+                var x = XDocument.Load(stream);
 
                 var baseUri = new Uri(location.GetLeftPart(Authority));
 
-                var dev = xdoc.Root.Element(NS + "device");
+                var dev = x.Root.Element(NS + "device");
 
                 var services = dev.Element(NS + "serviceList").Elements(NS + "service").Select(s => new UpnpServiceDescription(
                     s.Element(NS + "serviceType").Value,

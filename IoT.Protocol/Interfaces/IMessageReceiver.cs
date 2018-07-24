@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace IoT.Protocol.Interfaces
 {
     /// <summary>
-    /// Provides a posibility to receive messages from remote endpoint
+    /// Provides a possibility to receive messages from remote endpoint
     /// </summary>
     public interface IMessageReceiver : IDisposable
     {

@@ -30,7 +30,7 @@ namespace IoT.Protocol
                 }
                 catch(Exception e)
                 {
-                    Trace.TraceError($"Error in mesaage dispatch: {e.Message}");
+                    Trace.TraceError($"Error in message dispatch: {e.Message}");
                 }
             }
         }
