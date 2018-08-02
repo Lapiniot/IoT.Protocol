@@ -16,10 +16,9 @@ namespace IoT.Protocol.Soap
         private readonly HttpClient externalClient;
         private HttpClient client;
 
-        public SoapControlEndpoint(HttpClient httpClient, Uri baseAddress)
+        public SoapControlEndpoint(HttpClient httpClient)
         {
             externalClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-            baseUri = baseAddress;
         }
 
         public SoapControlEndpoint(Uri baseAddress)
