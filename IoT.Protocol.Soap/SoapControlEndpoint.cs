@@ -13,7 +13,14 @@ namespace IoT.Protocol.Soap
     public class SoapControlEndpoint : ConnectedObject, IControlEndpoint<SoapEnvelope, SoapEnvelope>
     {
         private readonly Uri baseUri;
+        private HttpMessageHandler handler;
         private HttpClient httpClient;
+
+        public SoapControlEndpoint(HttpMessageHandler messageHandler, Uri baseAddress)
+        {
+            handler = messageHandler;
+            baseUri = baseAddress;
+        }
 
         public SoapControlEndpoint(Uri baseAddress)
         {
@@ -71,17 +78,24 @@ namespace IoT.Protocol.Soap
 
         protected override void OnConnect()
         {
-            var handler = new SocketsHttpHandler
-            {
-                AutomaticDecompression = GZip,
-                UseProxy = false,
-                Proxy = null,
-                UseCookies = false,
-                CookieContainer = null,
-                AllowAutoRedirect = false
-            };
+            var ownsHandler = false;
 
-            httpClient = new HttpClient(handler, true)
+            if(handler == null)
+            {
+                handler = new SocketsHttpHandler
+                {
+                    AutomaticDecompression = GZip,
+                    UseProxy = false,
+                    Proxy = null,
+                    UseCookies = false,
+                    CookieContainer = null,
+                    AllowAutoRedirect = false
+                };
+
+                ownsHandler = true;
+            }
+
+            httpClient = new HttpClient(handler, ownsHandler)
             {
                 BaseAddress = baseUri,
                 DefaultRequestHeaders = {{"Accept-Encoding", "gzip"}}
