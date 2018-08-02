@@ -13,12 +13,12 @@ namespace IoT.Protocol.Soap
     public class SoapControlEndpoint : ConnectedObject, IControlEndpoint<SoapEnvelope, SoapEnvelope>
     {
         private readonly Uri baseUri;
-        private HttpMessageHandler handler;
-        private HttpClient httpClient;
+        private readonly HttpClient externalClient;
+        private HttpClient client;
 
-        public SoapControlEndpoint(HttpMessageHandler messageHandler, Uri baseAddress)
+        public SoapControlEndpoint(HttpClient httpClient, Uri baseAddress)
         {
-            handler = messageHandler;
+            externalClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             baseUri = baseAddress;
         }
 
@@ -40,7 +40,7 @@ namespace IoT.Protocol.Soap
 
             using(var request = CreateRequestMessage(actionUri, message))
             {
-                using(var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false))
+                using(var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false))
                 {
                     response.EnsureSuccessStatusCode();
 
@@ -78,11 +78,9 @@ namespace IoT.Protocol.Soap
 
         protected override void OnConnect()
         {
-            var ownsHandler = false;
-
-            if(handler == null)
+            if(externalClient == null)
             {
-                handler = new SocketsHttpHandler
+                var handler = new SocketsHttpHandler
                 {
                     AutomaticDecompression = GZip,
                     UseProxy = false,
@@ -92,20 +90,23 @@ namespace IoT.Protocol.Soap
                     AllowAutoRedirect = false
                 };
 
-                ownsHandler = true;
+                client = new HttpClient(handler, true)
+                {
+                    BaseAddress = baseUri,
+                    DefaultRequestHeaders = {{"Accept-Encoding", "gzip"}}
+                };
             }
-
-            httpClient = new HttpClient(handler, ownsHandler)
+            else
             {
-                BaseAddress = baseUri,
-                DefaultRequestHeaders = {{"Accept-Encoding", "gzip"}}
-            };
+                client = externalClient;
+            }
         }
 
         protected override void OnClose()
         {
-            httpClient.Dispose();
-            httpClient = null;
+            if(externalClient == null) client.Dispose();
+
+            client = null;
         }
     }
 }
