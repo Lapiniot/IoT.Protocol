@@ -10,7 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Common" Version="1.0.0" />
     <PackageReference Include="System.Common.Net" Version="1.0.0" />
   </ItemGroup>
 
