@@ -13,25 +13,13 @@ namespace IoT.Protocol.Upnp
         {
         }
 
-        public string Location
-        {
-            get { return this["LOCATION"]; }
-        }
+        public string Location => this["LOCATION"];
 
-        public string UniqueServiceName
-        {
-            get { return this["USN"]; }
-        }
+        public string UniqueServiceName => this["USN"];
 
-        public string Server
-        {
-            get { return this["SERVER"]; }
-        }
+        public string Server => this["SERVER"];
 
-        public string SearchTarget
-        {
-            get { return this["ST"]; }
-        }
+        public string SearchTarget => this["ST"];
 
         public static SsdpReply Parse(Span<byte> buffer)
         {

@@ -8,10 +8,7 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
     {
         private static ResourceReader instance;
 
-        public static ResourceReader Instance
-        {
-            get { return instance ?? (instance = new ResourceReader()); }
-        }
+        public static ResourceReader Instance => instance ?? (instance = new ResourceReader());
 
         #region Overrides of ReaderBase<Resource>
 

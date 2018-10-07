@@ -34,10 +34,7 @@ namespace IoT.Protocol.Soap
         public string Schema { get; }
         public IDictionary<string, string> Arguments { get; }
 
-        public string this[string name]
-        {
-            get { return Arguments[name]; }
-        }
+        public string this[string name] => Arguments[name];
 
         public override string ToString()
         {

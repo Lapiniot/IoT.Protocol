@@ -11,7 +11,10 @@ namespace IoT.Protocol
         {
             using(var cts = new CancellationTokenSource(timeout))
             {
-                foreach(var thing in enumerator.Enumerate(cts.Token)) yield return thing;
+                foreach(var thing in enumerator.Enumerate(cts.Token))
+                {
+                    yield return thing;
+                }
             }
         }
 
@@ -20,7 +23,10 @@ namespace IoT.Protocol
             using(var timeoutTokenSource = new CancellationTokenSource(timeout))
             using(var cts = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken))
             {
-                foreach(var thing in enumerator.Enumerate(cts.Token)) yield return thing;
+                foreach(var thing in enumerator.Enumerate(cts.Token))
+                {
+                    yield return thing;
+                }
             }
         }
 
@@ -28,7 +34,10 @@ namespace IoT.Protocol
         {
             using(var cts = new CancellationTokenSource(timeoutMilliseconds))
             {
-                foreach(var thing in enumerator.Enumerate(cts.Token)) yield return thing;
+                foreach(var thing in enumerator.Enumerate(cts.Token))
+                {
+                    yield return thing;
+                }
             }
         }
 
@@ -37,7 +46,10 @@ namespace IoT.Protocol
             using(var timeoutTokenSource = new CancellationTokenSource(timeoutMilliseconds))
             using(var cts = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken))
             {
-                foreach(var thing in enumerator.Enumerate(cts.Token)) yield return thing;
+                foreach(var thing in enumerator.Enumerate(cts.Token))
+                {
+                    yield return thing;
+                }
             }
         }
     }

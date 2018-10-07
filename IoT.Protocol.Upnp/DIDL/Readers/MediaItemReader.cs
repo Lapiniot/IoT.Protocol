@@ -8,10 +8,7 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
     {
         private static MediaItemReader instance;
 
-        public static MediaItemReader Instance
-        {
-            get { return instance ?? (instance = new MediaItemReader()); }
-        }
+        public static MediaItemReader Instance => instance ?? (instance = new MediaItemReader());
 
         #region Overrides of ItemReader<MediaItem>
 

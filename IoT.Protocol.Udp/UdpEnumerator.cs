@@ -33,7 +33,7 @@ namespace IoT.Protocol.Udp
         protected abstract int ReceiveBufferSize { get; }
 
         /// <summary>
-        /// Enumerates network devices by sending discovery datagrams
+        /// Enumerates network devices by sending discovery datagram
         /// </summary>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Enumerable sequence of IoT devices that responded to discovery message </returns>
