@@ -1,0 +1,12 @@
+{
+    "files.exclude": {
+        ".gitignore": true,
+        ".vs": true,
+        "*.DotSettings": true,
+        "**/.hg": false,
+        "**/.svn": false,
+        "**/bin": true,
+        "**/CVS": false,
+        "**/obj": true
+    }
+}
