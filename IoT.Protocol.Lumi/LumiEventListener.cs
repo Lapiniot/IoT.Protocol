@@ -4,23 +4,22 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Udp.Net;
-using ILumiObserver = System.IObserver<(string Command, string Sid, System.Json.JsonObject Data, System.Json.JsonObject Message)>;
 
 namespace IoT.Protocol.Lumi
 {
-    public class LumiEventListener : DataListener, IObservable<(string Command, string Sid, JsonObject Data, JsonObject Message)>
+    public class LumiEventListener : DataListener, IObservable<JsonObject>
     {
         private readonly IPEndPoint endpoint;
-        private readonly ObserversContainer<(string, string, JsonObject, JsonObject)> observers;
+        private readonly ObserversContainer<JsonObject> observers;
         private UdpMulticastMessageReceiver receiver;
 
         public LumiEventListener(IPEndPoint groupEndpoint)
         {
             endpoint = groupEndpoint;
-            observers = new ObserversContainer<(string, string, JsonObject, JsonObject)>();
+            observers = new ObserversContainer<JsonObject>();
         }
 
-        public IDisposable Subscribe(ILumiObserver observer)
+        public IDisposable Subscribe(IObserver<JsonObject> observer)
         {
             return observers.Subscribe(observer);
         }
@@ -29,11 +28,7 @@ namespace IoT.Protocol.Lumi
         {
             var message = (JsonObject)JsonExtensions.Deserialize(buffer, 0, size);
 
-            if(message.TryGetValue("sid", out var sid) && message.TryGetValue("cmd", out var cmd) &&
-               message.TryGetValue("data", out var v) && JsonValue.Parse(v) is JsonObject data)
-            {
-                observers.Notify((cmd, sid, data, message));
-            }
+            observers.Notify(message);
         }
 
         public override async Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
