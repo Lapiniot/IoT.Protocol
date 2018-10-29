@@ -8,9 +8,8 @@ namespace IoT.Protocol
 {
     public abstract class DataListener : DataReceiver
     {
-        private CancellationTokenSource cancellationTokenSource;
-
         protected int ReceiveBufferSize = 0x8000;
+        private CancellationTokenSource tokenSource;
 
         private async Task DispatchAsync(CancellationToken cancellationToken)
         {
@@ -47,20 +46,24 @@ namespace IoT.Protocol
 
         protected override void OnConnect()
         {
-            cancellationTokenSource = new CancellationTokenSource();
+            tokenSource = new CancellationTokenSource();
 
-            var token = cancellationTokenSource.Token;
+            var token = tokenSource.Token;
 
             Task.Run(() => DispatchAsync(token), token);
         }
 
         protected override void OnClose()
         {
-            cancellationTokenSource?.Cancel();
+            var source = tokenSource;
 
-            cancellationTokenSource?.Dispose();
+            if(source != null)
+            {
+                source.Cancel();
+                source.Dispose();
+            }
 
-            cancellationTokenSource = null;
+            tokenSource = null;
         }
 
         #endregion
