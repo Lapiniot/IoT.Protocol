@@ -9,9 +9,7 @@ namespace IoT.Protocol.Lumi
 {
     public sealed class LumiControlEndpoint : UdpDispatchingEndpoint<JsonObject, JsonObject, string>
     {
-        public LumiControlEndpoint(IPEndPoint endpoint) : base(endpoint)
-        {
-        }
+        public LumiControlEndpoint(IPEndPoint endpoint) : base(endpoint) {}
 
         protected override TimeSpan CommandTimeout { get; } = TimeSpan.FromSeconds(10);
 

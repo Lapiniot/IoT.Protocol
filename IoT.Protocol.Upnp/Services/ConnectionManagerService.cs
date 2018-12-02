@@ -11,14 +11,10 @@ namespace IoT.Protocol.Upnp.Services
     public class ConnectionManagerService : SoapActionInvoker
     {
         public ConnectionManagerService(SoapControlEndpoint endpoint, Uri controlUri) :
-            base(endpoint, controlUri, ConnectionManager)
-        {
-        }
+            base(endpoint, controlUri, ConnectionManager) {}
 
         public ConnectionManagerService(SoapControlEndpoint endpoint) :
-            base(endpoint, ConnectionManager)
-        {
-        }
+            base(endpoint, ConnectionManager) {}
 
         public Task<IDictionary<string, string>> GetProtocolInfoAsync(CancellationToken cancellationToken = default)
         {

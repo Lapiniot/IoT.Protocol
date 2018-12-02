@@ -8,13 +8,9 @@ namespace IoT.Protocol.Upnp.Services
     public sealed class RenderingControlService : SoapActionInvoker
     {
         public RenderingControlService(SoapControlEndpoint endpoint, Uri controlUri) :
-            base(endpoint, controlUri, RenderingControl)
-        {
-        }
+            base(endpoint, controlUri, RenderingControl) {}
 
         public RenderingControlService(SoapControlEndpoint endpoint) :
-            base(endpoint, RenderingControl)
-        {
-        }
+            base(endpoint, RenderingControl) {}
     }
 }

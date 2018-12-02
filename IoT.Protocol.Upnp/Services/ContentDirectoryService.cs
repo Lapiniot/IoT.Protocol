@@ -11,14 +11,10 @@ namespace IoT.Protocol.Upnp.Services
     public sealed class ContentDirectoryService : SoapActionInvoker
     {
         public ContentDirectoryService(SoapControlEndpoint endpoint, Uri controlUri) :
-            base(endpoint, controlUri, ContentDirectory)
-        {
-        }
+            base(endpoint, controlUri, ContentDirectory) {}
 
         public ContentDirectoryService(SoapControlEndpoint endpoint) :
-            base(endpoint, ContentDirectory)
-        {
-        }
+            base(endpoint, ContentDirectory) {}
 
         public Task<IDictionary<string, string>> BrowseAsync(string parent, string filter = null,
             string flags = null, string sortCriteria = null,

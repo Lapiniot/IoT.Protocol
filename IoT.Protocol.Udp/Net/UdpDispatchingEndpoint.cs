@@ -9,9 +9,7 @@ namespace IoT.Protocol.Udp.Net
     public abstract class UdpDispatchingEndpoint<TRequest, TResponse, TKey> :
         DispatchingEndpoint<TRequest, TResponse, TKey>
     {
-        protected UdpDispatchingEndpoint(IPEndPoint endpoint) : base(endpoint)
-        {
-        }
+        protected UdpDispatchingEndpoint(IPEndPoint endpoint) : base(endpoint) {}
 
         #region Overrides of DispatchingMessenger<byte[],byte[]>
 

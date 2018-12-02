@@ -5,9 +5,7 @@ namespace IoT.Protocol.Upnp.DIDL
 {
     public class MediaItem : Item
     {
-        public MediaItem(string id, string parentId, bool restricted) : base(id, parentId, restricted)
-        {
-        }
+        public MediaItem(string id, string parentId, bool restricted) : base(id, parentId, restricted) {}
 
         public string Description { get; set; }
         public string Creator { get; set; }

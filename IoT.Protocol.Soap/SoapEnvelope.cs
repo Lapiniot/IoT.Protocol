@@ -26,9 +26,7 @@ namespace IoT.Protocol.Soap
         }
 
         public SoapEnvelope(string action, string schema, params (string name, object value)[] args) :
-            this(action, schema, args.ToDictionary(a => a.name, a => Convert.ToString(a.value)))
-        {
-        }
+            this(action, schema, args.ToDictionary(a => a.name, a => Convert.ToString(a.value))) {}
 
         public string Action { get; }
         public string Schema { get; }

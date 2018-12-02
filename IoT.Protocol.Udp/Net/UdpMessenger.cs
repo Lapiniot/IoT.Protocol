@@ -8,9 +8,7 @@ namespace IoT.Protocol.Udp.Net
 {
     public sealed class UdpMessenger : UdpMessageReceiver, INetMessenger
     {
-        public UdpMessenger(IPEndPoint endpoint) : base(endpoint)
-        {
-        }
+        public UdpMessenger(IPEndPoint endpoint) : base(endpoint) {}
 
         #region Implementation of INetMessenger
 

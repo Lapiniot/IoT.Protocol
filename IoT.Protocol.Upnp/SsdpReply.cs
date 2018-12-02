@@ -9,9 +9,7 @@ namespace IoT.Protocol.Upnp
         private const byte Colon = 0x3a;
         private const byte Space = 0x20;
 
-        public SsdpReply() : base(10, StringComparer.OrdinalIgnoreCase)
-        {
-        }
+        public SsdpReply() : base(10, StringComparer.OrdinalIgnoreCase) {}
 
         public string Location => this["LOCATION"];
 

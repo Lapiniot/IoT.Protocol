@@ -26,9 +26,7 @@ namespace IoT.Protocol.Udp
         }
 
         protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint) :
-            this(createSocketFactory, sendToEndpoint, Sockets.EndPoint.Any)
-        {
-        }
+            this(createSocketFactory, sendToEndpoint, Sockets.EndPoint.Any) {}
 
         protected abstract int SendBufferSize { get; }
         protected abstract int ReceiveBufferSize { get; }
