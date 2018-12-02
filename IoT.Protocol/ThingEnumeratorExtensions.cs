@@ -41,7 +41,8 @@ namespace IoT.Protocol
             }
         }
 
-        public static IEnumerable<TThing> Enumerate<TThing>(this IThingEnumerator<TThing> enumerator, int timeoutMilliseconds, CancellationToken cancellationToken)
+        public static IEnumerable<TThing> Enumerate<TThing>(this IThingEnumerator<TThing> enumerator, int timeoutMilliseconds,
+            CancellationToken cancellationToken)
         {
             using(var timeoutTokenSource = new CancellationTokenSource(timeoutMilliseconds))
             using(var cts = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken))

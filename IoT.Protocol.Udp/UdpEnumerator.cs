@@ -25,7 +25,8 @@ namespace IoT.Protocol.Udp
             ReceiveFromEndpoint = receiveFromEndpoint;
         }
 
-        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint) : this(createSocketFactory, sendToEndpoint, Sockets.EndPoint.Any)
+        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint) :
+            this(createSocketFactory, sendToEndpoint, Sockets.EndPoint.Any)
         {
         }
 
@@ -50,7 +51,8 @@ namespace IoT.Protocol.Udp
 
                 if(datagram.Length > SendBufferSize)
                 {
-                    throw new InvalidOperationException($"Discovery datagram is larger than {nameof(SendBufferSize)} = {SendBufferSize} configured buffer size");
+                    throw new InvalidOperationException(
+                        $"Discovery datagram is larger than {nameof(SendBufferSize)} = {SendBufferSize} configured buffer size");
                 }
 
                 socket.SendToAsync(datagram, SendToEndpoint, cancellationToken).GetAwaiter().GetResult();

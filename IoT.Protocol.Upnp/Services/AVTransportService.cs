@@ -57,7 +57,8 @@ namespace IoT.Protocol.Upnp.Services
             return InvokeAsync("GetTransportInfo", cancellationToken, ("InstanceID", instanceId));
         }
 
-        public Task SetAVTransportUriAsync(uint instanceId = 0, string currentUri = null, string currentUriMetaData = null, CancellationToken cancellationToken = default)
+        public Task SetAVTransportUriAsync(uint instanceId = 0, string currentUri = null, string currentUriMetaData = null,
+            CancellationToken cancellationToken = default)
         {
             return InvokeAsync("SetAVTransportURI", cancellationToken,
                 ("InstanceID", instanceId),
@@ -65,7 +66,8 @@ namespace IoT.Protocol.Upnp.Services
                 ("CurrentURIMetaData", currentUriMetaData));
         }
 
-        public Task SetNextAVTransportUriAsync(uint instanceId = 0, string nextUri = null, string nextUriMetaData = null, CancellationToken cancellationToken = default)
+        public Task SetNextAVTransportUriAsync(uint instanceId = 0, string nextUri = null, string nextUriMetaData = null,
+            CancellationToken cancellationToken = default)
         {
             return InvokeAsync("SetNextAVTransportURI", cancellationToken,
                 ("InstanceID", instanceId),
