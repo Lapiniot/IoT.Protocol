@@ -7,39 +7,47 @@ using System.Threading.Tasks;
 using IoT.Protocol.Interfaces;
 using static System.Net.DecompressionMethods;
 using static System.Net.Http.HttpMethod;
+using static System.Threading.LazyThreadSafetyMode;
 
 namespace IoT.Protocol.Soap
 {
-    public class SoapControlEndpoint : ConnectedObject, IControlEndpoint<SoapEnvelope, SoapEnvelope>
+    public class SoapControlEndpoint : IControlEndpoint<SoapEnvelope, SoapEnvelope>, IDisposable
     {
-        private readonly Uri baseUri;
+        private readonly Lazy<HttpClient> clientLazy;
         private readonly HttpClient externalClient;
-        private HttpClient client;
 
         public SoapControlEndpoint(HttpClient httpClient)
         {
             externalClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            clientLazy = new Lazy<HttpClient>(externalClient);
         }
 
         public SoapControlEndpoint(Uri baseAddress)
         {
-            baseUri = baseAddress;
+            if(baseAddress == null) throw new ArgumentNullException(nameof(baseAddress));
+            clientLazy = new Lazy<HttpClient>(() => CreateClient(baseAddress), ExecutionAndPublication);
         }
+
+        private HttpClient Client => clientLazy.Value;
 
         public Task<SoapEnvelope> InvokeAsync(SoapEnvelope message, CancellationToken cancellationToken = default)
         {
             return InvokeAsync(null, message, cancellationToken);
         }
 
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         protected internal async Task<SoapEnvelope> InvokeAsync(Uri actionUri, SoapEnvelope message, CancellationToken cancellationToken = default)
         {
-            CheckDisposed();
-            CheckConnected();
             if(actionUri != null && actionUri.IsAbsoluteUri) throw new ArgumentException("Invalid uri type. Must be valid relative uri.");
 
             using(var request = CreateRequestMessage(actionUri, message))
             {
-                using(var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false))
+                using(var response = await Client.SendAsync(request, cancellationToken).ConfigureAwait(false))
                 {
                     response.EnsureSuccessStatusCode();
 
@@ -75,37 +83,34 @@ namespace IoT.Protocol.Soap
             };
         }
 
-        protected override void OnConnect()
+        protected HttpClient CreateClient(Uri baseAddress)
         {
-            if(externalClient == null)
+            var handler = new SocketsHttpHandler
             {
-                var handler = new SocketsHttpHandler
-                {
-                    AutomaticDecompression = GZip,
-                    UseProxy = false,
-                    Proxy = null,
-                    UseCookies = false,
-                    CookieContainer = null,
-                    AllowAutoRedirect = false
-                };
+                AutomaticDecompression = GZip,
+                UseProxy = false,
+                Proxy = null,
+                UseCookies = false,
+                CookieContainer = null,
+                AllowAutoRedirect = false
+            };
 
-                client = new HttpClient(handler, true)
-                {
-                    BaseAddress = baseUri,
-                    DefaultRequestHeaders = {{"Accept-Encoding", "gzip"}}
-                };
-            }
-            else
+            return new HttpClient(handler, true)
             {
-                client = externalClient;
-            }
+                BaseAddress = baseAddress,
+                DefaultRequestHeaders = {{"Accept-Encoding", "gzip"}}
+            };
         }
 
-        protected override void OnClose()
+        protected virtual void Dispose(bool disposing)
         {
-            if(externalClient == null) client.Dispose();
-
-            client = null;
+            if(disposing)
+            {
+                if(externalClient == null && clientLazy.IsValueCreated)
+                {
+                    clientLazy.Value.Dispose();
+                }
+            }
         }
     }
 }

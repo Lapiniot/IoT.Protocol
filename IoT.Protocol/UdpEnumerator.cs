@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using IoT.Protocol.Interfaces;
 
-namespace IoT.Protocol.Udp
+namespace IoT.Protocol
 {
     /// <summary>
     /// Base abstract class for IoT devices enumerator which uses network discovery via UDP

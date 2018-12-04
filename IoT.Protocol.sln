@@ -3,21 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Protocol", "IoT.Protocol\IoT.Protocol.csproj", "{71E51080-B3A0-4BFC-829C-DE1EA7C4FA7B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Protocol", "IoT.Protocol\IoT.Protocol.csproj", "{71E51080-B3A0-4BFC-829C-DE1EA7C4FA7B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Protocol.Udp", "IoT.Protocol.Udp\IoT.Protocol.Udp.csproj", "{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Protocol.Upnp", "IoT.Protocol.Upnp\IoT.Protocol.Upnp.csproj", "{81D38416-4671-4A69-A4E3-C2CA538C4A53}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Protocol.Upnp", "IoT.Protocol.Upnp\IoT.Protocol.Upnp.csproj", "{81D38416-4671-4A69-A4E3-C2CA538C4A53}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Protocol.Soap", "IoT.Protocol.Soap\IoT.Protocol.Soap.csproj", "{25A748AF-F8FD-4C6E-98FB-F55BB87C93F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Protocol.Soap", "IoT.Protocol.Soap\IoT.Protocol.Soap.csproj", "{25A748AF-F8FD-4C6E-98FB-F55BB87C93F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Protocol.Lumi", "IoT.Protocol.Lumi\IoT.Protocol.Lumi.csproj", "{86C262E3-7B3D-4C7E-B58D-6EA403704DE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Protocol.Yeelight", "IoT.Protocol.Yeelight\IoT.Protocol.Yeelight.csproj", "{57229E36-B94F-4D43-816F-A9AB5FE5112B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Protocol.Yeelight", "IoT.Protocol.Yeelight\IoT.Protocol.Yeelight.csproj", "{57229E36-B94F-4D43-816F-A9AB5FE5112B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System.Common", "System.Common", "{E6499073-A61A-494F-B9FD-D3517110876B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Common", "System.Common\System.Common\System.Common.csproj", "{72EE97FB-62DB-4280-921C-9C705FF6B5B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Common", "System.Common\System.Common\System.Common.csproj", "{72EE97FB-62DB-4280-921C-9C705FF6B5B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Common.Net", "System.Common\System.Common.Net\System.Common.Net.csproj", "{F8FD4528-38D9-429D-BB88-82D4A9B08747}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Common.Net", "System.Common\System.Common.Net\System.Common.Net.csproj", "{F8FD4528-38D9-429D-BB88-82D4A9B08747}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,18 +41,6 @@ Global
 		{71E51080-B3A0-4BFC-829C-DE1EA7C4FA7B}.Release|x64.Build.0 = Release|Any CPU
 		{71E51080-B3A0-4BFC-829C-DE1EA7C4FA7B}.Release|x86.ActiveCfg = Release|Any CPU
 		{71E51080-B3A0-4BFC-829C-DE1EA7C4FA7B}.Release|x86.Build.0 = Release|Any CPU
-		{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}.Debug|x64.Build.0 = Debug|Any CPU
-		{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}.Debug|x86.Build.0 = Debug|Any CPU
-		{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}.Release|Any CPU.Build.0 = Release|Any CPU
-		{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}.Release|x64.ActiveCfg = Release|Any CPU
-		{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}.Release|x64.Build.0 = Release|Any CPU
-		{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}.Release|x86.ActiveCfg = Release|Any CPU
-		{36BFA614-98C6-4743-8EC6-B7FBE7B3B553}.Release|x86.Build.0 = Release|Any CPU
 		{81D38416-4671-4A69-A4E3-C2CA538C4A53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{81D38416-4671-4A69-A4E3-C2CA538C4A53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81D38416-4671-4A69-A4E3-C2CA538C4A53}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -114,8 +102,14 @@ Global
 		{F8FD4528-38D9-429D-BB88-82D4A9B08747}.Release|x86.ActiveCfg = Release|Any CPU
 		{F8FD4528-38D9-429D-BB88-82D4A9B08747}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{72EE97FB-62DB-4280-921C-9C705FF6B5B4} = {E6499073-A61A-494F-B9FD-D3517110876B}
 		{F8FD4528-38D9-429D-BB88-82D4A9B08747} = {E6499073-A61A-494F-B9FD-D3517110876B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ACF16060-DC0D-476E-A344-8DCAB485EE3F}
 	EndGlobalSection
 EndGlobal

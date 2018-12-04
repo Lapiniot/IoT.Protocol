@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IoT.Protocol.Udp\IoT.Protocol.Udp.csproj" />
+    <ProjectReference Include="..\IoT.Protocol\IoT.Protocol.csproj" />
   </ItemGroup>
 
 </Project>

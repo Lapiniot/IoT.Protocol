@@ -1,17 +1,20 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Json;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using IoT.Protocol.Udp.Net;
 
 namespace IoT.Protocol.Lumi
 {
-    public class LumiEventListener : DataListener, IObservable<JsonObject>
+    public class LumiEventListener : AsyncConnectedObject, IObservable<JsonObject>
     {
+        private const int ReceiveBufferSize = 0x8000;
         private readonly IPEndPoint endpoint;
         private readonly ObserversContainer<JsonObject> observers;
-        private UdpMulticastMessageReceiver receiver;
+        private Socket socket;
+        private CancellationTokenSource tokenSource;
 
         public LumiEventListener(IPEndPoint groupEndpoint)
         {
@@ -24,49 +27,67 @@ namespace IoT.Protocol.Lumi
             return observers.Subscribe(observer);
         }
 
-        protected override void OnDataAvailable(byte[] buffer, int size)
+        protected override Task OnConnectAsync(CancellationToken cancellationToken)
         {
-            var message = (JsonObject)JsonExtensions.Deserialize(buffer, 0, size);
+            socket = Sockets.Udp.Multicast.Listener(endpoint);
 
-            observers.Notify(message);
+            tokenSource = new CancellationTokenSource();
+
+            var token = tokenSource.Token;
+
+            Task.Run(() => DispatchAsync(token), token);
+
+            return Task.CompletedTask;
         }
 
-        public override async Task<int> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        protected override Task OnDisconnectAsync()
         {
-            CheckDisposed();
-            CheckConnected();
+            var source = tokenSource;
 
-            var valueTask = receiver.ReceiveAsync(buffer, cancellationToken);
+            if(source != null)
+            {
+                source.Cancel();
+                source.Dispose();
+            }
 
-            return valueTask.IsCompleted ? valueTask.Result : await valueTask.ConfigureAwait(false);
+            tokenSource = null;
+
+            socket.Close();
+
+            return Task.CompletedTask;
         }
 
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
 
-            if(disposing)
+            if(disposing) observers.Dispose();
+        }
+
+        private async Task DispatchAsync(CancellationToken cancellationToken)
+        {
+            var buffer = new byte[ReceiveBufferSize];
+
+            while(!cancellationToken.IsCancellationRequested)
             {
-                observers.Dispose();
+                try
+                {
+                    var t = socket.ReceiveFromAsync(buffer, endpoint, cancellationToken);
+                    var size = t.IsCompletedSuccessfully ? t.Result.Size : (await t.ConfigureAwait(false)).Size;
+
+                    var message = (JsonObject)JsonExtensions.Deserialize(buffer, 0, size);
+
+                    observers.Notify(message);
+                }
+                catch(OperationCanceledException)
+                {
+                    Trace.TraceInformation("Cancelling message dispatching loop...");
+                }
+                catch(Exception e)
+                {
+                    Trace.TraceError($"Error in message dispatch: {e.Message}");
+                }
             }
         }
-
-        #region Overrides of DataListener
-
-        protected override void OnConnect()
-        {
-            receiver = new UdpMulticastMessageReceiver(endpoint);
-
-            base.OnConnect();
-        }
-
-        protected override void OnClose()
-        {
-            base.OnClose();
-
-            receiver.Dispose();
-        }
-
-        #endregion
     }
 }

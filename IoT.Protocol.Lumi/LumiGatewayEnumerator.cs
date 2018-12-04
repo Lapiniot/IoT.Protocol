@@ -1,7 +1,6 @@
 using System.Json;
 using System.Net;
 using System.Net.Sockets;
-using IoT.Protocol.Udp;
 
 namespace IoT.Protocol.Lumi
 {
