@@ -24,14 +24,14 @@ namespace IoT.Protocol.Lumi
             return observers.Subscribe(observer);
         }
 
-        protected override void OnDataAvailable(IPEndPoint remoteEndPoint, byte[] buffer, int size)
+        protected override void OnDataAvailable(byte[] buffer, int size)
         {
             var message = (JsonObject)JsonExtensions.Deserialize(buffer, 0, size);
 
             observers.Notify(message);
         }
 
-        public override async Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
+        public override async Task<int> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken)
         {
             CheckDisposed();
             CheckConnected();

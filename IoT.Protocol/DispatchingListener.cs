@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Interfaces;
@@ -9,19 +9,19 @@ namespace IoT.Protocol
     {
         private INetMessenger messenger;
 
-        public Task SendAsync(byte[] message, int offset, int size, CancellationToken cancellationToken)
+        public Task SendAsync(Memory<byte> message, CancellationToken cancellationToken)
         {
             CheckDisposed();
             CheckConnected();
 
-            return messenger.SendAsync(message, offset, size, cancellationToken);
+            return messenger.SendAsync(message, cancellationToken);
         }
 
         protected abstract INetMessenger CreateNetMessenger();
 
         #region Overrides of DataListener
 
-        public override async Task<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
+        public override async Task<int> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken)
         {
             CheckDisposed();
             CheckConnected();

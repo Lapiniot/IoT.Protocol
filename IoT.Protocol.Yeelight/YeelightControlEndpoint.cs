@@ -45,7 +45,7 @@ namespace IoT.Protocol.Yeelight
             }
         }
 
-        protected override bool TryParseResponse(byte[] bytes, int size, IPEndPoint remoteEndPoint, out long id, out JsonValue response)
+        protected override bool TryParseResponse(byte[] bytes, int size, out long id, out JsonValue response)
         {
             var message = JsonExtensions.Deserialize(bytes, 0, size);
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,9 +18,9 @@ namespace IoT.Protocol
             {
                 try
                 {
-                    var (size, ep) = await ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
+                    var size = await ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
 
-                    OnDataAvailable(ep, buffer, size);
+                    OnDataAvailable(buffer, size);
                 }
                 catch(OperationCanceledException)
                 {
@@ -37,10 +36,9 @@ namespace IoT.Protocol
         /// <summary>
         /// Process response datagram bytes
         /// </summary>
-        /// <param name="remoteEndpoint">Remote endpoint of the data sender</param>
         /// <param name="buffer">Raw datagram bytes</param>
         /// <param name="size">Size of the actually valid data written to the <paramref name="buffer" /></param>
-        protected abstract void OnDataAvailable(IPEndPoint remoteEndpoint, byte[] buffer, int size);
+        protected abstract void OnDataAvailable(byte[] buffer, int size);
 
         #region Overrides of MessageReceiver<TMessage>
 

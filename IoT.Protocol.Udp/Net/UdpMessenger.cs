@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,9 +13,9 @@ namespace IoT.Protocol.Udp.Net
 
         #region Implementation of INetMessenger
 
-        public Task SendAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
+        public Task SendAsync(Memory<byte> buffer, CancellationToken cancellationToken)
         {
-            return Socket.SendAsync(buffer, offset, size, cancellationToken);
+            return Socket.SendAsync(buffer, cancellationToken);
         }
 
         #endregion

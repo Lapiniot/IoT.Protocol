@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,6 +12,6 @@ namespace IoT.Protocol.Interfaces
         /// <summary>
         /// Receives data from the remote endpoint asynchronously
         /// </summary>
-        ValueTask<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken);
+        ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken);
     }
 }

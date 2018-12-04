@@ -11,14 +11,12 @@ namespace IoT.Protocol.Yeelight
     {
         private readonly byte[] endOfLineMarker = {0x0d, 0x0a};
 
-        private readonly IPEndPoint endpoint;
         private readonly Socket socket;
 
         private Memory<byte> reminder;
 
         public TcpLineMessenger(IPEndPoint endpoint)
         {
-            this.endpoint = endpoint;
             try
             {
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -42,9 +40,9 @@ namespace IoT.Protocol.Yeelight
 
         #region INetMessenger
 
-        public async ValueTask<(int Size, IPEndPoint RemoteEP)> ReceiveAsync(byte[] buffer, CancellationToken cancellationToken)
+        public async ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken)
         {
-            var window = buffer.AsMemory();
+            var window = buffer;
             var total = 0;
             int index;
             if(!reminder.IsEmpty)
@@ -53,7 +51,7 @@ namespace IoT.Protocol.Yeelight
                 {
                     reminder.Slice(0, index).CopyTo(window);
                     reminder = reminder.Slice(index + 2);
-                    return (index, endpoint);
+                    return index;
                 }
 
                 reminder.CopyTo(window);
@@ -74,7 +72,7 @@ namespace IoT.Protocol.Yeelight
                 {
                     total += index;
                     reminder = received.Slice(index + 2).ToArray();
-                    return (total, endpoint);
+                    return total;
                 }
 
                 total += size;
@@ -84,10 +82,11 @@ namespace IoT.Protocol.Yeelight
             throw new ArgumentException("Out of space in the " + nameof(buffer));
         }
 
-        public async Task SendAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
+        public async Task SendAsync(Memory<byte> buffer, CancellationToken cancellationToken)
         {
-            await socket.SendAsync(buffer, offset, size, cancellationToken).ConfigureAwait(false);
-            if(!(buffer[offset + size - 2] == 0x0d && buffer[offset + size - 1] == 0x0a))
+            await socket.SendAsync(buffer, cancellationToken).ConfigureAwait(false);
+            var length = buffer.Length;
+            if(!(buffer.Span[length - 2] == 0x0d && buffer.Span[length - 1] == 0x0a))
             {
                 await socket.SendAsync(endOfLineMarker, 0, 2, cancellationToken).ConfigureAwait(false);
             }

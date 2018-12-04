@@ -32,7 +32,7 @@ namespace IoT.Protocol
             {
                 completions.TryAdd(id, completionSource);
 
-                await SendAsync(datagram, 0, datagram.Length, cancellationToken).ConfigureAwait(false);
+                await SendAsync(datagram, cancellationToken).ConfigureAwait(false);
 
                 using(var timeoutSource = new CancellationTokenSource(CommandTimeout))
                 using(completionSource.Bind(cancellationToken, timeoutSource.Token))
@@ -46,13 +46,13 @@ namespace IoT.Protocol
             }
         }
 
-        protected abstract bool TryParseResponse(byte[] buffer, int size, IPEndPoint remoteEndPoint, out TKey id, out TResponse response);
+        protected abstract bool TryParseResponse(byte[] buffer, int size, out TKey id, out TResponse response);
 
         protected abstract Task<(TKey, byte[])> CreateRequestAsync(TRequest message, CancellationToken cancellationToken);
 
-        protected override void OnDataAvailable(IPEndPoint remoteEndpoint, byte[] buffer, int size)
+        protected override void OnDataAvailable(byte[] buffer, int size)
         {
-            if(TryParseResponse(buffer, size, remoteEndpoint, out var id, out var response))
+            if(TryParseResponse(buffer, size, out var id, out var response))
             {
                 if(completions.TryRemove(id, out var completionSource))
                 {
