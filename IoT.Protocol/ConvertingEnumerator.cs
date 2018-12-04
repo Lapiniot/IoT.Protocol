@@ -20,6 +20,6 @@ namespace IoT.Protocol
             return Enumerator.Enumerate(cancellationToken).Select(Convert);
         }
 
-        public abstract TThing2 Convert(TThing1 thing);
+        protected abstract TThing2 Convert(TThing1 thing);
     }
 }
