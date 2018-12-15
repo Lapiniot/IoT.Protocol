@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace IoT.Protocol.Interfaces
 {
     public interface IThingEnumerator<out TThing>
     {
-        IEnumerable<TThing> Enumerate(CancellationToken cancellationToken);
+        Task DiscoverAsync(Action<TThing> discovered, CancellationToken cancellationToken);
     }
 }

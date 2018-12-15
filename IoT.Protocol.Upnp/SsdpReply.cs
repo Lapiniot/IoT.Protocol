@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using static System.Text.Encoding;
 
 namespace IoT.Protocol.Upnp
 {
@@ -22,7 +22,7 @@ namespace IoT.Protocol.Upnp
         public static SsdpReply Parse(Span<byte> buffer)
         {
             int i;
-            if((i = buffer.IndexOfEOL()) >= 0 && Encoding.ASCII.GetString(buffer.Slice(0, i++)) == "HTTP/1.1 200 OK")
+            if((i = buffer.IndexOfEOL()) >= 0 && ASCII.GetString(buffer.Slice(0, i++)) == "HTTP/1.1 200 OK")
             {
                 var reply = new SsdpReply();
 
@@ -33,9 +33,9 @@ namespace IoT.Protocol.Upnp
 
                     if(index > 0)
                     {
-                        var key = Encoding.ASCII.GetString(line.Slice(0, index));
+                        var key = ASCII.GetString(line.Slice(0, index));
                         if(++index < line.Length && line[index] == Space) index++;
-                        var value = Encoding.ASCII.GetString(line.Slice(index));
+                        var value = ASCII.GetString(line.Slice(index));
                         reply.Add(key, value);
                     }
                 }

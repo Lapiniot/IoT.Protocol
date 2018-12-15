@@ -1,6 +1,9 @@
+using System.IO;
 using System.Json;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IoT.Protocol.Lumi
 {
@@ -23,11 +26,17 @@ namespace IoT.Protocol.Lumi
 
         protected override int ReceiveBufferSize { get; } = 0x100;
 
-        protected override (IPAddress Address, ushort Port, string Sid) ParseResponse(byte[] buffer, int size, IPEndPoint remoteEp)
+        protected override ValueTask<(IPAddress Address, ushort Port, string Sid)> CreateInstanceAsync(byte[] buffer, int size, IPEndPoint remoteEp,
+            CancellationToken cancellationToken)
         {
             var j = JsonExtensions.Deserialize(buffer, 0, size);
 
-            return j["cmd"] == "iam" ? (IPAddress.Parse(j["ip"]), ushort.Parse(j["port"]), j["sid"]) : (null, 0, null);
+            if(j["cmd"] == "iam")
+            {
+                return new ValueTask<(IPAddress Address, ushort Port, string Sid)>((IPAddress.Parse(j["ip"]), ushort.Parse(j["port"]), j["sid"]));
+            }
+
+            throw new InvalidDataException("Invalid discovery response message");
         }
 
         protected override byte[] GetDiscoveryDatagram()

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using static System.Net.Sockets.Sockets.Udp.Multicast;
 using static System.Runtime.InteropServices.RuntimeInformation;
 using static System.Text.Encoding;
@@ -28,14 +30,9 @@ namespace IoT.Protocol.Upnp
 
         protected override int ReceiveBufferSize { get; } = 0x400;
 
-        protected SsdpReply ParseResponse(Span<byte> buffer, IPEndPoint remoteEp)
+        protected override ValueTask<SsdpReply> CreateInstanceAsync(byte[] buffer, int size, IPEndPoint remoteEp, CancellationToken cancellationToken)
         {
-            return SsdpReply.Parse(buffer);
-        }
-
-        protected override SsdpReply ParseResponse(byte[] buffer, int size, IPEndPoint remoteEp)
-        {
-            return ParseResponse(new Span<byte>(buffer, 0, size), remoteEp);
+            return new ValueTask<SsdpReply>(SsdpReply.Parse(buffer));
         }
 
         protected override byte[] GetDiscoveryDatagram()
