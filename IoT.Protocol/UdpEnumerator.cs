@@ -17,18 +17,22 @@ namespace IoT.Protocol
         private readonly CreateSocketFactory createSocket;
         protected readonly IPEndPoint ReceiveFromEndpoint;
         protected readonly IPEndPoint SendToEndpoint;
-        protected bool DistinctEndPoint;
+        private readonly bool distinctAddress;
+        private readonly TimeSpan pollInterval;
 
-        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint, IPEndPoint receiveFromEndpoint)
+        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint, 
+            IPEndPoint receiveFromEndpoint, bool distinctAddress, TimeSpan pollInterval)
         {
             SendToEndpoint = sendToEndpoint;
             createSocket = createSocketFactory;
             ReceiveFromEndpoint = receiveFromEndpoint;
-            DistinctEndPoint = true;
+            this.distinctAddress = distinctAddress;
+            this.pollInterval = pollInterval;
         }
 
-        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint) :
-            this(createSocketFactory, sendToEndpoint, Sockets.EndPoint.Any) {}
+        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint, 
+            bool distinctAddress, TimeSpan pollInterval) :
+            this(createSocketFactory, sendToEndpoint, Sockets.EndPoint.Any, distinctAddress, pollInterval) {}
 
         protected abstract int SendBufferSize { get; }
         protected abstract int ReceiveBufferSize { get; }
@@ -37,7 +41,7 @@ namespace IoT.Protocol
         {
             if(discovered == null) throw new ArgumentNullException(nameof(discovered));
 
-            var endPoints = new HashSet<IPEndPoint>(new IPEndPointComparer());
+            var addresses = new HashSet<IPAddress>(new IPEndPointComparer());
 
             using(var socket = createSocket())
             {
@@ -52,7 +56,7 @@ namespace IoT.Protocol
                         $"Discovery datagram is larger than {nameof(SendBufferSize)} = {SendBufferSize} configured buffer size");
                 }
 
-                var _ = SendDiscoveryDatagramAsync(socket, SendToEndpoint, datagram, TimeSpan.FromSeconds(3), cancellationToken);
+                var _ = SendDiscoveryDatagramAsync(socket, SendToEndpoint, datagram, pollInterval, cancellationToken);
 
                 var buffer = new byte[ReceiveBufferSize];
 
@@ -62,7 +66,7 @@ namespace IoT.Protocol
                     {
                         var (size, remoteEndPoint) = await socket.ReceiveFromAsync(buffer, ReceiveFromEndpoint, cancellationToken).ConfigureAwait(false);
 
-                        if(DistinctEndPoint && !endPoints.Add(remoteEndPoint)) continue;
+                        if(distinctAddress && !addresses.Add(remoteEndPoint.Address)) continue;
 
                         var vt = CreateInstanceAsync(buffer, size, remoteEndPoint, cancellationToken);
                         var instance = vt.IsCompletedSuccessfully ? vt.Result : await vt.AsTask().ConfigureAwait(false);
@@ -115,21 +119,21 @@ namespace IoT.Protocol
         /// <returns>Raw datagram bytes</returns>
         protected abstract byte[] GetDiscoveryDatagram();
 
-        public class IPEndPointComparer : IEqualityComparer<IPEndPoint>
+        public class IPEndPointComparer : IEqualityComparer<IPAddress>
         {
             #region Implementation of IEqualityComparer<in IPEndPoint>
 
-            public bool Equals(IPEndPoint x, IPEndPoint y)
+            public bool Equals(IPAddress x, IPAddress y)
             {
                 if(x == null && y == null) return true;
                 if(x == null || y == null) return false;
-                return (x.Address == null ? y.Address == null : x.Address.Equals(y.Address)) && x.Port == y.Port;
+                return x.Equals(y);
             }
 
-            public int GetHashCode(IPEndPoint obj)
+            public int GetHashCode(IPAddress obj)
             {
-                if(obj?.Address == null) return 0;
-                return obj.Address.GetHashCode() ^ obj.Port.GetHashCode();
+                if(obj == null) return 0;
+                return obj.GetHashCode();
             }
 
             #endregion

@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.TimeSpan;
 
 namespace IoT.Protocol.Lumi
 {
@@ -11,7 +12,8 @@ namespace IoT.Protocol.Lumi
     {
         private readonly byte[] whoisMessage;
 
-        public LumiEnumerator() : base(Sockets.Udp.Multicast.Sender, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321))
+        public LumiEnumerator() : base(Sockets.Udp.Multicast.Sender,
+            new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, FromMinutes(5))
         {
             whoisMessage = new byte[]
             {
