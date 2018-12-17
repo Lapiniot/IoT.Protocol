@@ -17,6 +17,19 @@ namespace IoT.Protocol
             this.comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
         }
 
+        public async IAsyncEnumerable<TThing2> EnumerateAsync(CancellationToken cancellationToken)
+        {
+            var set = new HashSet<TThing1>(comparer);
+
+            await foreach(var thing in Enumerator.EnumerateAsync(cancellationToken))
+            {
+                if(set.Add(thing))
+                {
+                    yield return Convert(thing);
+                }
+            }
+        }
+
         public Task DiscoverAsync(Action<TThing2> discovered, CancellationToken cancellationToken)
         {
             var set = new HashSet<TThing1>(comparer);
