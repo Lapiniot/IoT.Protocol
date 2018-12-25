@@ -15,12 +15,12 @@ namespace IoT.Protocol
     public abstract class UdpEnumerator<TThing> : IThingEnumerator<TThing>
     {
         private readonly CreateSocketFactory createSocket;
-        protected readonly IPEndPoint ReceiveFromEndpoint;
-        protected readonly IPEndPoint SendToEndpoint;
         private readonly bool distinctAddress;
         private readonly TimeSpan pollInterval;
+        protected readonly IPEndPoint ReceiveFromEndpoint;
+        protected readonly IPEndPoint SendToEndpoint;
 
-        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint, 
+        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint,
             IPEndPoint receiveFromEndpoint, bool distinctAddress, TimeSpan pollInterval)
         {
             SendToEndpoint = sendToEndpoint;
@@ -30,7 +30,7 @@ namespace IoT.Protocol
             this.pollInterval = pollInterval;
         }
 
-        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint, 
+        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint,
             bool distinctAddress, TimeSpan pollInterval) :
             this(createSocketFactory, sendToEndpoint, Sockets.EndPoint.Any, distinctAddress, pollInterval) {}
 

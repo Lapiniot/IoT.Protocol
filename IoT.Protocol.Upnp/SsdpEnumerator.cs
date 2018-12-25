@@ -28,14 +28,10 @@ namespace IoT.Protocol.Upnp
         }
 
         public SsdpEnumerator(TimeSpan pollInterval, string searchTarget = All) :
-            this(1900, searchTarget, pollInterval)
-        {
-        }
+            this(1900, searchTarget, pollInterval) {}
 
         public SsdpEnumerator(string searchTarget = All) :
-            this(1900, searchTarget, TimeSpan.FromSeconds(5))
-        {
-        }
+            this(1900, searchTarget, TimeSpan.FromSeconds(5)) {}
 
         protected override int SendBufferSize { get; } = 0x200;
 
