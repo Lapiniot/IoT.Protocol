@@ -23,10 +23,7 @@ namespace IoT.Protocol
 
             await foreach(var thing in Enumerator.EnumerateAsync(cancellationToken))
             {
-                if(set.Add(thing))
-                {
-                    yield return Convert(thing);
-                }
+                if(set.Add(thing)) yield return Convert(thing);
             }
         }
 

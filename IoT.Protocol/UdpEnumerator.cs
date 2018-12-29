@@ -41,38 +41,35 @@ namespace IoT.Protocol
         {
             var addresses = new HashSet<IPAddress>(new IPEndPointComparer());
 
-            using (var socket = createSocket())
+            var socket = createSocket();
+            socket.ReceiveBufferSize = ReceiveBufferSize;
+            socket.SendBufferSize = SendBufferSize;
+
+            var datagram = GetDiscoveryDatagram();
+
+            if(datagram.Length > SendBufferSize)
             {
-                socket.ReceiveBufferSize = ReceiveBufferSize;
-                socket.SendBufferSize = SendBufferSize;
-
-                var datagram = GetDiscoveryDatagram();
-
-                if (datagram.Length > SendBufferSize)
-                {
-                    throw new InvalidOperationException(
-                        $"Discovery datagram is larger than {nameof(SendBufferSize)} = {SendBufferSize} configured buffer size");
-                }
-
-                var _ = SendDiscoveryDatagramAsync(socket, SendToEndpoint, datagram, pollInterval, cancellationToken);
-
-                var buffer = new byte[ReceiveBufferSize];
-
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    var (size, remoteEndPoint) = await socket.ReceiveFromAsync(buffer, ReceiveFromEndpoint, cancellationToken).ConfigureAwait(false);
-
-                    if (distinctAddress && !addresses.Add(remoteEndPoint.Address)) continue;
-
-                    var vt = CreateInstanceAsync(buffer, size, remoteEndPoint, cancellationToken);
-                    var instance = vt.IsCompletedSuccessfully ? vt.Result : await vt.AsTask().ConfigureAwait(false);
-
-                    if (instance != null)
-                    {
-                        yield return instance;
-                    }
-                }
+                throw new InvalidOperationException(
+                    $"Discovery datagram is larger than {nameof(SendBufferSize)} = {SendBufferSize} configured buffer size");
             }
+
+            var _ = SendDiscoveryDatagramAsync(socket, SendToEndpoint, datagram, pollInterval, cancellationToken);
+
+            var buffer = new byte[ReceiveBufferSize];
+
+            while(!cancellationToken.IsCancellationRequested)
+            {
+                var (size, remoteEndPoint) = await socket.ReceiveFromAsync(buffer, ReceiveFromEndpoint, cancellationToken).ConfigureAwait(false);
+
+                if(distinctAddress && !addresses.Add(remoteEndPoint.Address)) continue;
+
+                var vt = CreateInstanceAsync(buffer, size, remoteEndPoint, cancellationToken);
+                var instance = vt.IsCompletedSuccessfully ? vt.Result : await vt.AsTask().ConfigureAwait(false);
+
+                if(instance != null) yield return instance;
+            }
+
+            socket.Dispose();
         }
 
         public async Task DiscoverAsync(Action<TThing> discovered, CancellationToken cancellationToken)
