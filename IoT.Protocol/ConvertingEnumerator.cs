@@ -27,19 +27,16 @@ namespace IoT.Protocol
             }
         }
 
-        public Task DiscoverAsync(Action<TThing2> discovered, CancellationToken cancellationToken)
+        public Task DiscoverAsync<TState>(Func<TThing2, TState, Task> discovered, TState state, CancellationToken cancellationToken)
         {
             var set = new HashSet<TThing1>(comparer);
 
-            void DiscoveredAdapter(TThing1 thing)
+            async Task DiscoveredAsync(TThing1 thing, TState st)
             {
-                if(set.Add(thing))
-                {
-                    discovered(Convert(thing));
-                }
+                if(set.Add(thing)) await discovered(Convert(thing), st);
             }
 
-            return Enumerator.DiscoverAsync(DiscoveredAdapter, cancellationToken);
+            return Enumerator.DiscoverAsync(DiscoveredAsync, state, cancellationToken);
         }
 
         protected abstract TThing2 Convert(TThing1 thing);
