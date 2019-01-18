@@ -72,7 +72,7 @@ namespace IoT.Protocol
             socket.Dispose();
         }
 
-        public async Task DiscoverAsync<TState>(Func<TThing, TState, Task> discovered, TState state, CancellationToken cancellationToken)
+        public async Task DiscoverAsync<TState>(Func<TThing, TState, CancellationToken, Task> discovered, TState state, CancellationToken cancellationToken)
         {
             if(discovered == null) throw new ArgumentNullException(nameof(discovered));
 
@@ -108,7 +108,7 @@ namespace IoT.Protocol
 
                         if(instance == null) continue;
 
-                        var task = discovered(instance, state);
+                        var task = discovered(instance, state, cancellationToken);
 
                         if(!task.IsCompletedSuccessfully)
                         {
