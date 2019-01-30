@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using IoT.Protocol.Interfaces;
 
 namespace IoT.Protocol
 {
@@ -12,7 +11,7 @@ namespace IoT.Protocol
     /// Base abstract class for IoT devices enumerator which uses network discovery via UDP
     /// </summary>
     /// <typeparam name="TThing">Type of the 'thing' discoverable by concrete implementations</typeparam>
-    public abstract class UdpEnumerator<TThing> : IThingEnumerator<TThing>
+    public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     {
         private readonly CreateSocketFactory createSocket;
         private readonly bool distinctAddress;
@@ -37,7 +36,48 @@ namespace IoT.Protocol
         protected abstract int SendBufferSize { get; }
         protected abstract int ReceiveBufferSize { get; }
 
-        public async IAsyncEnumerable<TThing> EnumerateAsync(CancellationToken cancellationToken)
+        /// <summary>
+        /// Factory method to create IoT device instance by parsing discovery response datagram bytes
+        /// </summary>
+        /// <param name="buffer">Buffer containing message</param>
+        /// <param name="size">Size of the valid data in the buffer</param>
+        /// <param name="remoteEp">Responder endpoint information</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>
+        /// Instance of type
+        /// <typeparam name="TThing" />
+        /// </returns>
+        protected abstract ValueTask<TThing> CreateInstanceAsync(byte[] buffer, int size, IPEndPoint remoteEp, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns datagram bytes to be send over the network for discovery
+        /// </summary>
+        /// <returns>Raw datagram bytes</returns>
+        protected abstract byte[] GetDiscoveryDatagram();
+
+        public class IPEndPointComparer : IEqualityComparer<IPAddress>
+        {
+            #region Implementation of IEqualityComparer<in IPEndPoint>
+
+            public bool Equals(IPAddress x, IPAddress y)
+            {
+                if(x == null && y == null) return true;
+                if(x == null || y == null) return false;
+                return x.Equals(y);
+            }
+
+            public int GetHashCode(IPAddress obj)
+            {
+                if(obj == null) return 0;
+                return obj.GetHashCode();
+            }
+
+            #endregion
+        }
+
+        #region Implementation of IAsyncEnumerable<out TThing>
+
+        public async IAsyncEnumerator<TThing> GetAsyncEnumerator(CancellationToken cancellationToken = default)
         {
             var addresses = new HashSet<IPAddress>(new IPEndPointComparer());
 
@@ -86,43 +126,6 @@ namespace IoT.Protocol
             }
         }
 
-        /// <summary>
-        /// Factory method to create IoT device instance by parsing discovery response datagram bytes
-        /// </summary>
-        /// <param name="buffer">Buffer containing message</param>
-        /// <param name="size">Size of the valid data in the buffer</param>
-        /// <param name="remoteEp">Responder endpoint information</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>
-        /// Instance of type
-        /// <typeparam name="TThing" />
-        /// </returns>
-        protected abstract ValueTask<TThing> CreateInstanceAsync(byte[] buffer, int size, IPEndPoint remoteEp, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Returns datagram bytes to be send over the network for discovery
-        /// </summary>
-        /// <returns>Raw datagram bytes</returns>
-        protected abstract byte[] GetDiscoveryDatagram();
-
-        public class IPEndPointComparer : IEqualityComparer<IPAddress>
-        {
-            #region Implementation of IEqualityComparer<in IPEndPoint>
-
-            public bool Equals(IPAddress x, IPAddress y)
-            {
-                if(x == null && y == null) return true;
-                if(x == null || y == null) return false;
-                return x.Equals(y);
-            }
-
-            public int GetHashCode(IPAddress obj)
-            {
-                if(obj == null) return 0;
-                return obj.GetHashCode();
-            }
-
-            #endregion
-        }
+        #endregion
     }
 }
