@@ -20,18 +20,14 @@ namespace IoT.Protocol
         protected readonly IPEndPoint SendToEndpoint;
 
         protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint,
-            IPEndPoint receiveFromEndpoint, bool distinctAddress, TimeSpan pollInterval)
+            bool distinctAddress, TimeSpan pollInterval)
         {
-            SendToEndpoint = sendToEndpoint;
             createSocket = createSocketFactory;
-            ReceiveFromEndpoint = receiveFromEndpoint;
+            SendToEndpoint = sendToEndpoint;
+            ReceiveFromEndpoint = new IPEndPoint(IPAddress.Any, 0);
             this.distinctAddress = distinctAddress;
             this.pollInterval = pollInterval;
         }
-
-        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint,
-            bool distinctAddress, TimeSpan pollInterval) :
-            this(createSocketFactory, sendToEndpoint, Sockets.EndPoint.Any, distinctAddress, pollInterval) {}
 
         protected abstract int SendBufferSize { get; }
         protected abstract int ReceiveBufferSize { get; }
@@ -97,14 +93,25 @@ namespace IoT.Protocol
 
             var buffer = new byte[ReceiveBufferSize];
 
+            var ep = new IPEndPoint(SendToEndpoint.Address, 0);
+
             while(!cancellationToken.IsCancellationRequested)
             {
-                var (size, remoteEndPoint) = await socket.ReceiveFromAsync(buffer, ReceiveFromEndpoint, cancellationToken).ConfigureAwait(false);
+                TThing instance = default;
 
-                if(distinctAddress && !addresses.Add(remoteEndPoint.Address)) continue;
+                try
+                {
+                    var (size, remoteEndPoint) = await socket.ReceiveFromAsync(buffer, ep, cancellationToken).ConfigureAwait(false);
 
-                var vt = CreateInstanceAsync(buffer, size, remoteEndPoint, cancellationToken);
-                var instance = vt.IsCompletedSuccessfully ? vt.Result : await vt.AsTask().ConfigureAwait(false);
+                    if(distinctAddress && !addresses.Add(remoteEndPoint.Address)) continue;
+
+                    var vt = CreateInstanceAsync(buffer, size, remoteEndPoint, cancellationToken);
+                    instance = vt.IsCompletedSuccessfully ? vt.Result : await vt.AsTask().ConfigureAwait(false);
+                }
+                catch(OperationCanceledException)
+                {
+                    // ignored as expected
+                }
 
                 if(instance != null) yield return instance;
             }

@@ -23,6 +23,7 @@ namespace IoT.Protocol.Lumi
         private readonly IPEndPoint endpoint;
         private Socket socket;
         private CancellationTokenSource tokenSource;
+        private Task dispatchTask;
 
         public LumiControlEndpoint(IPEndPoint endpoint)
         {
@@ -135,22 +136,18 @@ namespace IoT.Protocol.Lumi
 
             var token = tokenSource.Token;
 
-            var _ = Task.Run(() => DispatchAsync(token), token);
+            dispatchTask = DispatchAsync(token);
         }
 
         protected override async Task OnDisconnectAsync()
         {
-            var source = tokenSource;
-
-            if(source != null)
-            {
-                source.Cancel();
-                source.Dispose();
-            }
-
+            using var source = tokenSource;
             tokenSource = null;
 
-            await socket.DisconnectAsync().ConfigureAwait(false);
+            source.Cancel();
+            await dispatchTask.ConfigureAwait(false);
+
+            socket.Shutdown(SocketShutdown.Both);
 
             socket.Close();
         }
