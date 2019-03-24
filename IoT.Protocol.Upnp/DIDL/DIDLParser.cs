@@ -17,17 +17,14 @@ namespace IoT.Protocol.Upnp.DIDL
             using(var tr = new StringReader(content))
             using(var r = XmlReader.Create(tr))
             {
-                if(r.MoveToContent() == Element && r.Name == "DIDL-Lite" && r.NamespaceURI == NS)
+                if(r.MoveToContent() != Element || r.Name != "DIDL-Lite" || r.NamespaceURI != NS) return objects;
+                while(r.Read())
                 {
-                    while(r.Read())
-                    {
-                        if(r.NodeType == Element)
-                        {
-                            var item = ReadItem(r);
+                    if(r.NodeType != Element) continue;
 
-                            if(item != null) objects.Add(item);
-                        }
-                    }
+                    var item = ReadItem(r);
+
+                    if(item != null) objects.Add(item);
                 }
             }
 
