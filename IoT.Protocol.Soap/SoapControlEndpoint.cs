@@ -85,7 +85,7 @@ namespace IoT.Protocol.Soap
 
         protected HttpClient CreateClient(Uri baseAddress)
         {
-            var handler = new SocketsHttpHandler
+            var handler = new HttpClientHandler
             {
                 AutomaticDecompression = GZip,
                 UseProxy = false,
