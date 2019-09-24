@@ -72,10 +72,9 @@ namespace IoT.Protocol.Lumi
             {
                 try
                 {
-                    var t = socket.ReceiveFromAsync(buffer, endpoint, cancellationToken);
-                    var size = t.IsCompletedSuccessfully ? t.Result.Size : (await t.ConfigureAwait(false)).Size;
+                    var result = await socket.ReceiveFromAsync(buffer, default, endpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
 
-                    var message = (JsonObject)JsonExtensions.Deserialize(buffer, 0, size);
+                    var message = (JsonObject)JsonExtensions.Deserialize(buffer, 0, result.ReceivedBytes);
 
                     observers.Notify(message);
                 }

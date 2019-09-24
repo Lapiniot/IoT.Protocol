@@ -51,31 +51,11 @@ namespace IoT.Protocol
         /// <returns>Raw datagram bytes</returns>
         protected abstract byte[] GetDiscoveryDatagram();
 
-        public class IPEndPointComparer : IEqualityComparer<IPAddress>
-        {
-            #region Implementation of IEqualityComparer<in IPEndPoint>
-
-            public bool Equals(IPAddress x, IPAddress y)
-            {
-                if(x == null && y == null) return true;
-                if(x == null || y == null) return false;
-                return x.Equals(y);
-            }
-
-            public int GetHashCode(IPAddress obj)
-            {
-                if(obj == null) return 0;
-                return obj.GetHashCode();
-            }
-
-            #endregion
-        }
-
         #region Implementation of IAsyncEnumerable<out TThing>
 
         public async IAsyncEnumerator<TThing> GetAsyncEnumerator(CancellationToken cancellationToken = default)
         {
-            var addresses = new HashSet<IPAddress>(new IPEndPointComparer());
+            var addresses = new HashSet<IPAddress>(EqualityComparer<IPAddress>.Default);
 
             using var socket = createSocket();
             socket.ReceiveBufferSize = ReceiveBufferSize;
@@ -101,11 +81,11 @@ namespace IoT.Protocol
 
                 try
                 {
-                    var (size, remoteEndPoint) = await socket.ReceiveFromAsync(buffer, ep, cancellationToken).ConfigureAwait(false);
+                    var result = await socket.ReceiveFromAsync(buffer, default, ep).WaitAsync(cancellationToken).ConfigureAwait(false);
 
-                    if(distinctAddress && !addresses.Add(remoteEndPoint.Address)) continue;
+                    if(distinctAddress && !addresses.Add(((IPEndPoint)result.RemoteEndPoint).Address)) continue;
 
-                    var vt = CreateInstanceAsync(buffer, size, remoteEndPoint, cancellationToken);
+                    var vt = CreateInstanceAsync(buffer, result.ReceivedBytes, (IPEndPoint)result.RemoteEndPoint, cancellationToken);
                     instance = vt.IsCompletedSuccessfully ? vt.Result : await vt.AsTask().ConfigureAwait(false);
                 }
                 catch(OperationCanceledException)
@@ -117,13 +97,13 @@ namespace IoT.Protocol
             }
         }
 
-        private async Task SendDiscoveryDatagramAsync(Socket socket, IPEndPoint endpoint, byte[] datagram, TimeSpan interval, CancellationToken cancellationToken)
+        private async Task SendDiscoveryDatagramAsync(Socket socket, EndPoint endpoint, byte[] datagram, TimeSpan interval, CancellationToken cancellationToken)
         {
             try
             {
                 while(!cancellationToken.IsCancellationRequested)
                 {
-                    await socket.SendToAsync(datagram, endpoint, cancellationToken).ConfigureAwait(false);
+                    await socket.SendToAsync(datagram, default, endpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
                     await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
                 }
             }

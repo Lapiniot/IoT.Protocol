@@ -17,7 +17,7 @@ namespace IoT.Protocol.Upnp
         private readonly string userAgent;
 
         public SsdpEnumerator(int port, string searchTarget, TimeSpan pollInterval) :
-            base(Sender, new IPEndPoint(new IPAddress(0xfaffffef /* 239.255.255.250 */), port), false, pollInterval)
+            base(DefaultSender, new IPEndPoint(new IPAddress(0xfaffffef /* 239.255.255.250 */), port), false, pollInterval)
         {
             if(string.IsNullOrEmpty(searchTarget)) throw new ArgumentException("Parameter couldn't be null or empty.", nameof(searchTarget));
 
@@ -44,21 +44,20 @@ namespace IoT.Protocol.Upnp
 
         protected override byte[] GetDiscoveryDatagram()
         {
-            using(var stream = new MemoryStream())
-            {
-                using(var writer = new StreamWriter(stream, ASCII, 2048, true) {NewLine = "\r\n"})
-                {
-                    writer.WriteLine("M-SEARCH * HTTP/1.1");
-                    writer.WriteLine("HOST: 239.255.255.250:{0}", port);
-                    writer.WriteLine("MAN: \"ssdp:discover\"");
-                    writer.WriteLine("MX: {0}", 2);
-                    writer.WriteLine("ST: {0}", searchTarget);
-                    writer.WriteLine(userAgent);
-                    writer.WriteLine();
-                }
+            using var stream = new MemoryStream();
 
-                return stream.ToArray();
+            using(var writer = new StreamWriter(stream, ASCII, 2048, true) {NewLine = "\r\n"})
+            {
+                writer.WriteLine("M-SEARCH * HTTP/1.1");
+                writer.WriteLine("HOST: 239.255.255.250:{0}", port);
+                writer.WriteLine("MAN: \"ssdp:discover\"");
+                writer.WriteLine("MX: {0}", 2);
+                writer.WriteLine("ST: {0}", searchTarget);
+                writer.WriteLine(userAgent);
+                writer.WriteLine();
             }
+
+            return stream.ToArray();
         }
     }
 }

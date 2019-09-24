@@ -142,7 +142,36 @@ namespace IoT.Protocol.Yeelight
         protected override async Task OnDisconnectAsync()
         {
             await base.OnDisconnectAsync().ConfigureAwait(false);
-            await socket.DisconnectAsync().ConfigureAwait(false);
+            
+            var tcs = new TaskCompletionSource<bool>();
+            
+            var args = new SocketAsyncEventArgs {UserToken = tcs};
+            
+            args.Completed += OnDisconnectAsyncCompleted;
+            
+            try
+            {
+                socket.DisconnectAsync(args);
+                await tcs.Task.ConfigureAwait(false);
+            }
+            finally
+            {
+                args.Completed -= OnDisconnectAsyncCompleted;
+            }
+        }
+
+        private void OnDisconnectAsyncCompleted(object sender, SocketAsyncEventArgs e)
+        {
+            var completionSource = (TaskCompletionSource<bool>)e.UserToken;
+
+            if(e.SocketError != SocketError.Success)
+            {
+                completionSource.SetException(new SocketException((int)e.SocketError));
+            }
+            else
+            {
+                completionSource.SetResult(true);
+            }
         }
 
         #endregion
