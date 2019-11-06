@@ -29,7 +29,7 @@ namespace IoT.Protocol.Lumi
 
         protected override Task OnConnectAsync(CancellationToken cancellationToken)
         {
-            socket = Sockets.Udp.Multicast.Listener(endpoint);
+            socket = SocketFactory.CreateUdpMulticastListener(endpoint);
 
             tokenSource = new CancellationTokenSource();
 
