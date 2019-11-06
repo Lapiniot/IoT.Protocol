@@ -13,7 +13,7 @@ using static System.Net.Sockets.SocketType;
 
 namespace IoT.Protocol.Lumi
 {
-    public sealed class LumiControlEndpoint : AsyncConnectedObject, IConnectedEndpoint<JsonObject, JsonObject>
+    public sealed class LumiControlEndpoint : ConnectedObject, IConnectedEndpoint<JsonObject, JsonObject>
     {
         private const int ReceiveBufferSize = 0x8000;
 
@@ -21,9 +21,9 @@ namespace IoT.Protocol.Lumi
             new ConcurrentDictionary<string, TaskCompletionSource<JsonObject>>();
 
         private readonly IPEndPoint endpoint;
+        private Task dispatchTask;
         private Socket socket;
         private CancellationTokenSource tokenSource;
-        private Task dispatchTask;
 
         public LumiControlEndpoint(IPEndPoint endpoint)
         {
@@ -60,7 +60,7 @@ namespace IoT.Protocol.Lumi
             }
         }
 
-        private bool TryParseResponse(byte[] buffer, int size, out string id, out JsonObject response)
+        private static bool TryParseResponse(byte[] buffer, int size, out string id, out JsonObject response)
         {
             var json = JsonExtensions.Deserialize(buffer, 0, size);
             if(json is JsonObject jObject && jObject.TryGetValue("cmd", out var cmd) && jObject.TryGetValue("sid", out var sid))
@@ -75,12 +75,12 @@ namespace IoT.Protocol.Lumi
             return false;
         }
 
-        private string GetCommandKey(string command, string sid)
+        private static string GetCommandKey(string command, string sid)
         {
             return $"{command}.{sid}";
         }
 
-        private string GetCmdName(string command)
+        private static string GetCmdName(string command)
         {
             return command.EndsWith("_ack") ? command.Substring(0, command.Length - 4) : command;
         }
@@ -92,13 +92,11 @@ namespace IoT.Protocol.Lumi
 
         private void OnDataAvailable(byte[] buffer, int size)
         {
-            if(TryParseResponse(buffer, size, out var id, out var response))
-            {
-                if(completions.TryRemove(id, out var completionSource))
-                {
-                    completionSource.TrySetResult(response);
-                }
-            }
+            if(!TryParseResponse(buffer, size, out var id, out var response)) return;
+
+            if(!completions.TryRemove(id, out var completionSource)) return;
+
+            completionSource.TrySetResult(response);
         }
 
         private async Task DispatchAsync(CancellationToken cancellationToken)
@@ -142,9 +140,11 @@ namespace IoT.Protocol.Lumi
         protected override async Task OnDisconnectAsync()
         {
             using var source = tokenSource;
+
             tokenSource = null;
 
             source.Cancel();
+
             await dispatchTask.ConfigureAwait(false);
 
             socket.Shutdown(SocketShutdown.Both);

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace IoT.Protocol.Lumi
 {
-    public class LumiEventListener : AsyncConnectedObject, IObservable<JsonObject>
+    public class LumiEventListener : ConnectedObject, IObservable<JsonObject>
     {
         private const int ReceiveBufferSize = 0x8000;
         private readonly IPEndPoint endpoint;
@@ -57,11 +57,12 @@ namespace IoT.Protocol.Lumi
             return Task.CompletedTask;
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
 
-            if(disposing) observers.Dispose();
+        public override ValueTask DisposeAsync()
+        {
+            using(observers) {}
+
+            return base.DisposeAsync();
         }
 
         private async Task DispatchAsync(CancellationToken cancellationToken)
