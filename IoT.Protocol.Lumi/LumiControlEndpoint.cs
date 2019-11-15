@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Json;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Interfaces;
@@ -13,12 +14,12 @@ using static System.Net.Sockets.SocketType;
 
 namespace IoT.Protocol.Lumi
 {
-    public sealed class LumiControlEndpoint : ConnectedObject, IConnectedEndpoint<JsonObject, JsonObject>
+    public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDictionary<string, object>, IDictionary<string, object>>
     {
         private const int ReceiveBufferSize = 0x8000;
 
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<JsonObject>> completions =
-            new ConcurrentDictionary<string, TaskCompletionSource<JsonObject>>();
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<IDictionary<string, object>>> completions =
+            new ConcurrentDictionary<string, TaskCompletionSource<IDictionary<string, object>>>();
 
         private readonly IPEndPoint endpoint;
         private Task dispatchTask;
@@ -32,11 +33,13 @@ namespace IoT.Protocol.Lumi
 
         private TimeSpan CommandTimeout { get; } = TimeSpan.FromSeconds(10);
 
-        public async Task<JsonObject> InvokeAsync(JsonObject message, CancellationToken cancellationToken)
-        {
-            var completionSource = new TaskCompletionSource<JsonObject>(cancellationToken);
+        #region Implementation of IControlEndpoint<in IDictionary<string,object>,IDictionary<string,object>>
 
-            var (id, datagram) = (GetCommandKey(message["cmd"], message["sid"]), message.Serialize());
+        public async Task<IDictionary<string, object>> InvokeAsync(IDictionary<string, object> message, CancellationToken cancellationToken)
+        {
+            var completionSource = new TaskCompletionSource<IDictionary<string, object>>(cancellationToken);
+
+            var (id, datagram) = (GetCommandKey((string)message["cmd"], (string)message["sid"]), JsonSerializer.SerializeToUtf8Bytes(message));
 
             try
             {
@@ -60,13 +63,15 @@ namespace IoT.Protocol.Lumi
             }
         }
 
-        private static bool TryParseResponse(byte[] buffer, int size, out string id, out JsonObject response)
+        #endregion
+
+        private static bool TryParseResponse(byte[] buffer, int size, out string id, out IDictionary<string, object> response)
         {
-            var json = JsonExtensions.Deserialize(buffer, 0, size);
-            if(json is JsonObject jObject && jObject.TryGetValue("cmd", out var cmd) && jObject.TryGetValue("sid", out var sid))
+            var json = JsonSerializer.Deserialize<IDictionary<string, object>>(buffer[..size]);
+            if(json.TryGetValue("cmd", out var cmd) && json.TryGetValue("sid", out var sid))
             {
-                id = GetCommandKey(GetCmdName(cmd), sid);
-                response = jObject;
+                id = GetCommandKey(GetCmdName((string)cmd), (string)sid);
+                response = json;
                 return true;
             }
 
@@ -85,9 +90,9 @@ namespace IoT.Protocol.Lumi
             return command.EndsWith("_ack") ? command.Substring(0, command.Length - 4) : command;
         }
 
-        public Task<JsonObject> InvokeAsync(string command, string sid, CancellationToken cancellationToken = default)
+        public Task<IDictionary<string, object>> InvokeAsync(string command, string sid, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync(new JsonObject {{"cmd", command}, {"sid", sid}}, cancellationToken);
+            return InvokeAsync(new Dictionary<string, object> {{"cmd", command}, {"sid", sid}}, cancellationToken);
         }
 
         private void OnDataAvailable(byte[] buffer, int size)
@@ -124,7 +129,9 @@ namespace IoT.Protocol.Lumi
             }
         }
 
-        protected override async Task OnConnectAsync(CancellationToken cancellationToken)
+        #region Overrides of ActivityObject
+
+        protected override async Task StartingAsync(CancellationToken cancellationToken)
         {
             socket = new Socket(endpoint.AddressFamily, Dgram, Udp);
 
@@ -137,7 +144,7 @@ namespace IoT.Protocol.Lumi
             dispatchTask = DispatchAsync(token);
         }
 
-        protected override async Task OnDisconnectAsync()
+        protected override async Task StoppingAsync()
         {
             using var source = tokenSource;
 
@@ -151,5 +158,23 @@ namespace IoT.Protocol.Lumi
 
             socket.Close();
         }
+
+        #endregion
+
+        #region Implementation of IConnectedObject
+
+        public bool IsConnected => IsRunning;
+
+        public Task ConnectAsync(CancellationToken cancellationToken = default)
+        {
+            return StartActivityAsync(cancellationToken);
+        }
+
+        public Task DisconnectAsync()
+        {
+            return StopActivityAsync();
+        }
+
+        #endregion
     }
 }

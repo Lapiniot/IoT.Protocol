@@ -1,33 +1,76 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Json;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace IoT.Protocol.Lumi
 {
-    public class LumiEventListener : ConnectedObject, IObservable<JsonObject>
+    public class LumiEventListener : ActivityObject, IObservable<IDictionary<string, object>>
     {
         private const int ReceiveBufferSize = 0x8000;
         private readonly IPEndPoint endpoint;
-        private readonly ObserversContainer<JsonObject> observers;
+        private readonly ObserversContainer<IDictionary<string, object>> observers;
         private Socket socket;
         private CancellationTokenSource tokenSource;
 
         public LumiEventListener(IPEndPoint groupEndpoint)
         {
             endpoint = groupEndpoint;
-            observers = new ObserversContainer<JsonObject>();
+            observers = new ObserversContainer<IDictionary<string, object>>();
         }
 
-        public IDisposable Subscribe(IObserver<JsonObject> observer)
+        #region Implementation of IObservable<out IDictionary<string,object>>
+
+        public IDisposable Subscribe(IObserver<IDictionary<string, object>> observer)
         {
             return observers.Subscribe(observer);
         }
 
-        protected override Task OnConnectAsync(CancellationToken cancellationToken)
+        #endregion
+
+        #region Overrides of ActivityObject
+
+        public override ValueTask DisposeAsync()
+        {
+            using(observers) {}
+
+            return base.DisposeAsync();
+        }
+
+        #endregion
+
+        private async Task DispatchAsync(CancellationToken cancellationToken)
+        {
+            var buffer = new byte[ReceiveBufferSize];
+
+            while(!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    var result = await socket.ReceiveFromAsync(buffer, default, endpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                    var message = JsonSerializer.Deserialize<IDictionary<string, object>>(buffer[..result.ReceivedBytes]);
+
+                    observers.Notify(message);
+                }
+                catch(OperationCanceledException)
+                {
+                    Trace.TraceInformation("Cancelling message dispatching loop...");
+                }
+                catch(Exception e)
+                {
+                    Trace.TraceError($"Error in message dispatch: {e.Message}");
+                }
+            }
+        }
+
+        #region Overrides of ActivityObject
+
+        protected override Task StartingAsync(CancellationToken cancellationToken)
         {
             socket = SocketFactory.CreateUdpMulticastListener(endpoint);
 
@@ -40,7 +83,7 @@ namespace IoT.Protocol.Lumi
             return Task.CompletedTask;
         }
 
-        protected override Task OnDisconnectAsync()
+        protected override Task StoppingAsync()
         {
             var source = tokenSource;
 
@@ -57,37 +100,6 @@ namespace IoT.Protocol.Lumi
             return Task.CompletedTask;
         }
 
-
-        public override ValueTask DisposeAsync()
-        {
-            using(observers) {}
-
-            return base.DisposeAsync();
-        }
-
-        private async Task DispatchAsync(CancellationToken cancellationToken)
-        {
-            var buffer = new byte[ReceiveBufferSize];
-
-            while(!cancellationToken.IsCancellationRequested)
-            {
-                try
-                {
-                    var result = await socket.ReceiveFromAsync(buffer, default, endpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
-
-                    var message = (JsonObject)JsonExtensions.Deserialize(buffer, 0, result.ReceivedBytes);
-
-                    observers.Notify(message);
-                }
-                catch(OperationCanceledException)
-                {
-                    Trace.TraceInformation("Cancelling message dispatching loop...");
-                }
-                catch(Exception e)
-                {
-                    Trace.TraceError($"Error in message dispatch: {e.Message}");
-                }
-            }
-        }
+        #endregion
     }
 }

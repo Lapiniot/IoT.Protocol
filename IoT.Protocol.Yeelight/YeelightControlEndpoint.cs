@@ -1,30 +1,29 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Json;
 using System.Memory;
 using System.Net;
 using System.Net.Pipes;
 using System.Net.Sockets;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Interfaces;
-using static System.Json.JsonType;
-using static System.Net.Sockets.ProtocolType;
 using static System.Net.Sockets.SocketFlags;
 using static System.TimeSpan;
 
 namespace IoT.Protocol.Yeelight
 {
     public class YeelightControlEndpoint : PipeProducerConsumer,
-        IObservable<JsonObject>, IConnectedEndpoint<JsonObject, JsonValue>
+        IObservable<IDictionary<string, object>>, IConnectedEndpoint<IDictionary<string, object>, IDictionary<string, object>>
     {
-        private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonValue>> completions =
-            new ConcurrentDictionary<long, TaskCompletionSource<JsonValue>>();
+        private readonly ConcurrentDictionary<long, TaskCompletionSource<IDictionary<string, object>>> completions =
+            new ConcurrentDictionary<long, TaskCompletionSource<IDictionary<string, object>>>();
 
-        private readonly ObserversContainer<JsonObject> observers;
+        private readonly ObserversContainer<IDictionary<string, object>> observers;
         private long counter;
         private Socket socket;
 
@@ -32,7 +31,7 @@ namespace IoT.Protocol.Yeelight
         {
             Endpoint = endpoint;
             DeviceId = deviceId;
-            observers = new ObserversContainer<JsonObject>();
+            observers = new ObserversContainer<IDictionary<string, object>>();
         }
 
         public uint DeviceId { get; }
@@ -41,11 +40,11 @@ namespace IoT.Protocol.Yeelight
 
         public IPEndPoint Endpoint { get; }
 
-        #region Implementation of IControlEndpoint<in JsonObject,JsonValue>
+        #region Implementation of IControlEndpoint<in IDictionary<string,object>,IDictionary<string,object>>
 
-        public async Task<JsonValue> InvokeAsync(JsonObject message, CancellationToken cancellationToken)
+        public async Task<IDictionary<string, object>> InvokeAsync(IDictionary<string, object> message, CancellationToken cancellationToken)
         {
-            var completionSource = new TaskCompletionSource<JsonValue>(cancellationToken);
+            var completionSource = new TaskCompletionSource<IDictionary<string, object>>(cancellationToken);
 
             var id = Interlocked.Increment(ref counter);
 
@@ -54,13 +53,18 @@ namespace IoT.Protocol.Yeelight
             ReadOnlyMemory<byte> datagram;
 
             //TODO: use buffer pooling to avoid memory allocations here
-            using(var ms = new MemoryStream())
+            await using(var ms = new MemoryStream())
             {
-                message.SerializeTo(ms);
+                await using(var writer = new Utf8JsonWriter(ms))
+                {
+                    JsonSerializer.Serialize(writer, message);
+                }
+
                 ms.WriteByte(SequenceExtensions.CR);
                 ms.WriteByte(SequenceExtensions.LF);
                 datagram = ms.ToArray();
             }
+
 
             try
             {
@@ -69,7 +73,7 @@ namespace IoT.Protocol.Yeelight
                 var vt = socket.SendAsync(datagram, None, cancellationToken);
                 if(!vt.IsCompletedSuccessfully) await vt.AsTask().ConfigureAwait(false);
 
-                using(var timeoutSource = new CancellationTokenSource(CommandTimeout))
+                using var timeoutSource = new CancellationTokenSource(CommandTimeout);
                 using(completionSource.Bind(cancellationToken, timeoutSource.Token))
                 {
                     return await completionSource.Task.ConfigureAwait(false);
@@ -83,14 +87,28 @@ namespace IoT.Protocol.Yeelight
 
         #endregion
 
-        #region Implementation of IObservable<out JsonObject>
+        #region Implementation of IObservable<out IDictionary<string,object>>
 
-        public IDisposable Subscribe(IObserver<JsonObject> observer)
+        public IDisposable Subscribe(IObserver<IDictionary<string, object>> observer)
         {
             return observers.Subscribe(observer);
         }
 
         #endregion
+
+        private void OnDisconnectAsyncCompleted(object sender, SocketAsyncEventArgs e)
+        {
+            var completionSource = (TaskCompletionSource<bool>)e.UserToken;
+
+            if(e.SocketError != SocketError.Success)
+            {
+                completionSource.SetException(new SocketException((int)e.SocketError));
+            }
+            else
+            {
+                completionSource.SetResult(true);
+            }
+        }
 
         #region Overrides of PipeProducerConsumer
 
@@ -107,21 +125,19 @@ namespace IoT.Protocol.Yeelight
 
             try
             {
-                var message = JsonExtensions.Deserialize(line);
+                var message = JsonSerializer.Deserialize<IDictionary<string, object>>(line.Span);
 
-                if(!(message is JsonObject json)) return consumed;
-
-                if(json.TryGetValue("id", out var id) && id.JsonType == Number)
+                if(message.TryGetValue("id", out var id))
                 {
-                    if(completions.TryRemove(id, out var completion))
+                    if(completions.TryRemove((long)id, out var completion))
                     {
-                        completion.TrySetResult(json);
+                        completion.TrySetResult(message);
                     }
                 }
-                else if(json.TryGetValue("method", out var m) && m == "props" &&
-                        json.TryGetValue("params", out var p) && p is JsonObject props)
+                else if(message.TryGetValue("method", out var m) && (string)m == "props" &&
+                        message.TryGetValue("params", out var p))
                 {
-                    observers.Notify(props);
+                    observers.Notify((IDictionary<string, object>)p);
                 }
             }
             catch(Exception e)
@@ -132,23 +148,23 @@ namespace IoT.Protocol.Yeelight
             return consumed;
         }
 
-        protected override async Task OnConnectAsync(CancellationToken cancellationToken)
+        protected override async Task StartingAsync(CancellationToken cancellationToken)
         {
-            socket = new Socket(Endpoint.AddressFamily, SocketType.Stream, Tcp);
+            socket = new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             await socket.ConnectAsync(Endpoint).ConfigureAwait(false);
-            await base.OnConnectAsync(cancellationToken).ConfigureAwait(false);
+            await base.StartingAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        protected override async Task OnDisconnectAsync()
+        protected override async Task StoppingAsync()
         {
-            await base.OnDisconnectAsync().ConfigureAwait(false);
-            
+            await base.StoppingAsync().ConfigureAwait(false);
+
             var tcs = new TaskCompletionSource<bool>();
-            
+
             var args = new SocketAsyncEventArgs {UserToken = tcs};
-            
+
             args.Completed += OnDisconnectAsyncCompleted;
-            
+
             try
             {
                 socket.DisconnectAsync(args);
@@ -160,18 +176,20 @@ namespace IoT.Protocol.Yeelight
             }
         }
 
-        private void OnDisconnectAsyncCompleted(object sender, SocketAsyncEventArgs e)
-        {
-            var completionSource = (TaskCompletionSource<bool>)e.UserToken;
+        #endregion
 
-            if(e.SocketError != SocketError.Success)
-            {
-                completionSource.SetException(new SocketException((int)e.SocketError));
-            }
-            else
-            {
-                completionSource.SetResult(true);
-            }
+        #region Implementation of IConnectedObject
+
+        public bool IsConnected => IsRunning;
+
+        public Task ConnectAsync(CancellationToken cancellationToken = default)
+        {
+            return StartActivityAsync(cancellationToken);
+        }
+
+        public Task DisconnectAsync()
+        {
+            return StopActivityAsync();
         }
 
         #endregion

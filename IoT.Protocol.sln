@@ -13,8 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Protocol.Lumi", "IoT.Pr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Protocol.Yeelight", "IoT.Protocol.Yeelight\IoT.Protocol.Yeelight.csproj", "{57229E36-B94F-4D43-816F-A9AB5FE5112B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System.Common", "System.Common", "{E6499073-A61A-494F-B9FD-D3517110876B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Common", "System.Common\System.Common\System.Common.csproj", "{72EE97FB-62DB-4280-921C-9C705FF6B5B4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Common.Net", "System.Common\System.Common.Net\System.Common.Net.csproj", "{F8FD4528-38D9-429D-BB88-82D4A9B08747}"
@@ -109,10 +107,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{72EE97FB-62DB-4280-921C-9C705FF6B5B4} = {E6499073-A61A-494F-B9FD-D3517110876B}
-		{F8FD4528-38D9-429D-BB88-82D4A9B08747} = {E6499073-A61A-494F-B9FD-D3517110876B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ACF16060-DC0D-476E-A344-8DCAB485EE3F}

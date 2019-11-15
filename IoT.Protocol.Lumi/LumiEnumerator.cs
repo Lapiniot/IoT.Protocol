@@ -1,7 +1,8 @@
-﻿using System.IO;
-using System.Json;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using static System.TimeSpan;
@@ -30,11 +31,11 @@ namespace IoT.Protocol.Lumi
         protected override ValueTask<(IPAddress Address, ushort Port, string Sid)> CreateInstanceAsync(byte[] buffer, int size, IPEndPoint remoteEp,
             CancellationToken cancellationToken)
         {
-            var j = JsonExtensions.Deserialize(buffer, 0, size);
+            var j = JsonSerializer.Deserialize<IDictionary<string, object>>(buffer[..size]);
 
-            if(j["cmd"] == "iam")
+            if((string)j["cmd"] == "iam")
             {
-                return new ValueTask<(IPAddress Address, ushort Port, string Sid)>((IPAddress.Parse(j["ip"]), ushort.Parse(j["port"]), j["sid"]));
+                return new ValueTask<(IPAddress Address, ushort Port, string Sid)>((IPAddress.Parse((string)j["ip"]), ushort.Parse((string)j["port"]), (string)j["sid"]));
             }
 
             throw new InvalidDataException("Invalid discovery response message");
