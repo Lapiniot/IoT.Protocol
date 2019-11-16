@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -9,23 +8,23 @@ using System.Threading.Tasks;
 
 namespace IoT.Protocol.Lumi
 {
-    public class LumiEventListener : ActivityObject, IObservable<IDictionary<string, object>>
+    public class LumiEventListener : ActivityObject, IObservable<JsonElement>
     {
         private const int ReceiveBufferSize = 0x8000;
         private readonly IPEndPoint endpoint;
-        private readonly ObserversContainer<IDictionary<string, object>> observers;
+        private readonly ObserversContainer<JsonElement> observers;
         private Socket socket;
         private CancellationTokenSource tokenSource;
 
         public LumiEventListener(IPEndPoint groupEndpoint)
         {
             endpoint = groupEndpoint;
-            observers = new ObserversContainer<IDictionary<string, object>>();
+            observers = new ObserversContainer<JsonElement>();
         }
 
-        #region Implementation of IObservable<out IDictionary<string,object>>
+        #region Implementation of IObservable<out JsonElement>
 
-        public IDisposable Subscribe(IObserver<IDictionary<string, object>> observer)
+        public IDisposable Subscribe(IObserver<JsonElement> observer)
         {
             return observers.Subscribe(observer);
         }
@@ -53,7 +52,7 @@ namespace IoT.Protocol.Lumi
                 {
                     var result = await socket.ReceiveFromAsync(buffer, default, endpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
 
-                    var message = JsonSerializer.Deserialize<IDictionary<string, object>>(buffer[..result.ReceivedBytes]);
+                    var message = JsonSerializer.Deserialize<JsonElement>(buffer[..result.ReceivedBytes]);
 
                     observers.Notify(message);
                 }
@@ -66,6 +65,16 @@ namespace IoT.Protocol.Lumi
                     Trace.TraceError($"Error in message dispatch: {e.Message}");
                 }
             }
+        }
+
+        public Task ConnectAsync(in CancellationToken cancellationToken)
+        {
+            return StartActivityAsync(cancellationToken);
+        }
+
+        public Task DisconnectAsync()
+        {
+            return StopActivityAsync();
         }
 
         #region Overrides of ActivityObject

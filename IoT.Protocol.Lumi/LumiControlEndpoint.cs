@@ -14,12 +14,12 @@ using static System.Net.Sockets.SocketType;
 
 namespace IoT.Protocol.Lumi
 {
-    public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDictionary<string, object>, IDictionary<string, object>>
+    public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDictionary<string, object>, JsonElement>
     {
         private const int ReceiveBufferSize = 0x8000;
 
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<IDictionary<string, object>>> completions =
-            new ConcurrentDictionary<string, TaskCompletionSource<IDictionary<string, object>>>();
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<JsonElement>> completions =
+            new ConcurrentDictionary<string, TaskCompletionSource<JsonElement>>();
 
         private readonly IPEndPoint endpoint;
         private Task dispatchTask;
@@ -33,11 +33,11 @@ namespace IoT.Protocol.Lumi
 
         private TimeSpan CommandTimeout { get; } = TimeSpan.FromSeconds(10);
 
-        #region Implementation of IControlEndpoint<in IDictionary<string,object>,IDictionary<string,object>>
+        #region Implementation of IControlEndpoint<in IDictionary<string,object>, JsonElement>
 
-        public async Task<IDictionary<string, object>> InvokeAsync(IDictionary<string, object> message, CancellationToken cancellationToken)
+        public async Task<JsonElement> InvokeAsync(IDictionary<string, object> message, CancellationToken cancellationToken)
         {
-            var completionSource = new TaskCompletionSource<IDictionary<string, object>>(cancellationToken);
+            var completionSource = new TaskCompletionSource<JsonElement>(cancellationToken);
 
             var (id, datagram) = (GetCommandKey((string)message["cmd"], (string)message["sid"]), JsonSerializer.SerializeToUtf8Bytes(message));
 
@@ -51,11 +51,14 @@ namespace IoT.Protocol.Lumi
                     await vt.AsTask().ConfigureAwait(false);
                 }
 
-                using(var timeoutSource = new CancellationTokenSource(CommandTimeout))
-                using(completionSource.Bind(cancellationToken, timeoutSource.Token))
-                {
-                    return await completionSource.Task.ConfigureAwait(false);
-                }
+                using var timeoutSource = new CancellationTokenSource(CommandTimeout);
+
+                return await completionSource.Task.WaitAsync(timeoutSource.Token).ConfigureAwait(false);
+            }
+            catch(OperationCanceledException)
+            {
+                completionSource.TrySetCanceled();
+                throw;
             }
             finally
             {
@@ -65,18 +68,18 @@ namespace IoT.Protocol.Lumi
 
         #endregion
 
-        private static bool TryParseResponse(byte[] buffer, int size, out string id, out IDictionary<string, object> response)
+        private static bool TryParseResponse(byte[] buffer, int size, out string id, out JsonElement response)
         {
-            var json = JsonSerializer.Deserialize<IDictionary<string, object>>(buffer[..size]);
-            if(json.TryGetValue("cmd", out var cmd) && json.TryGetValue("sid", out var sid))
+            var json = JsonSerializer.Deserialize<JsonElement>(buffer[..size]);
+            if(json.TryGetProperty("cmd", out var cmd) && json.TryGetProperty("sid", out var sid))
             {
-                id = GetCommandKey(GetCmdName((string)cmd), (string)sid);
+                id = GetCommandKey(GetCmdName(cmd.GetString()), sid.GetString());
                 response = json;
                 return true;
             }
 
             id = null;
-            response = null;
+            response = default;
             return false;
         }
 
@@ -90,7 +93,7 @@ namespace IoT.Protocol.Lumi
             return command.EndsWith("_ack") ? command.Substring(0, command.Length - 4) : command;
         }
 
-        public Task<IDictionary<string, object>> InvokeAsync(string command, string sid, CancellationToken cancellationToken = default)
+        public Task<JsonElement> InvokeAsync(string command, string sid, CancellationToken cancellationToken = default)
         {
             return InvokeAsync(new Dictionary<string, object> {{"cmd", command}, {"sid", sid}}, cancellationToken);
         }

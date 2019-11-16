@@ -18,12 +18,12 @@ using static System.TimeSpan;
 namespace IoT.Protocol.Yeelight
 {
     public class YeelightControlEndpoint : PipeProducerConsumer,
-        IObservable<IDictionary<string, object>>, IConnectedEndpoint<IDictionary<string, object>, IDictionary<string, object>>
+        IObservable<JsonElement>, IConnectedEndpoint<IDictionary<string, object>, JsonElement>
     {
-        private readonly ConcurrentDictionary<long, TaskCompletionSource<IDictionary<string, object>>> completions =
-            new ConcurrentDictionary<long, TaskCompletionSource<IDictionary<string, object>>>();
+        private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> completions =
+            new ConcurrentDictionary<long, TaskCompletionSource<JsonElement>>();
 
-        private readonly ObserversContainer<IDictionary<string, object>> observers;
+        private readonly ObserversContainer<JsonElement> observers;
         private long counter;
         private Socket socket;
 
@@ -31,7 +31,7 @@ namespace IoT.Protocol.Yeelight
         {
             Endpoint = endpoint;
             DeviceId = deviceId;
-            observers = new ObserversContainer<IDictionary<string, object>>();
+            observers = new ObserversContainer<JsonElement>();
         }
 
         public uint DeviceId { get; }
@@ -42,9 +42,9 @@ namespace IoT.Protocol.Yeelight
 
         #region Implementation of IControlEndpoint<in IDictionary<string,object>,IDictionary<string,object>>
 
-        public async Task<IDictionary<string, object>> InvokeAsync(IDictionary<string, object> message, CancellationToken cancellationToken)
+        public async Task<JsonElement> InvokeAsync(IDictionary<string, object> message, CancellationToken cancellationToken)
         {
-            var completionSource = new TaskCompletionSource<IDictionary<string, object>>(cancellationToken);
+            var completionSource = new TaskCompletionSource<JsonElement>(cancellationToken);
 
             var id = Interlocked.Increment(ref counter);
 
@@ -74,10 +74,13 @@ namespace IoT.Protocol.Yeelight
                 if(!vt.IsCompletedSuccessfully) await vt.AsTask().ConfigureAwait(false);
 
                 using var timeoutSource = new CancellationTokenSource(CommandTimeout);
-                using(completionSource.Bind(cancellationToken, timeoutSource.Token))
-                {
-                    return await completionSource.Task.ConfigureAwait(false);
-                }
+
+                return await completionSource.Task.WaitAsync(timeoutSource.Token).ConfigureAwait(false);
+            }
+            catch(OperationCanceledException)
+            {
+                completionSource.TrySetCanceled();
+                throw;
             }
             finally
             {
@@ -89,7 +92,7 @@ namespace IoT.Protocol.Yeelight
 
         #region Implementation of IObservable<out IDictionary<string,object>>
 
-        public IDisposable Subscribe(IObserver<IDictionary<string, object>> observer)
+        public IDisposable Subscribe(IObserver<JsonElement> observer)
         {
             return observers.Subscribe(observer);
         }
@@ -125,19 +128,19 @@ namespace IoT.Protocol.Yeelight
 
             try
             {
-                var message = JsonSerializer.Deserialize<IDictionary<string, object>>(line.Span);
+                var message = JsonSerializer.Deserialize<JsonElement>(line.Span);
 
-                if(message.TryGetValue("id", out var id))
+                if(message.TryGetProperty("id", out var id))
                 {
-                    if(completions.TryRemove((long)id, out var completion))
+                    if(completions.TryRemove(id.GetInt64(), out var completion))
                     {
                         completion.TrySetResult(message);
                     }
                 }
-                else if(message.TryGetValue("method", out var m) && (string)m == "props" &&
-                        message.TryGetValue("params", out var p))
+                else if(message.TryGetProperty("method", out var m) && m.GetString() == "props" &&
+                        message.TryGetProperty("params", out var p))
                 {
-                    observers.Notify((IDictionary<string, object>)p);
+                    observers.Notify(p);
                 }
             }
             catch(Exception e)
