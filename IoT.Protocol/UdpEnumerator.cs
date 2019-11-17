@@ -86,7 +86,7 @@ namespace IoT.Protocol
                     if(distinctAddress && !addresses.Add(((IPEndPoint)result.RemoteEndPoint).Address)) continue;
 
                     var vt = CreateInstanceAsync(buffer, result.ReceivedBytes, (IPEndPoint)result.RemoteEndPoint, cancellationToken);
-                    instance = vt.IsCompletedSuccessfully ? vt.Result : await vt.AsTask().ConfigureAwait(false);
+                    instance = vt.IsCompletedSuccessfully ? vt.Result : await vt.ConfigureAwait(false);
                 }
                 catch(OperationCanceledException)
                 {

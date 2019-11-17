@@ -71,7 +71,7 @@ namespace IoT.Protocol.Yeelight
                 completions.TryAdd(id, completionSource);
 
                 var vt = socket.SendAsync(datagram, None, cancellationToken);
-                if(!vt.IsCompletedSuccessfully) await vt.AsTask().ConfigureAwait(false);
+                if(!vt.IsCompletedSuccessfully) await vt.ConfigureAwait(false);
 
                 using var timeoutSource = new CancellationTokenSource(CommandTimeout);
 

@@ -48,7 +48,7 @@ namespace IoT.Protocol.Lumi
                 var vt = socket.SendAsync(datagram, None, cancellationToken);
                 if(!vt.IsCompletedSuccessfully)
                 {
-                    await vt.AsTask().ConfigureAwait(false);
+                    await vt.ConfigureAwait(false);
                 }
 
                 using var timeoutSource = new CancellationTokenSource(CommandTimeout);
@@ -117,7 +117,7 @@ namespace IoT.Protocol.Lumi
                 {
                     var vt = socket.ReceiveAsync(buffer, None, cancellationToken);
 
-                    var size = vt.IsCompletedSuccessfully ? vt.Result : await vt.AsTask().ConfigureAwait(false);
+                    var size = vt.IsCompletedSuccessfully ? vt.Result : await vt.ConfigureAwait(false);
 
                     OnDataAvailable(buffer, size);
                 }
