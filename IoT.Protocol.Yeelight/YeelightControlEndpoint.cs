@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Memory;
 using System.Net;
 using System.Net.Pipes;
@@ -12,13 +10,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Interfaces;
+using static System.Buffers.ArrayPool<byte>;
 using static System.Net.Sockets.SocketFlags;
 using static System.TimeSpan;
 
 namespace IoT.Protocol.Yeelight
 {
     public class YeelightControlEndpoint : PipeProducerConsumer,
-        IObservable<JsonElement>, IConnectedEndpoint<IDictionary<string, object>, JsonElement>
+        IObservable<JsonElement>, IConnectedEndpoint<RequestMessage, JsonElement>
     {
         private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> completions =
             new ConcurrentDictionary<long, TaskCompletionSource<JsonElement>>();
@@ -42,36 +41,30 @@ namespace IoT.Protocol.Yeelight
 
         #region Implementation of IControlEndpoint<in IDictionary<string,object>,IDictionary<string,object>>
 
-        public async Task<JsonElement> InvokeAsync(IDictionary<string, object> message, CancellationToken cancellationToken)
+        public async Task<JsonElement> InvokeAsync(RequestMessage message, CancellationToken cancellationToken)
         {
             var completionSource = new TaskCompletionSource<JsonElement>(cancellationToken);
 
             var id = Interlocked.Increment(ref counter);
 
-            message["id"] = id;
-
-            ReadOnlyMemory<byte> datagram;
-
-            //TODO: use buffer pooling to avoid memory allocations here
-            await using(var ms = new MemoryStream())
-            {
-                await using(var writer = new Utf8JsonWriter(ms))
-                {
-                    JsonSerializer.Serialize(writer, message);
-                }
-
-                ms.WriteByte(SequenceExtensions.CR);
-                ms.WriteByte(SequenceExtensions.LF);
-                datagram = ms.ToArray();
-            }
-
-
             try
             {
                 completions.TryAdd(id, completionSource);
 
-                var vt = socket.SendAsync(datagram, None, cancellationToken);
-                if(!vt.IsCompletedSuccessfully) await vt.ConfigureAwait(false);
+                var buffer = Shared.Rent(2048);
+
+                try
+                {
+                    var emitted = (int)message.SerializeTo(buffer, id);
+                    buffer[emitted] = SequenceExtensions.CR;
+                    buffer[emitted + 1] = SequenceExtensions.LF;
+                    var vt = socket.SendAsync(buffer.AsMemory(0, emitted + 2), None, cancellationToken);
+                    if(!vt.IsCompletedSuccessfully) await vt.ConfigureAwait(false);
+                }
+                finally
+                {
+                    Shared.Return(buffer);
+                }
 
                 using var timeoutSource = new CancellationTokenSource(CommandTimeout);
 
