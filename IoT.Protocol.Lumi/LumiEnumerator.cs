@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -30,7 +31,7 @@ namespace IoT.Protocol.Lumi
         protected override ValueTask<(IPAddress Address, ushort Port, string Sid)> CreateInstanceAsync(byte[] buffer, int size, IPEndPoint remoteEp,
             CancellationToken cancellationToken)
         {
-            var json = JsonSerializer.Deserialize<JsonElement>(buffer[..size]);
+            var json = JsonSerializer.Deserialize<JsonElement>(buffer.AsSpan(0, size));
 
             if(json.TryGetProperty("cmd", out var cmd) && cmd.GetString() == "iam")
             {

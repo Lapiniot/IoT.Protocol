@@ -10,7 +10,7 @@ namespace IoT.Protocol.Lumi
 {
     public class LumiEventListener : ActivityObject, IObservable<JsonElement>
     {
-        private const int ReceiveBufferSize = 0x8000;
+        private const int MaxReceiveBufferSize = 2048;
         private readonly IPEndPoint endpoint;
         private readonly ObserversContainer<JsonElement> observers;
         private Socket socket;
@@ -44,7 +44,7 @@ namespace IoT.Protocol.Lumi
 
         private async Task DispatchAsync(CancellationToken cancellationToken)
         {
-            var buffer = new byte[ReceiveBufferSize];
+            var buffer = new byte[MaxReceiveBufferSize];
 
             while(!cancellationToken.IsCancellationRequested)
             {
@@ -52,7 +52,7 @@ namespace IoT.Protocol.Lumi
                 {
                     var result = await socket.ReceiveFromAsync(buffer, default, endpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
 
-                    var message = JsonSerializer.Deserialize<JsonElement>(buffer[..result.ReceivedBytes]);
+                    var message = JsonSerializer.Deserialize<JsonElement>(buffer.AsSpan(0, result.ReceivedBytes));
 
                     observers.Notify(message);
                 }

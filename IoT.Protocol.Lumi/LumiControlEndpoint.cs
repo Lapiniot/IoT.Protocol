@@ -16,7 +16,7 @@ namespace IoT.Protocol.Lumi
 {
     public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDictionary<string, object>, JsonElement>
     {
-        private const int ReceiveBufferSize = 0x8000;
+        private const int MaxReceiveBufferSize = 2048;
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<JsonElement>> completions =
             new ConcurrentDictionary<string, TaskCompletionSource<JsonElement>>();
@@ -68,9 +68,10 @@ namespace IoT.Protocol.Lumi
 
         #endregion
 
-        private static bool TryParseResponse(byte[] buffer, int size, out string id, out JsonElement response)
+        private static bool TryParseResponse(Span<byte> span, out string id, out JsonElement response)
         {
-            var json = JsonSerializer.Deserialize<JsonElement>(buffer[..size]);
+            var json = JsonSerializer.Deserialize<JsonElement>(span);
+
             if(json.TryGetProperty("cmd", out var cmd) && json.TryGetProperty("sid", out var sid))
             {
                 id = GetCommandKey(GetCmdName(cmd.GetString()), sid.GetString());
@@ -98,9 +99,9 @@ namespace IoT.Protocol.Lumi
             return InvokeAsync(new Dictionary<string, object> {{"cmd", command}, {"sid", sid}}, cancellationToken);
         }
 
-        private void OnDataAvailable(byte[] buffer, int size)
+        private void OnDataAvailable(Span<byte> span)
         {
-            if(!TryParseResponse(buffer, size, out var id, out var response)) return;
+            if(!TryParseResponse(span, out var id, out var response)) return;
 
             if(!completions.TryRemove(id, out var completionSource)) return;
 
@@ -109,7 +110,7 @@ namespace IoT.Protocol.Lumi
 
         private async Task DispatchAsync(CancellationToken cancellationToken)
         {
-            var buffer = new byte[ReceiveBufferSize];
+            var buffer = new byte[MaxReceiveBufferSize];
 
             while(!cancellationToken.IsCancellationRequested)
             {
@@ -119,7 +120,7 @@ namespace IoT.Protocol.Lumi
 
                     var size = vt.IsCompletedSuccessfully ? vt.Result : await vt.ConfigureAwait(false);
 
-                    OnDataAvailable(buffer, size);
+                    OnDataAvailable(buffer.AsSpan(0, size));
                 }
                 catch(OperationCanceledException)
                 {
