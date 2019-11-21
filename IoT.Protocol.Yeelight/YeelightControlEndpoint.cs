@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Memory;
 using System.Net;
-using System.Net.Pipes;
+using System.Net.Pipelines;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading;
