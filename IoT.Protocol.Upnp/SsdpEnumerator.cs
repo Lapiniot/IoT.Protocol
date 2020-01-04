@@ -17,7 +17,7 @@ namespace IoT.Protocol.Upnp
         private readonly string userAgent;
 
         public SsdpEnumerator(int port, string searchTarget, TimeSpan pollInterval) :
-            base(SocketFactory.CreateUdpMulticastSender, new IPEndPoint(new IPAddress(0xfaffffef /* 239.255.255.250 */), port), false, pollInterval)
+            base(SocketFactory.CreateUdpIPv4MulticastSender, new IPEndPoint(new IPAddress(0xfaffffef /* 239.255.255.250 */), port), false, pollInterval)
         {
             if(string.IsNullOrEmpty(searchTarget)) throw new ArgumentException("Parameter couldn't be null or empty.", nameof(searchTarget));
 

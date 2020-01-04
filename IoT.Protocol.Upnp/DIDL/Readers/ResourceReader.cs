@@ -39,7 +39,7 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                     }
                     else
                     {
-                        resource.Attributes = resource.Attributes ?? new Dictionary<string, string>();
+                        resource.Attributes ??= new Dictionary<string, string>();
                         resource.Attributes[reader.Name] = reader.Value;
                     }
                 }

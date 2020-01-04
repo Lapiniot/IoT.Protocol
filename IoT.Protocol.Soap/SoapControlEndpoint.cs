@@ -45,30 +45,24 @@ namespace IoT.Protocol.Soap
         {
             if(actionUri != null && actionUri.IsAbsoluteUri) throw new ArgumentException("Invalid uri type. Must be valid relative uri.");
 
-            using(var request = CreateRequestMessage(actionUri, message))
+            using var request = CreateRequestMessage(actionUri, message);
+            using var response = await Client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            var charSet = response.Content.Headers.ContentType?.CharSet?.Trim('"');
+
+            var encoding = charSet != null ? Encoding.GetEncoding(charSet) : Encoding.UTF8;
+
+            using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var readerWithEncoding = new StreamReader(responseStream, encoding);
+            var envelope = SoapEnvelope.Deserialize(readerWithEncoding);
+
+            if(envelope.Action != message.Action + "Response")
             {
-                using(var response = await Client.SendAsync(request, cancellationToken).ConfigureAwait(false))
-                {
-                    response.EnsureSuccessStatusCode();
-
-                    var charSet = response.Content.Headers.ContentType?.CharSet?.Trim('"');
-
-                    var encoding = charSet != null ? Encoding.GetEncoding(charSet) : Encoding.UTF8;
-
-                    using(var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                    using(var readerWithEncoding = new StreamReader(responseStream, encoding))
-                    {
-                        var envelope = SoapEnvelope.Deserialize(readerWithEncoding);
-
-                        if(envelope.Action != message.Action + "Response")
-                        {
-                            throw new InvalidDataException("Invalid SOAP action response");
-                        }
-
-                        return envelope;
-                    }
-                }
+                throw new InvalidDataException("Invalid SOAP action response");
             }
+
+            return envelope;
         }
 
         private HttpRequestMessage CreateRequestMessage(Uri actionUri, SoapEnvelope message)

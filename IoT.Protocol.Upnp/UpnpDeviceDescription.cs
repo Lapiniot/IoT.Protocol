@@ -44,41 +44,39 @@ namespace IoT.Protocol.Upnp
 
         public static async Task<UpnpDeviceDescription> LoadAsync(Uri location, CancellationToken cancellationToken)
         {
-            using(var client = new HttpClient())
-            using(var response = await client.GetAsync(location, cancellationToken).ConfigureAwait(false))
-            using(var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-            {
-                var x = XDocument.Load(stream);
+            using var client = new HttpClient();
+            using var response = await client.GetAsync(location, cancellationToken).ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            var x = XDocument.Load(stream);
 
-                var baseUri = new Uri(location.GetLeftPart(Authority));
+            var baseUri = new Uri(location.GetLeftPart(Authority));
 
-                var dev = x.Root.Element(NS + "device");
+            var dev = x.Root.Element(NS + "device");
 
-                var services = dev.Element(NS + "serviceList").Elements(NS + "service").Select(s => new UpnpServiceDescription(
-                    s.Element(NS + "serviceType").Value,
-                    s.Element(NS + "serviceId").Value,
-                    new Uri(baseUri, s.Element(NS + "SCPDURL").Value),
-                    new Uri(baseUri, s.Element(NS + "controlURL").Value),
-                    new Uri(baseUri, s.Element(NS + "eventSubURL").Value)
-                )).ToArray();
+            var services = dev.Element(NS + "serviceList").Elements(NS + "service").Select(s => new UpnpServiceDescription(
+                s.Element(NS + "serviceType").Value,
+                s.Element(NS + "serviceId").Value,
+                new Uri(baseUri, s.Element(NS + "SCPDURL").Value),
+                new Uri(baseUri, s.Element(NS + "controlURL").Value),
+                new Uri(baseUri, s.Element(NS + "eventSubURL").Value)
+            )).ToArray();
 
-                var icons = dev.Element(NS + "iconList")?.Elements(NS + "icon").Select(i => new Icon(
-                    new Uri(baseUri, i.Element(NS + "url").Value),
-                    i.Element(NS + "mimetype").Value,
-                    int.Parse(i.Element(NS + "depth").Value),
-                    int.Parse(i.Element(NS + "width").Value),
-                    int.Parse(i.Element(NS + "height").Value)
-                )).ToArray();
+            var icons = dev.Element(NS + "iconList")?.Elements(NS + "icon").Select(i => new Icon(
+                new Uri(baseUri, i.Element(NS + "url").Value),
+                i.Element(NS + "mimetype").Value,
+                int.Parse(i.Element(NS + "depth").Value),
+                int.Parse(i.Element(NS + "width").Value),
+                int.Parse(i.Element(NS + "height").Value)
+            )).ToArray();
 
-                return new UpnpDeviceDescription(location, services, icons ?? Array.Empty<Icon>(),
-                    dev.Element(NS + "UDN").Value,
-                    dev.Element(NS + "deviceType").Value,
-                    dev.Element(NS + "friendlyName").Value,
-                    dev.Element(NS + "manufacturer").Value,
-                    dev.Element(NS + "modelDescription")?.Value,
-                    dev.Element(NS + "modelName").Value,
-                    dev.Element(NS + "modelNumber")?.Value);
-            }
+            return new UpnpDeviceDescription(location, services, icons ?? Array.Empty<Icon>(),
+                dev.Element(NS + "UDN").Value,
+                dev.Element(NS + "deviceType").Value,
+                dev.Element(NS + "friendlyName").Value,
+                dev.Element(NS + "manufacturer").Value,
+                dev.Element(NS + "modelDescription")?.Value,
+                dev.Element(NS + "modelName").Value,
+                dev.Element(NS + "modelNumber")?.Value);
         }
 
         public class Icon

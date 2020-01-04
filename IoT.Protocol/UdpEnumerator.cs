@@ -16,7 +16,6 @@ namespace IoT.Protocol
         private readonly CreateSocketFactory createSocket;
         private readonly bool distinctAddress;
         private readonly TimeSpan pollInterval;
-        protected readonly IPEndPoint ReceiveFromEndpoint;
         protected readonly IPEndPoint SendToEndpoint;
 
         protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint,
@@ -24,7 +23,6 @@ namespace IoT.Protocol
         {
             createSocket = createSocketFactory;
             SendToEndpoint = sendToEndpoint;
-            ReceiveFromEndpoint = new IPEndPoint(IPAddress.Any, 0);
             this.distinctAddress = distinctAddress;
             this.pollInterval = pollInterval;
         }
@@ -73,15 +71,13 @@ namespace IoT.Protocol
 
             var buffer = new byte[ReceiveBufferSize];
 
-            var ep = new IPEndPoint(SendToEndpoint.Address, 0);
-
             while(!cancellationToken.IsCancellationRequested)
             {
                 TThing instance = default;
 
                 try
                 {
-                    var result = await socket.ReceiveFromAsync(buffer, default, ep).WaitAsync(cancellationToken).ConfigureAwait(false);
+                    var result = await socket.ReceiveFromAsync(buffer, default, SendToEndpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
 
                     if(distinctAddress && !addresses.Add(((IPEndPoint)result.RemoteEndPoint).Address)) continue;
 

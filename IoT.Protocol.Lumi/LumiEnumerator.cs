@@ -13,7 +13,7 @@ namespace IoT.Protocol.Lumi
     {
         private readonly byte[] whoisMessage;
 
-        public LumiEnumerator() : base(SocketFactory.CreateUdpMulticastSender, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, FromMinutes(5))
+        public LumiEnumerator() : base(SocketFactory.CreateUdpIPv4MulticastSender, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, FromMinutes(5))
         {
             whoisMessage = new byte[]
             {
