@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using static System.Text.Encoding;
 
 namespace IoT.Protocol.Upnp
@@ -43,7 +44,7 @@ namespace IoT.Protocol.Upnp
                 return reply;
             }
 
-            throw new ApplicationException("Not a SSDP success response");
+            throw new InvalidDataException("Not a SSDP success response");
         }
     }
 }
