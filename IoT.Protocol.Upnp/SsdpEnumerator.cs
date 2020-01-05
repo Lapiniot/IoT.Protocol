@@ -24,6 +24,7 @@ namespace IoT.Protocol.Upnp
             this.searchTarget = searchTarget;
             var type = typeof(SsdpEnumerator);
             userAgent = $"USER-AGENT: {nameof(SsdpEnumerator)}/{type.Assembly.GetName().Version} ({OSDescription.TrimEnd()})";
+            SendBufferSize = 85 + (int)Math.Log10(port) + searchTarget.Length + userAgent.Length;
         }
 
         public SsdpEnumerator(TimeSpan pollInterval, string searchTarget = All) :
@@ -32,7 +33,7 @@ namespace IoT.Protocol.Upnp
         public SsdpEnumerator(string searchTarget = All) :
             this(1900, searchTarget, TimeSpan.FromSeconds(5)) {}
 
-        protected override int SendBufferSize { get; } = 0x200;
+        protected override int SendBufferSize { get; }
 
         protected override int ReceiveBufferSize { get; } = 0x400;
 
@@ -41,11 +42,9 @@ namespace IoT.Protocol.Upnp
             return new ValueTask<SsdpReply>(SsdpReply.Parse(new Span<byte>(buffer, 0, size)));
         }
 
-        protected override byte[] GetDiscoveryDatagram()
+        protected override int WriteDiscoveryDatagram(Span<byte> span)
         {
             var portStr = port.ToString();
-            byte[] buffer = new byte[84 + portStr.Length + searchTarget.Length + userAgent.Length];
-            Span<byte> span = buffer;
             var count = ASCII.GetBytes("M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:", span);
             count += ASCII.GetBytes(portStr, span.Slice(count));
             count += ASCII.GetBytes("\r\nMAN: \"ssdp:discover\"\r\nMX: 2\r\nST: ", span.Slice(count));
@@ -54,7 +53,7 @@ namespace IoT.Protocol.Upnp
             count += ASCII.GetBytes(userAgent, span.Slice(count));
             span[count++] = 13; span[count++] = 10;
             span[count++] = 13; span[count++] = 10;
-            return buffer;
+            return count;
         }
     }
 }

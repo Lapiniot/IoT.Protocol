@@ -16,13 +16,13 @@ namespace IoT.Protocol
         private readonly CreateSocketFactory createSocket;
         private readonly bool distinctAddress;
         private readonly TimeSpan pollInterval;
-        protected readonly IPEndPoint SendToEndpoint;
+        private readonly IPEndPoint groupEndpoint;
 
-        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint sendToEndpoint,
+        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint groupEndpoint,
             bool distinctAddress, TimeSpan pollInterval)
         {
             createSocket = createSocketFactory;
-            SendToEndpoint = sendToEndpoint;
+            this.groupEndpoint = groupEndpoint;
             this.distinctAddress = distinctAddress;
             this.pollInterval = pollInterval;
         }
@@ -47,7 +47,7 @@ namespace IoT.Protocol
         /// Returns datagram bytes to be send over the network for discovery
         /// </summary>
         /// <returns>Raw datagram bytes</returns>
-        protected abstract byte[] GetDiscoveryDatagram();
+        protected abstract int WriteDiscoveryDatagram(Span<byte> span);
 
         #region Implementation of IAsyncEnumerable<out TThing>
 
@@ -59,17 +59,12 @@ namespace IoT.Protocol
             socket.ReceiveBufferSize = ReceiveBufferSize;
             socket.SendBufferSize = SendBufferSize;
 
-            var datagram = GetDiscoveryDatagram();
-
-            if(datagram.Length > SendBufferSize)
-            {
-                throw new InvalidOperationException(
-                    $"Discovery datagram is larger than {nameof(SendBufferSize)} = {SendBufferSize} configured buffer size");
-            }
-
-            var _ = SendDiscoveryDatagramAsync(socket, SendToEndpoint, datagram, pollInterval, cancellationToken);
-
+            var datagram = new byte[SendBufferSize];
             var buffer = new byte[ReceiveBufferSize];
+
+            var size = WriteDiscoveryDatagram(datagram);
+
+            var _ = StartDiscoverySenderAsync(socket, groupEndpoint, datagram[..size], pollInterval, cancellationToken);
 
             while(!cancellationToken.IsCancellationRequested)
             {
@@ -77,7 +72,7 @@ namespace IoT.Protocol
 
                 try
                 {
-                    var result = await socket.ReceiveFromAsync(buffer, default, SendToEndpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
+                    var result = await socket.ReceiveFromAsync(buffer, default, groupEndpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
 
                     if(distinctAddress && !addresses.Add(((IPEndPoint)result.RemoteEndPoint).Address)) continue;
 
@@ -93,7 +88,7 @@ namespace IoT.Protocol
             }
         }
 
-        private async Task SendDiscoveryDatagramAsync(Socket socket, EndPoint endpoint, byte[] datagram, TimeSpan interval, CancellationToken cancellationToken)
+        private async Task StartDiscoverySenderAsync(Socket socket, EndPoint endpoint, ArraySegment<byte> datagram, TimeSpan interval, CancellationToken cancellationToken)
         {
             try
             {
