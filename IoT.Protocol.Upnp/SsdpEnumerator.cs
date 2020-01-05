@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -44,20 +43,18 @@ namespace IoT.Protocol.Upnp
 
         protected override byte[] GetDiscoveryDatagram()
         {
-            using var stream = new MemoryStream();
-
-            using(var writer = new StreamWriter(stream, ASCII, 2048, true) {NewLine = "\r\n"})
-            {
-                writer.WriteLine("M-SEARCH * HTTP/1.1");
-                writer.WriteLine("HOST: 239.255.255.250:{0}", port);
-                writer.WriteLine("MAN: \"ssdp:discover\"");
-                writer.WriteLine("MX: {0}", 2);
-                writer.WriteLine("ST: {0}", searchTarget);
-                writer.WriteLine(userAgent);
-                writer.WriteLine();
-            }
-
-            return stream.ToArray();
+            var portStr = port.ToString();
+            byte[] buffer = new byte[84 + portStr.Length + searchTarget.Length + userAgent.Length];
+            Span<byte> span = buffer;
+            var count = ASCII.GetBytes("M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:", span);
+            count += ASCII.GetBytes(portStr, span.Slice(count));
+            count += ASCII.GetBytes("\r\nMAN: \"ssdp:discover\"\r\nMX: 2\r\nST: ", span.Slice(count));
+            count += ASCII.GetBytes(searchTarget, span.Slice(count));
+            span[count++] = 13; span[count++] = 10;
+            count += ASCII.GetBytes(userAgent, span.Slice(count));
+            span[count++] = 13; span[count++] = 10;
+            span[count++] = 13; span[count++] = 10;
+            return buffer;
         }
     }
 }
