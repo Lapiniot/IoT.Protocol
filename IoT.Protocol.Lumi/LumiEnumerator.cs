@@ -42,9 +42,10 @@ namespace IoT.Protocol.Lumi
             throw new InvalidDataException("Invalid discovery response message");
         }
 
-        protected override byte[] GetDiscoveryDatagram()
+        protected override int WriteDiscoveryDatagram(Span<byte> span)
         {
-            return whoisMessage;
+            whoisMessage.CopyTo(span);
+            return whoisMessage.Length;
         }
     }
 }

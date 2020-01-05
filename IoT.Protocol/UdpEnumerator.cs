@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -16,19 +17,19 @@ namespace IoT.Protocol
         private readonly CreateSocketFactory createSocket;
         private readonly bool distinctAddress;
         private readonly TimeSpan pollInterval;
-        private readonly IPEndPoint groupEndpoint;
 
         protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint groupEndpoint,
             bool distinctAddress, TimeSpan pollInterval)
         {
             createSocket = createSocketFactory;
-            this.groupEndpoint = groupEndpoint;
+            GroupEndpoint = groupEndpoint;
             this.distinctAddress = distinctAddress;
             this.pollInterval = pollInterval;
         }
 
         protected abstract int SendBufferSize { get; }
         protected abstract int ReceiveBufferSize { get; }
+        public IPEndPoint GroupEndpoint { get; }
 
         /// <summary>
         /// Factory method to create IoT device instance by parsing discovery response datagram bytes
@@ -64,7 +65,7 @@ namespace IoT.Protocol
 
             var size = WriteDiscoveryDatagram(datagram);
 
-            var _ = StartDiscoverySenderAsync(socket, groupEndpoint, datagram[..size], pollInterval, cancellationToken);
+            var _ = StartDiscoverySenderAsync(socket, GroupEndpoint, datagram[..size], pollInterval, cancellationToken);
 
             while(!cancellationToken.IsCancellationRequested)
             {
@@ -72,7 +73,7 @@ namespace IoT.Protocol
 
                 try
                 {
-                    var result = await socket.ReceiveFromAsync(buffer, default, groupEndpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
+                    var result = await socket.ReceiveFromAsync(buffer, default, GroupEndpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
 
                     if(distinctAddress && !addresses.Add(((IPEndPoint)result.RemoteEndPoint).Address)) continue;
 
@@ -81,7 +82,11 @@ namespace IoT.Protocol
                 }
                 catch(OperationCanceledException)
                 {
-                    // ignored as expected
+                    // ignored as expected cancellation signal
+                }
+                catch(InvalidDataException)
+                {
+                    // ignored as expected if received datagram has wrong format
                 }
 
                 if(instance != null) yield return instance;
