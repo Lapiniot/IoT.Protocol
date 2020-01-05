@@ -13,6 +13,7 @@ namespace IoT.Protocol.Upnp
     {
         private readonly int port;
         private readonly string searchTarget;
+        private readonly string host;
         private readonly string userAgent;
 
         public SsdpEnumerator(int port, string searchTarget, TimeSpan pollInterval) :
@@ -22,9 +23,9 @@ namespace IoT.Protocol.Upnp
 
             this.port = port;
             this.searchTarget = searchTarget;
-            var type = typeof(SsdpEnumerator);
-            userAgent = $"USER-AGENT: {nameof(SsdpEnumerator)}/{type.Assembly.GetName().Version} ({OSDescription.TrimEnd()})";
-            SendBufferSize = 85 + (int)Math.Log10(port) + searchTarget.Length + userAgent.Length;
+            host = GroupEndpoint.ToString();
+            userAgent = $"USER-AGENT: {nameof(SsdpEnumerator)}/{typeof(SsdpEnumerator).Assembly.GetName().Version} ({OSDescription.TrimEnd()})";
+            SendBufferSize = 68 + host.Length + searchTarget.Length + userAgent.Length;
         }
 
         public SsdpEnumerator(TimeSpan pollInterval, string searchTarget = All) :
@@ -44,9 +45,8 @@ namespace IoT.Protocol.Upnp
 
         protected override int WriteDiscoveryDatagram(Span<byte> span)
         {
-            var portStr = port.ToString();
-            var count = ASCII.GetBytes("M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:", span);
-            count += ASCII.GetBytes(portStr, span.Slice(count));
+            var count = ASCII.GetBytes("M-SEARCH * HTTP/1.1\r\nHOST: ", span);
+            count += ASCII.GetBytes(host, span.Slice(count));
             count += ASCII.GetBytes("\r\nMAN: \"ssdp:discover\"\r\nMX: 2\r\nST: ", span.Slice(count));
             count += ASCII.GetBytes(searchTarget, span.Slice(count));
             span[count++] = 13; span[count++] = 10;
