@@ -6,6 +6,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
+#pragma warning disable 8425
+
 namespace IoT.Protocol
 {
     /// <summary>

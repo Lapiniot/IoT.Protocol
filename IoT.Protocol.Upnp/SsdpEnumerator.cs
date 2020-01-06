@@ -11,17 +11,15 @@ namespace IoT.Protocol.Upnp
 {
     public class SsdpEnumerator : UdpEnumerator<SsdpReply>
     {
-        private readonly int port;
-        private readonly string searchTarget;
         private readonly string host;
+        private readonly string searchTarget;
         private readonly string userAgent;
 
         public SsdpEnumerator(int port, string searchTarget, TimeSpan pollInterval) :
-            base(SocketFactory.CreateUdpIPv4MulticastSender, new IPEndPoint(new IPAddress(0xfaffffef /* 239.255.255.250 */), port), false, pollInterval)
+            base(SocketFactory.CreateIPv4UdpMulticastSender, new IPEndPoint(new IPAddress(0xfaffffef /* 239.255.255.250 */), port), false, pollInterval)
         {
             if(string.IsNullOrEmpty(searchTarget)) throw new ArgumentException("Parameter couldn't be null or empty.", nameof(searchTarget));
 
-            this.port = port;
             this.searchTarget = searchTarget;
             host = GroupEndpoint.ToString();
             userAgent = $"USER-AGENT: {nameof(SsdpEnumerator)}/{typeof(SsdpEnumerator).Assembly.GetName().Version} ({OSDescription.TrimEnd()})";
@@ -49,10 +47,13 @@ namespace IoT.Protocol.Upnp
             count += ASCII.GetBytes(host, span.Slice(count));
             count += ASCII.GetBytes("\r\nMAN: \"ssdp:discover\"\r\nMX: 2\r\nST: ", span.Slice(count));
             count += ASCII.GetBytes(searchTarget, span.Slice(count));
-            span[count++] = 13; span[count++] = 10;
+            span[count++] = 13;
+            span[count++] = 10;
             count += ASCII.GetBytes(userAgent, span.Slice(count));
-            span[count++] = 13; span[count++] = 10;
-            span[count++] = 13; span[count++] = 10;
+            span[count++] = 13;
+            span[count++] = 10;
+            span[count++] = 13;
+            span[count++] = 10;
             return count;
         }
     }

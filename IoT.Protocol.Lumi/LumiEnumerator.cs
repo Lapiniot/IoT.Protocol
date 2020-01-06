@@ -11,20 +11,9 @@ namespace IoT.Protocol.Lumi
 {
     public class LumiEnumerator : UdpEnumerator<(IPAddress Address, ushort Port, string Sid)>
     {
-        private readonly byte[] whoisMessage;
+        public LumiEnumerator() : base(SocketFactory.CreateIPv4UdpMulticastSender, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, FromMinutes(5)) {}
 
-        public LumiEnumerator() : base(SocketFactory.CreateUdpIPv4MulticastSender, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, FromMinutes(5))
-        {
-            whoisMessage = new byte[]
-            {
-                0x7B, 0x22, 0x63, 0x6D,
-                0x64, 0x22, 0x3A, 0x22,
-                0x77, 0x68, 0x6F, 0x69,
-                0x73, 0x22, 0x7D
-            };
-        }
-
-        protected override int SendBufferSize { get; } = 0x10;
+        protected override int SendBufferSize { get; } = 0xF;
 
         protected override int ReceiveBufferSize { get; } = 0x100;
 
@@ -44,8 +33,25 @@ namespace IoT.Protocol.Lumi
 
         protected override int WriteDiscoveryDatagram(Span<byte> span)
         {
-            whoisMessage.CopyTo(span);
-            return whoisMessage.Length;
+            // {"cmd":"whois"}
+
+            span[0] = 0x7B;
+            span[1] = 0x22;
+            span[2] = 0x63;
+            span[3] = 0x6D;
+            span[4] = 0x64;
+            span[5] = 0x22;
+            span[6] = 0x3A;
+            span[7] = 0x22;
+            span[8] = 0x77;
+            span[9] = 0x68;
+            span[10] = 0x6F;
+            span[11] = 0x69;
+            span[12] = 0x73;
+            span[13] = 0x22;
+            span[14] = 0x7D;
+
+            return 15;
         }
     }
 }
