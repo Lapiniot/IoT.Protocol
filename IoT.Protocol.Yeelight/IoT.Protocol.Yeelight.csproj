@@ -1,8 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="../common.props" />
-  <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="4.7.0" />
-  </ItemGroup>
+    <Import Project="../common.props" />
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="System.Text.Json" Version="4.7.0" />
+    </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\IoT.Protocol.Upnp\IoT.Protocol.Upnp.csproj" />

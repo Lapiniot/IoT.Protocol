@@ -1,8 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="../common.props" />
+    <Import Project="../common.props" />
 
-  <ItemGroup>
-    <ProjectReference Include="..\IoT.Protocol.Soap\IoT.Protocol.Soap.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\IoT.Protocol.Soap\IoT.Protocol.Soap.csproj" />
+    </ItemGroup>
 
 </Project>
