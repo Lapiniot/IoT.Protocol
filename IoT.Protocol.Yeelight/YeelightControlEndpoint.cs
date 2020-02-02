@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Memory;
 using System.Net;
 using System.Net.Pipelines;
@@ -16,8 +17,8 @@ using static System.TimeSpan;
 
 namespace IoT.Protocol.Yeelight
 {
-    public class YeelightControlEndpoint : PipeProducerConsumer,
-        IObservable<JsonElement>, IConnectedEndpoint<RequestMessage, JsonElement>
+    [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "Type implements IAsyncDisposable instead")]
+    public class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonElement>, IConnectedEndpoint<RequestMessage, JsonElement>
     {
         private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> completions =
             new ConcurrentDictionary<long, TaskCompletionSource<JsonElement>>();
@@ -92,7 +93,7 @@ namespace IoT.Protocol.Yeelight
 
         #endregion
 
-        private void OnDisconnectAsyncCompleted(object sender, SocketAsyncEventArgs e)
+        private static void OnDisconnectAsyncCompleted(object sender, SocketAsyncEventArgs e)
         {
             var completionSource = (TaskCompletionSource<bool>)e.UserToken;
 
@@ -169,6 +170,7 @@ namespace IoT.Protocol.Yeelight
             finally
             {
                 args.Completed -= OnDisconnectAsyncCompleted;
+                args.Dispose();
             }
         }
 

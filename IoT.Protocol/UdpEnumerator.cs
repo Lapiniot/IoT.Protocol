@@ -95,7 +95,7 @@ namespace IoT.Protocol
             }
         }
 
-        private async Task StartDiscoverySenderAsync(Socket socket, EndPoint endpoint, ArraySegment<byte> datagram, TimeSpan interval, CancellationToken cancellationToken)
+        private static async Task StartDiscoverySenderAsync(Socket socket, EndPoint endpoint, ArraySegment<byte> datagram, TimeSpan interval, CancellationToken cancellationToken)
         {
             try
             {

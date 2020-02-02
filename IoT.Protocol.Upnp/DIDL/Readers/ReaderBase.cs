@@ -1,16 +1,18 @@
-﻿using System.Xml;
+﻿using System;
+using System.Xml;
 using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Upnp.DIDL.Readers
 {
     public abstract class ReaderBase<TElementType> where TElementType : class
     {
-        protected const string NS = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
+        protected const string Ns = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
         protected const string DC = "http://purl.org/dc/elements/1.1/";
         protected const string UPNP = "urn:schemas-upnp-org:metadata-1-0/upnp/";
 
         public TElementType Read(XmlReader reader)
         {
+            if(reader == null) throw new ArgumentNullException(nameof(reader));
             var nodeName = reader.Name;
             var depth = reader.Depth;
 

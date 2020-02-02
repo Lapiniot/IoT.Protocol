@@ -23,28 +23,28 @@ namespace IoT.Protocol.Upnp
         public static SsdpReply Parse(Span<byte> buffer)
         {
             int i;
-            if((i = buffer.IndexOfEOL()) >= 0 && ASCII.GetString(buffer.Slice(0, i++)) == "HTTP/1.1 200 OK")
+
+            if((i = buffer.IndexOfEOL()) < 0 || ASCII.GetString(buffer.Slice(0, i++)) != "HTTP/1.1 200 OK")
             {
-                var reply = new SsdpReply();
-
-                for(var r = buffer.Slice(++i); (i = r.IndexOfEOL()) >= 0; r = r.Slice(++i))
-                {
-                    var line = r.Slice(0, i++);
-                    var index = line.IndexOf(Colon);
-
-                    if(index > 0)
-                    {
-                        var key = ASCII.GetString(line.Slice(0, index));
-                        if(++index < line.Length && line[index] == Space) index++;
-                        var value = ASCII.GetString(line.Slice(index));
-                        reply.Add(key, value);
-                    }
-                }
-
-                return reply;
+                throw new InvalidDataException("Not a SSDP success response");
             }
 
-            throw new InvalidDataException("Not a SSDP success response");
+            var reply = new SsdpReply();
+
+            for(var r = buffer.Slice(++i); (i = r.IndexOfEOL()) >= 0; r = r.Slice(++i))
+            {
+                var line = r.Slice(0, i++);
+                var index = line.IndexOf(Colon);
+
+                if(index <= 0) continue;
+
+                var key = ASCII.GetString(line.Slice(0, index));
+                if(++index < line.Length && line[index] == Space) index++;
+                var value = ASCII.GetString(line.Slice(index));
+                reply.Add(key, value);
+            }
+
+            return reply;
         }
     }
 }

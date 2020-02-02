@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -44,6 +45,7 @@ namespace IoT.Protocol.Soap
         protected internal async Task<SoapEnvelope> InvokeAsync(Uri actionUri, SoapEnvelope message, CancellationToken cancellationToken = default)
         {
             if(actionUri != null && actionUri.IsAbsoluteUri) throw new ArgumentException("Invalid uri type. Must be valid relative uri.");
+            if(message == null) throw new ArgumentNullException(nameof(message));
 
             using var request = CreateRequestMessage(actionUri, message);
             using var response = await Client.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -53,7 +55,7 @@ namespace IoT.Protocol.Soap
 
             var encoding = charSet != null ? Encoding.GetEncoding(charSet) : Encoding.UTF8;
 
-            using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             using var readerWithEncoding = new StreamReader(responseStream, encoding);
             var envelope = SoapEnvelope.Deserialize(readerWithEncoding);
 
@@ -65,7 +67,7 @@ namespace IoT.Protocol.Soap
             return envelope;
         }
 
-        private HttpRequestMessage CreateRequestMessage(Uri actionUri, SoapEnvelope message)
+        private static HttpRequestMessage CreateRequestMessage(Uri actionUri, SoapEnvelope message)
         {
             return new HttpRequestMessage
             {
@@ -77,7 +79,8 @@ namespace IoT.Protocol.Soap
             };
         }
 
-        protected HttpClient CreateClient(Uri baseAddress)
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Will be disposed by wrapping HttpClient instance automatically")]
+        protected static HttpClient CreateClient(Uri baseAddress)
         {
             var handler = new HttpClientHandler
             {
@@ -98,12 +101,11 @@ namespace IoT.Protocol.Soap
 
         protected virtual void Dispose(bool disposing)
         {
-            if(disposing)
+            if(!disposing) return;
+
+            if(externalClient == null && clientLazy.IsValueCreated)
             {
-                if(externalClient == null && clientLazy.IsValueCreated)
-                {
-                    clientLazy.Value.Dispose();
-                }
+                clientLazy.Value.Dispose();
             }
         }
     }

@@ -19,6 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Common.Net", "System
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C48393D6-1E1B-49B7-8BC9-B0FFE1BB21F5}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		common.props = common.props
 	EndProjectSection
 EndProject

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using static System.StringComparison;
 
 namespace IoT.Protocol.Upnp
@@ -17,14 +18,19 @@ namespace IoT.Protocol.Upnp
 
         public bool Equals(SsdpReply x, SsdpReply y)
         {
-            return x.TryGetValue(key, out var id1) && y.TryGetValue(key, out var id2) &&
-                   string.Equals(id1, id2, OrdinalIgnoreCase);
+            if(ReferenceEquals(x, y)) return true;
+            if(x == null || y == null) return false;
+            return x.TryGetValue(key, out var v1) &&
+                   y.TryGetValue(key, out var v2) &&
+                   string.Equals(v1, v2, OrdinalIgnoreCase);
         }
 
+        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "obj is never null")]
         public int GetHashCode(SsdpReply obj)
         {
-            if(obj == null || !obj.TryGetValue(key, out var id) || string.IsNullOrEmpty(id)) return 0;
-            return id.GetHashCode();
+            return obj.TryGetValue(key, out var value) && !string.IsNullOrEmpty(value)
+                ? value.GetHashCode(InvariantCulture)
+                : 0;
         }
 
         #endregion

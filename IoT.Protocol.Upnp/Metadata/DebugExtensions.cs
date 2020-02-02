@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -29,14 +31,14 @@ namespace IoT.Protocol.Upnp.Metadata
 
             textWriter.Write(" ");
             textWriter.Write(action.Name);
-            DumpPrototype(textWriter, inArgs, n => n.Substring(0, 1).ToLower() + n.Substring(1));
+            DumpPrototype(textWriter, inArgs, n => n.Substring(0, 1).ToLower(CultureInfo.InvariantCulture) + n.Substring(1));
             textWriter.WriteLine(";");
         }
 
-        private static void DumpPrototype(TextWriter tw, Argument[] args, Func<string, string> nameHandler)
+        private static void DumpPrototype(TextWriter tw, IReadOnlyList<Argument> args, Func<string, string> nameHandler)
         {
             tw.Write("(");
-            for(var i = 0; i < args.Length; i++)
+            for(var i = 0; i < args.Count; i++)
             {
                 if(i != 0) tw.Write(", ");
                 var arg = args[i];

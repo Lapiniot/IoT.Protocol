@@ -11,7 +11,7 @@ namespace IoT.Protocol.Upnp.Metadata
 {
     public class ServiceMetadata
     {
-        private static readonly XNamespace NS = "urn:schemas-upnp-org:service-1-0";
+        private static readonly XNamespace Ns = "urn:schemas-upnp-org:service-1-0";
 
         internal ServiceMetadata(ServiceAction[] actions, IReadOnlyDictionary<string, StateVariable> stateTable)
         {
@@ -27,26 +27,26 @@ namespace IoT.Protocol.Upnp.Metadata
         {
             using var client = new HttpClient();
             using var response = await client.GetAsync(location, cancellationToken).ConfigureAwait(false);
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var x = XDocument.Load(stream);
 
-            var stateTable = x.Root.Element(NS + "serviceStateTable").Elements(NS + "stateVariable").ToDictionary(
-                sv => sv.Element(NS + "name").Value,
+            var stateTable = x.Root.Element(Ns + "serviceStateTable").Elements(Ns + "stateVariable").ToDictionary(
+                sv => sv.Element(Ns + "name").Value,
                 sv => new StateVariable(
-                    sv.Element(NS + "name").Value,
-                    CreateType(sv.Element(NS + "dataType")),
-                    sv.Element(NS + "defaultValue")?.Value,
-                    sv.Attribute(NS + "sendEvents")?.Value != "no",
-                    sv.Element(NS + "allowedValueList")?.Elements(NS + "allowedValue").Select(av => av.Value).ToArray(),
-                    CreateRange(sv.Element(NS + "allowedValueRange"))));
+                    sv.Element(Ns + "name").Value,
+                    CreateType(sv.Element(Ns + "dataType")),
+                    sv.Element(Ns + "defaultValue")?.Value,
+                    sv.Attribute(Ns + "sendEvents")?.Value != "no",
+                    sv.Element(Ns + "allowedValueList")?.Elements(Ns + "allowedValue").Select(av => av.Value).ToArray(),
+                    CreateRange(sv.Element(Ns + "allowedValueRange"))));
 
-            var actions = x.Root.Element(NS + "actionList").Elements(NS + "action").Select(a => new ServiceAction(
-                a.Element(NS + "name").Value,
-                a.Element(NS + "argumentList").Elements(NS + "argument").Select(arg => new Argument(
-                    arg.Element(NS + "name").Value,
-                    arg.Element(NS + "direction").Value,
-                    arg.Element(NS + "retval") != null,
-                    stateTable[arg.Element(NS + "relatedStateVariable").Value]
+            var actions = x.Root.Element(Ns + "actionList").Elements(Ns + "action").Select(a => new ServiceAction(
+                a.Element(Ns + "name").Value,
+                a.Element(Ns + "argumentList").Elements(Ns + "argument").Select(arg => new Argument(
+                    arg.Element(Ns + "name").Value,
+                    arg.Element(Ns + "direction").Value,
+                    arg.Element(Ns + "retval") != null,
+                    stateTable[arg.Element(Ns + "relatedStateVariable").Value]
                 )).ToArray()
             )).ToArray();
 
@@ -55,16 +55,16 @@ namespace IoT.Protocol.Upnp.Metadata
 
         private static string CreateType(XElement element)
         {
-            return element.Attribute(NS + "type")?.Value ?? element.Value;
+            return element.Attribute(Ns + "type")?.Value ?? element.Value;
         }
 
-        private static ArgumentValueRange CreateRange(XElement element)
+        private static ArgumentValueRange CreateRange(XContainer element)
         {
             return element != null
                 ? new ArgumentValueRange(
-                    element.Element(NS + "minimum").Value,
-                    element.Element(NS + "maximum").Value,
-                    element.Element(NS + "step").Value)
+                    element.Element(Ns + "minimum").Value,
+                    element.Element(Ns + "maximum").Value,
+                    element.Element(Ns + "step").Value)
                 : null;
         }
     }

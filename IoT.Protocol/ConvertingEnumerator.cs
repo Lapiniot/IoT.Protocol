@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,7 +19,7 @@ namespace IoT.Protocol
 
         #region Implementation of IAsyncEnumerable<out TThing2>
 
-        public async IAsyncEnumerator<TThing2> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        public async IAsyncEnumerator<TThing2> GetAsyncEnumerator([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var set = new HashSet<TThing1>(comparer);
 

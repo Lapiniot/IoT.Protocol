@@ -4,7 +4,7 @@ namespace IoT.Protocol.Upnp.DIDL
 {
     public class Resource
     {
-        public Dictionary<string, string> Attributes { get; set; }
+        public Dictionary<string, string> Attributes { get; internal set; }
 
         public string Protocol { get; set; }
 

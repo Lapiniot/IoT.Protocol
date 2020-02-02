@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Xml;
 using static System.Xml.XmlNodeType;
 
@@ -13,46 +13,48 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
 
         protected override bool TryReadChildNode(XmlReader reader, TElementType element)
         {
-            if(reader.NodeType == Element)
+            if(reader == null) throw new ArgumentNullException(nameof(reader));
+            if(element == null) throw new ArgumentNullException(nameof(element));
+
+            if(reader.NodeType != Element) return false;
+
+            switch(reader.NamespaceURI)
             {
-                switch(reader.NamespaceURI)
-                {
-                    case DC:
-                        switch(reader.LocalName)
-                        {
-                            case "title":
-                                element.Title = reader.ReadElementContentAsString();
-                                return true;
-                        }
+                case DC:
+                    switch(reader.LocalName)
+                    {
+                        case "title":
+                            element.Title = reader.ReadElementContentAsString();
+                            return true;
+                    }
 
-                        break;
-                    case UPNP:
-                        switch(reader.LocalName)
-                        {
-                            case "class":
-                                element.Class = reader.ReadElementContentAsString();
-                                return true;
-                            case "storageUsed":
-                                element.StorageUsed = reader.ReadElementContentAsInt();
-                                return true;
-                            case "albumArtURI":
-                                (element.AlbumArts ?? (element.AlbumArts = new List<string>())).Add(reader.ReadElementContentAsString());
-                                return true;
-                        }
+                    break;
+                case UPNP:
+                    switch(reader.LocalName)
+                    {
+                        case "class":
+                            element.Class = reader.ReadElementContentAsString();
+                            return true;
+                        case "storageUsed":
+                            element.StorageUsed = reader.ReadElementContentAsInt();
+                            return true;
+                        case "albumArtURI":
+                            element.AlbumArts.Add(reader.ReadElementContentAsString());
+                            return true;
+                    }
 
-                        break;
-                    default:
-                        if(reader.Name == "res")
-                        {
-                            element.Resource = ResourceReader.Instance.Read(reader);
-                        }
-                        else
-                        {
-                            element.Vendor[reader.Name] = reader.ReadElementContentAsString();
-                        }
+                    break;
+                default:
+                    if(reader.Name == "res")
+                    {
+                        element.Resource = ResourceReader.Instance.Read(reader);
+                    }
+                    else
+                    {
+                        element.Vendor[reader.Name] = reader.ReadElementContentAsString();
+                    }
 
-                        return true;
-                }
+                    return true;
             }
 
             return false;

@@ -22,13 +22,9 @@ namespace IoT.Protocol.Lumi
         {
             var json = JsonSerializer.Deserialize<JsonElement>(buffer.AsSpan(0, size));
 
-            if(json.TryGetProperty("cmd", out var cmd) && cmd.GetString() == "iam")
-            {
-                var result = (Address: IPAddress.Parse(json.GetProperty("ip").GetString()), Port: ushort.Parse(json.GetProperty("port").GetString()), Sid: json.GetProperty("sid").GetString());
-                return new ValueTask<(IPAddress, ushort, string)>(result);
-            }
-
-            throw new InvalidDataException("Invalid discovery response message");
+            if(!json.TryGetProperty("cmd", out var cmd) || cmd.GetString() != "iam") throw new InvalidDataException("Invalid discovery response message");
+            var result = (Address: IPAddress.Parse(json.GetProperty("ip").GetString()), Port: ushort.Parse(json.GetProperty("port").GetString()), Sid: json.GetProperty("sid").GetString());
+            return new ValueTask<(IPAddress, ushort, string)>(result);
         }
 
         protected override int WriteDiscoveryDatagram(Span<byte> span)
