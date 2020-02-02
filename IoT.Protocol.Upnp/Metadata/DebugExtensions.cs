@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -10,6 +9,9 @@ namespace IoT.Protocol.Upnp.Metadata
     {
         public static void DebugDump(this ServiceMetadata metadata, TextWriter textWriter)
         {
+            if(metadata == null) throw new ArgumentNullException(nameof(metadata));
+            if(textWriter == null) throw new ArgumentNullException(nameof(textWriter));
+
             foreach(var action in metadata.Actions)
             {
                 action.DebugDump(textWriter);
@@ -18,6 +20,9 @@ namespace IoT.Protocol.Upnp.Metadata
 
         public static void DebugDump(this ServiceAction action, TextWriter textWriter)
         {
+            if(action == null) throw new ArgumentNullException(nameof(action));
+            if(textWriter == null) throw new ArgumentNullException(nameof(textWriter));
+
             var outArgs = action.Arguments.Where(a => a.Direction == "out").ToArray();
             var inArgs = action.Arguments.Where(a => a.Direction == "in").ToArray();
             if(outArgs.Length > 0)
@@ -31,7 +36,7 @@ namespace IoT.Protocol.Upnp.Metadata
 
             textWriter.Write(" ");
             textWriter.Write(action.Name);
-            DumpPrototype(textWriter, inArgs, n => n.Substring(0, 1).ToLower(CultureInfo.InvariantCulture) + n.Substring(1));
+            DumpPrototype(textWriter, inArgs, n => n.Substring(0, 1).ToUpperInvariant() + n.Substring(1));
             textWriter.WriteLine(";");
         }
 

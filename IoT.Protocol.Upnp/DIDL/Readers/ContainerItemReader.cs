@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System;
+using System.Xml;
 
 namespace IoT.Protocol.Upnp.DIDL.Readers
 {
@@ -15,6 +16,8 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
 
         protected override Container CreateElement(XmlReader reader)
         {
+            if(reader == null) throw new ArgumentNullException(nameof(reader));
+
             var container = base.CreateElement(reader);
 
             container.Searchable = ParseBoolean(reader.GetAttribute("searchable"));

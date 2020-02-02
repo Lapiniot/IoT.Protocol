@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using static System.Globalization.CultureInfo;
 using static System.String;
 using static System.Xml.XmlNodeType;
 
@@ -26,7 +27,7 @@ namespace IoT.Protocol.Soap
         }
 
         public SoapEnvelope(string action, string schema, params (string name, object value)[] args) :
-            this(action, schema, args.ToDictionary(a => a.name, a => Convert.ToString(a.value))) {}
+            this(action, schema, args.ToDictionary(a => a.name, a => Convert.ToString(a.value, InvariantCulture))) {}
 
         public string Action { get; }
         public string Schema { get; }
@@ -50,7 +51,7 @@ namespace IoT.Protocol.Soap
             {
                 foreach(var (key, value) in Arguments)
                 {
-                    w.WriteElementString(Empty, key, Empty, Convert.ToString(value));
+                    w.WriteElementString(Empty, key, Empty, Convert.ToString(value, InvariantCulture));
                 }
             }
 

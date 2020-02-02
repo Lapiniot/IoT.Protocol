@@ -65,6 +65,7 @@ namespace IoT.Protocol.Lumi
                 catch(Exception e)
                 {
                     Trace.TraceError($"Error in message dispatch: {e.Message}");
+                    throw;
                 }
             }
         }

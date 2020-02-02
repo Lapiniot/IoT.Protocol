@@ -12,6 +12,7 @@ using IoT.Protocol.Interfaces;
 using static System.Net.Sockets.ProtocolType;
 using static System.Net.Sockets.SocketFlags;
 using static System.Net.Sockets.SocketType;
+using static System.StringComparison;
 
 namespace IoT.Protocol.Lumi
 {
@@ -39,6 +40,8 @@ namespace IoT.Protocol.Lumi
 
         public async Task<JsonElement> InvokeAsync(IDictionary<string, object> message, CancellationToken cancellationToken)
         {
+            if(message == null) throw new ArgumentNullException(nameof(message));
+
             var completionSource = new TaskCompletionSource<JsonElement>(cancellationToken);
 
             var (id, datagram) = (GetCommandKey((string)message["cmd"], (string)message["sid"]), JsonSerializer.SerializeToUtf8Bytes(message));
@@ -93,7 +96,7 @@ namespace IoT.Protocol.Lumi
 
         private static string GetCmdName(string command)
         {
-            return command.EndsWith("_ack") ? command.Substring(0, command.Length - 4) : command;
+            return command.EndsWith("_ack", InvariantCulture) ? command.Substring(0, command.Length - 4) : command;
         }
 
         public Task<JsonElement> InvokeAsync(string command, string sid, CancellationToken cancellationToken = default)
@@ -131,6 +134,7 @@ namespace IoT.Protocol.Lumi
                 catch(Exception e)
                 {
                     Trace.TraceError($"Error in message dispatch: {e.Message}");
+                    throw;
                 }
             }
         }

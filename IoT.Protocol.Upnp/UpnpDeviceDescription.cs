@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace IoT.Protocol.Upnp
     {
         private static readonly XNamespace Ns = "urn:schemas-upnp-org:device-1-0";
 
-        internal UpnpDeviceDescription(Uri location, UpnpServiceDescription[] services, Icon[] icons, string udn, string deviceType,
+        internal UpnpDeviceDescription(Uri location, IEnumerable<UpnpServiceDescription> services, IEnumerable<Icon> icons, string udn, string deviceType,
             string friendlyName, string manufacturer, string modelDescription, string modelName, string modelNumber)
         {
             if(string.IsNullOrWhiteSpace(udn)) throw new ArgumentException("Shouldn't be null or empty", nameof(udn));
@@ -33,8 +34,8 @@ namespace IoT.Protocol.Upnp
         }
 
         public Uri Location { get; }
-        public UpnpServiceDescription[] Services { get; }
-        public Icon[] Icons { get; }
+        public IEnumerable<UpnpServiceDescription> Services { get; }
+        public IEnumerable<Icon> Icons { get; }
         public string Udn { get; }
         public string DeviceType { get; }
         public string FriendlyName { get; }
@@ -57,20 +58,20 @@ namespace IoT.Protocol.Upnp
             var dev = x.Root.Element(Ns + "device");
 
             var services = dev.Element(Ns + "serviceList").Elements(Ns + "service").Select(s => new UpnpServiceDescription(
-                s.Element(Ns + "serviceType").Value,
-                s.Element(Ns + "serviceId").Value,
-                new Uri(baseUri, s.Element(Ns + "SCPDURL").Value),
-                new Uri(baseUri, s.Element(Ns + "controlURL").Value),
-                new Uri(baseUri, s.Element(Ns + "eventSubURL").Value)
-            )).ToArray();
+                    s.Element(Ns + "serviceType").Value,
+                    s.Element(Ns + "serviceId").Value,
+                    new Uri(baseUri, s.Element(Ns + "SCPDURL").Value),
+                    new Uri(baseUri, s.Element(Ns + "controlURL").Value),
+                    new Uri(baseUri, s.Element(Ns + "eventSubURL").Value)))
+                .ToArray();
 
             var icons = dev.Element(Ns + "iconList")?.Elements(Ns + "icon").Select(i => new Icon(
-                new Uri(baseUri, i.Element(Ns + "url").Value),
-                i.Element(Ns + "mimetype").Value,
-                int.Parse(i.Element(Ns + "depth").Value, CultureInfo.InvariantCulture),
-                int.Parse(i.Element(Ns + "width").Value, CultureInfo.InvariantCulture),
-                int.Parse(i.Element(Ns + "height").Value, CultureInfo.InvariantCulture)
-            )).ToArray();
+                    new Uri(baseUri, i.Element(Ns + "url").Value),
+                    i.Element(Ns + "mimetype").Value,
+                    int.Parse(i.Element(Ns + "depth").Value, CultureInfo.InvariantCulture),
+                    int.Parse(i.Element(Ns + "width").Value, CultureInfo.InvariantCulture),
+                    int.Parse(i.Element(Ns + "height").Value, CultureInfo.InvariantCulture)))
+                .ToArray();
 
             return new UpnpDeviceDescription(location, services, icons ?? Array.Empty<Icon>(),
                 dev.Element(Ns + "UDN").Value,

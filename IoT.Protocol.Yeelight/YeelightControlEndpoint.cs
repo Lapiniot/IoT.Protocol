@@ -140,6 +140,7 @@ namespace IoT.Protocol.Yeelight
             catch(Exception e)
             {
                 Trace.TraceError($"Error processing response message: {e.Message}");
+                throw;
             }
 
             return consumed;

@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Globalization.CultureInfo;
 using static System.TimeSpan;
 
 namespace IoT.Protocol.Lumi
@@ -23,7 +24,9 @@ namespace IoT.Protocol.Lumi
             var json = JsonSerializer.Deserialize<JsonElement>(buffer.AsSpan(0, size));
 
             if(!json.TryGetProperty("cmd", out var cmd) || cmd.GetString() != "iam") throw new InvalidDataException("Invalid discovery response message");
-            var result = (Address: IPAddress.Parse(json.GetProperty("ip").GetString()), Port: ushort.Parse(json.GetProperty("port").GetString()), Sid: json.GetProperty("sid").GetString());
+            var result = (Address: IPAddress.Parse(json.GetProperty("ip").GetString()),
+                Port: ushort.Parse(json.GetProperty("port").GetString(), InvariantCulture),
+                Sid: json.GetProperty("sid").GetString());
             return new ValueTask<(IPAddress, ushort, string)>(result);
         }
 

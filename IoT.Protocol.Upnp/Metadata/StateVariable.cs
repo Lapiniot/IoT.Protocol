@@ -36,7 +36,7 @@ namespace IoT.Protocol.Upnp.Metadata
         };
 
         internal StateVariable(string name, string dataTypeName, string defaultValue, bool sendsEvent,
-            string[] allowedValues, ArgumentValueRange valueRange)
+            IEnumerable<string> allowedValues, ArgumentValueRange valueRange)
         {
             Name = name;
             DataTypeName = dataTypeName;
@@ -52,7 +52,7 @@ namespace IoT.Protocol.Upnp.Metadata
         public Type DataType { get; }
         public string DefaultValue { get; }
         public bool SendsEvent { get; }
-        public string[] AllowedValues { get; }
+        public IEnumerable<string> AllowedValues { get; }
         public ArgumentValueRange ValueRange { get; }
     }
 }

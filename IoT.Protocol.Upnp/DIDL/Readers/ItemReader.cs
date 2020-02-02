@@ -8,6 +8,8 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
     {
         protected override TElementType CreateElement(XmlReader reader)
         {
+            if(reader == null) throw new ArgumentNullException(nameof(reader));
+
             return CreateElement(reader.GetAttribute("id"), reader.GetAttribute("parentID"), ParseBoolean(reader.GetAttribute("restricted")));
         }
 

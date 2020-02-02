@@ -13,13 +13,13 @@ namespace IoT.Protocol.Upnp.Metadata
     {
         private static readonly XNamespace Ns = "urn:schemas-upnp-org:service-1-0";
 
-        internal ServiceMetadata(ServiceAction[] actions, IReadOnlyDictionary<string, StateVariable> stateTable)
+        internal ServiceMetadata(IEnumerable<ServiceAction> actions, IReadOnlyDictionary<string, StateVariable> stateTable)
         {
             Actions = actions;
             StateTable = stateTable;
         }
 
-        public ServiceAction[] Actions { get; }
+        public IEnumerable<ServiceAction> Actions { get; }
 
         public IReadOnlyDictionary<string, StateVariable> StateTable { get; }
 
