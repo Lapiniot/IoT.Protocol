@@ -18,10 +18,10 @@ namespace IoT.Protocol.Lumi
 
         protected override int ReceiveBufferSize { get; } = 0x100;
 
-        protected override ValueTask<(IPAddress Address, ushort Port, string Sid)> CreateInstanceAsync(byte[] buffer, int size, IPEndPoint remoteEp,
+        protected override ValueTask<(IPAddress Address, ushort Port, string Sid)> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp,
             CancellationToken cancellationToken)
         {
-            var json = JsonSerializer.Deserialize<JsonElement>(buffer.AsSpan(0, size));
+            var json = JsonSerializer.Deserialize<JsonElement>(buffer.Span);
 
             if(!json.TryGetProperty("cmd", out var cmd) || cmd.GetString() != "iam") throw new InvalidDataException("Invalid discovery response message");
             var result = (Address: IPAddress.Parse(json.GetProperty("ip").GetString()),

@@ -44,7 +44,7 @@ namespace IoT.Protocol
         /// Instance of type
         /// <typeparam name="TThing" />
         /// </returns>
-        protected abstract ValueTask<TThing> CreateInstanceAsync(byte[] buffer, int size, IPEndPoint remoteEp, CancellationToken cancellationToken);
+        protected abstract ValueTask<TThing> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns datagram bytes to be send over the network for discovery
@@ -65,9 +65,9 @@ namespace IoT.Protocol
             var datagram = new byte[SendBufferSize];
             var buffer = new byte[ReceiveBufferSize];
 
-            var size = WriteDiscoveryDatagram(datagram);
+            var count = WriteDiscoveryDatagram(datagram);
 
-            var _ = StartDiscoverySenderAsync(socket, GroupEndpoint, datagram[..size], pollInterval, cancellationToken);
+            var _ = StartDiscoverySenderAsync(socket, GroupEndpoint, new ArraySegment<byte>(datagram, 0, count), pollInterval, cancellationToken);
 
             while(!cancellationToken.IsCancellationRequested)
             {
@@ -76,10 +76,8 @@ namespace IoT.Protocol
                 try
                 {
                     var result = await socket.ReceiveFromAsync(buffer, default, GroupEndpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
-
                     if(distinctAddress && !addresses.Add(((IPEndPoint)result.RemoteEndPoint).Address)) continue;
-
-                    var vt = CreateInstanceAsync(buffer, result.ReceivedBytes, (IPEndPoint)result.RemoteEndPoint, cancellationToken);
+                    var vt = CreateInstanceAsync(buffer.AsMemory(0, result.ReceivedBytes), (IPEndPoint)result.RemoteEndPoint, cancellationToken);
                     instance = vt.IsCompletedSuccessfully ? vt.Result : await vt.ConfigureAwait(false);
                 }
                 catch(OperationCanceledException)

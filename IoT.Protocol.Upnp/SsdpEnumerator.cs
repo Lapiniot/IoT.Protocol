@@ -36,9 +36,9 @@ namespace IoT.Protocol.Upnp
 
         protected override int ReceiveBufferSize { get; } = 0x400;
 
-        protected override ValueTask<SsdpReply> CreateInstanceAsync(byte[] buffer, int size, IPEndPoint remoteEp, CancellationToken cancellationToken)
+        protected override ValueTask<SsdpReply> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken)
         {
-            return new ValueTask<SsdpReply>(SsdpReply.Parse(new Span<byte>(buffer, 0, size)));
+            return new ValueTask<SsdpReply>(SsdpReply.Parse(buffer.Span));
         }
 
         protected override int WriteDiscoveryDatagram(Span<byte> span)
