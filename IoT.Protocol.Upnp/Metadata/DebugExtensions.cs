@@ -36,7 +36,7 @@ namespace IoT.Protocol.Upnp.Metadata
 
             textWriter.Write(" ");
             textWriter.Write(action.Name);
-            DumpPrototype(textWriter, inArgs, n => n.Substring(0, 1).ToUpperInvariant() + n.Substring(1));
+            DumpPrototype(textWriter, inArgs, n => char.ToUpperInvariant(n[0]) + n[1..]);
             textWriter.WriteLine(";");
         }
 

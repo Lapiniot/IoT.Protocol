@@ -37,7 +37,6 @@ namespace IoT.Protocol
         /// Factory method to create IoT device instance by parsing discovery response datagram bytes
         /// </summary>
         /// <param name="buffer">Buffer containing message</param>
-        /// <param name="size">Size of the valid data in the buffer</param>
         /// <param name="remoteEp">Responder endpoint information</param>
         /// <param name="cancellationToken"></param>
         /// <returns>

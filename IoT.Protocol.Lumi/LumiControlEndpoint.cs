@@ -96,7 +96,7 @@ namespace IoT.Protocol.Lumi
 
         private static string GetCmdName(string command)
         {
-            return command.EndsWith("_ack", InvariantCulture) ? command.Substring(0, command.Length - 4) : command;
+            return command.EndsWith("_ack", InvariantCulture) ? command[..^4] : command;
         }
 
         public Task<JsonElement> InvokeAsync(string command, string sid, CancellationToken cancellationToken = default)
