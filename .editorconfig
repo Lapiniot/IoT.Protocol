@@ -27,6 +27,9 @@ dotnet_diagnostic.CA1710.severity = silent
 # CA1054: Uri parameters should not be strings
 dotnet_diagnostic.CA1054.severity = silent
 
+# IDE0010: Add missing cases
+dotnet_diagnostic.IDE0010.severity = none
+
 [*.proto]
 indent_style=tab
 indent_size=tab
