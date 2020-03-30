@@ -13,7 +13,7 @@ namespace IoT.Protocol.Upnp
 {
     public class UpnpDeviceDescription
     {
-        private static readonly XNamespace Ns = "urn:schemas-upnp-org:device-1-0";
+        public static readonly XNamespace NS = "urn:schemas-upnp-org:device-1-0";
 
         internal UpnpDeviceDescription(Uri location, IEnumerable<UpnpServiceDescription> services, IEnumerable<Icon> icons, string udn, string deviceType,
             string friendlyName, string manufacturer, string modelDescription, string modelName, string modelNumber)
@@ -55,32 +55,32 @@ namespace IoT.Protocol.Upnp
 
             var baseUri = new Uri(location.GetLeftPart(Authority));
 
-            var dev = x.Root.Element(Ns + "device");
+            var dev = x.Root.Element(NS + "device");
 
-            var services = dev.Element(Ns + "serviceList").Elements(Ns + "service").Select(s => new UpnpServiceDescription(
-                    s.Element(Ns + "serviceType").Value,
-                    s.Element(Ns + "serviceId").Value,
-                    new Uri(baseUri, s.Element(Ns + "SCPDURL").Value),
-                    new Uri(baseUri, s.Element(Ns + "controlURL").Value),
-                    new Uri(baseUri, s.Element(Ns + "eventSubURL").Value)))
+            var services = dev.Element(NS + "serviceList").Elements(NS + "service").Select(s => new UpnpServiceDescription(
+                    s.Element(NS + "serviceType").Value,
+                    s.Element(NS + "serviceId").Value,
+                    new Uri(baseUri, s.Element(NS + "SCPDURL").Value),
+                    new Uri(baseUri, s.Element(NS + "controlURL").Value),
+                    new Uri(baseUri, s.Element(NS + "eventSubURL").Value)))
                 .ToArray();
 
-            var icons = dev.Element(Ns + "iconList")?.Elements(Ns + "icon").Select(i => new Icon(
-                    new Uri(baseUri, i.Element(Ns + "url").Value),
-                    i.Element(Ns + "mimetype").Value,
-                    int.Parse(i.Element(Ns + "depth").Value, CultureInfo.InvariantCulture),
-                    int.Parse(i.Element(Ns + "width").Value, CultureInfo.InvariantCulture),
-                    int.Parse(i.Element(Ns + "height").Value, CultureInfo.InvariantCulture)))
+            var icons = dev.Element(NS + "iconList")?.Elements(NS + "icon").Select(i => new Icon(
+                    new Uri(baseUri, i.Element(NS + "url").Value),
+                    i.Element(NS + "mimetype").Value,
+                    int.Parse(i.Element(NS + "depth").Value, CultureInfo.InvariantCulture),
+                    int.Parse(i.Element(NS + "width").Value, CultureInfo.InvariantCulture),
+                    int.Parse(i.Element(NS + "height").Value, CultureInfo.InvariantCulture)))
                 .ToArray();
 
             return new UpnpDeviceDescription(location, services, icons ?? Array.Empty<Icon>(),
-                dev.Element(Ns + "UDN").Value,
-                dev.Element(Ns + "deviceType").Value,
-                dev.Element(Ns + "friendlyName").Value,
-                dev.Element(Ns + "manufacturer").Value,
-                dev.Element(Ns + "modelDescription")?.Value,
-                dev.Element(Ns + "modelName").Value,
-                dev.Element(Ns + "modelNumber")?.Value);
+                dev.Element(NS + "UDN").Value,
+                dev.Element(NS + "deviceType").Value,
+                dev.Element(NS + "friendlyName").Value,
+                dev.Element(NS + "manufacturer").Value,
+                dev.Element(NS + "modelDescription")?.Value,
+                dev.Element(NS + "modelName").Value,
+                dev.Element(NS + "modelNumber")?.Value);
         }
     }
 }
