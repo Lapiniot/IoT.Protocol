@@ -11,6 +11,7 @@ namespace IoT.Protocol.Upnp
     {
         private const string EventNS = "urn:schemas-upnp-org:event-1-0";
         private const string MetadataNS = "urn:schemas-upnp-org:metadata-1-0/AVT/";
+
         public static async Task<string> ReadPropertyAsync(XmlReader reader)
         {
             if(reader is null) throw new ArgumentNullException(nameof(reader));
@@ -62,6 +63,7 @@ namespace IoT.Protocol.Upnp
                     }
                 }
             }
+
             return map;
         }
     }

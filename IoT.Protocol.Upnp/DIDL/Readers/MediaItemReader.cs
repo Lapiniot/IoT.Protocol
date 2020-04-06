@@ -48,7 +48,7 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                     switch(reader.LocalName)
                     {
                         case "artist":
-                            (element.Artists ?? (element.Artists = new List<string>())).Add(reader.ReadElementContentAsString());
+                            (element.Artists ??= new List<string>()).Add(reader.ReadElementContentAsString());
                             return true;
                         case "album":
                             element.Album = reader.ReadElementContentAsString();
@@ -60,22 +60,22 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                             element.LyricsUrl = reader.ReadElementContentAsString();
                             return true;
                         case "genre":
-                            (element.Genres ?? (element.Genres = new List<string>())).Add(reader.ReadElementContentAsString());
+                            (element.Genres ??= new List<string>()).Add(reader.ReadElementContentAsString());
                             return true;
                         case "originalTrackNumber":
                             element.TrackNumber = reader.ReadElementContentAsInt();
                             return true;
                         case "actor":
-                            (element.Actors ?? (element.Actors = new List<string>())).Add(reader.ReadElementContentAsString());
+                            (element.Actors ??= new List<string>()).Add(reader.ReadElementContentAsString());
                             return true;
                         case "author":
-                            (element.Authors ?? (element.Authors = new List<string>())).Add(reader.ReadElementContentAsString());
+                            (element.Authors ??= new List<string>()).Add(reader.ReadElementContentAsString());
                             return true;
                         case "producer":
-                            (element.Producers ?? (element.Producers = new List<string>())).Add(reader.ReadElementContentAsString());
+                            (element.Producers ??= new List<string>()).Add(reader.ReadElementContentAsString());
                             return true;
                         case "publisher":
-                            (element.Publishers ?? (element.Publishers = new List<string>())).Add(reader.ReadElementContentAsString());
+                            (element.Publishers ??= new List<string>()).Add(reader.ReadElementContentAsString());
                             return true;
                     }
 
