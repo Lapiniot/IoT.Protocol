@@ -12,7 +12,7 @@ namespace IoT.Protocol.Upnp
         private const string EventNS = "urn:schemas-upnp-org:event-1-0";
         private const string MetadataNS = "urn:schemas-upnp-org:metadata-1-0/AVT/";
 
-        public static async Task<string> ReadPropertyAsync(XmlReader reader)
+        public static async Task<string> ReadLastChangeContentAsync(XmlReader reader)
         {
             if(reader is null) throw new ArgumentNullException(nameof(reader));
 
@@ -37,28 +37,38 @@ namespace IoT.Protocol.Upnp
 
         public static async Task<IDictionary<string, string>> ParseAsync(XmlReader reader)
         {
+            var content = await ReadLastChangeContentAsync(reader).ConfigureAwait(false);
+
+            if(string.IsNullOrEmpty(content)) return null;
+
             var map = new Dictionary<string, string>();
-            var content = await ReadPropertyAsync(reader).ConfigureAwait(false);
-            using var r = XmlReader.Create(new StringReader(content));
-            while(r.Read() && r.Depth == 0)
-            {
-                if(r.NodeType != Element || r.LocalName != "Event" || r.NamespaceURI != MetadataNS) continue;
 
-                while(r.Read() && r.Depth == 1)
+            using var innerReader = XmlReader.Create(new StringReader(content),
+                new XmlReaderSettings
                 {
-                    if(r.NodeType != Element && r.LocalName != "InstanceID" || r.NamespaceURI != MetadataNS) continue;
+                    CloseInput = true, ConformanceLevel = ConformanceLevel.Fragment,
+                    IgnoreProcessingInstructions = true, IgnoreWhitespace = true, IgnoreComments = true
+                });
 
-                    while(r.Read() && r.Depth == 2)
+            while(innerReader.Read() && innerReader.Depth == 0)
+            {
+                if(innerReader.NodeType != Element || innerReader.LocalName != "Event" || innerReader.NamespaceURI != MetadataNS) continue;
+
+                while(innerReader.Read() && innerReader.Depth == 1)
+                {
+                    if(innerReader.NodeType != Element && innerReader.LocalName != "InstanceID" || innerReader.NamespaceURI != MetadataNS) continue;
+
+                    while(innerReader.Read() && innerReader.Depth == 2)
                     {
-                        if(r.NodeType != Element) continue;
-                        var name = r.LocalName;
-                        if(r.MoveToAttribute("val"))
+                        if(innerReader.NodeType != Element) continue;
+                        var name = innerReader.LocalName;
+                        if(innerReader.MoveToAttribute("val"))
                         {
-                            map[name] = r.ReadContentAsString();
+                            map[name] = innerReader.ReadContentAsString();
                         }
                         else
                         {
-                            map[name] = r.ReadElementContentAsString();
+                            map[name] = innerReader.ReadElementContentAsString();
                         }
                     }
                 }
