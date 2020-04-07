@@ -10,25 +10,56 @@ namespace IoT.Protocol.Upnp.DIDL
     {
         private const string Ns = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
 
-        public static IEnumerable<Item> Parse(string content)
+        private static readonly XmlReaderSettings Settings = new XmlReaderSettings
         {
-            var objects = new List<Item>();
+            CloseInput = true,
+            ConformanceLevel = ConformanceLevel.Fragment,
+            IgnoreComments = true,
+            IgnoreProcessingInstructions = true,
+            IgnoreWhitespace = true
+        };
 
-            using(var tr = new StringReader(content))
+        public static IEnumerable<Item> Parse(string content, bool strict = true)
+        {
+            using var r = XmlReader.Create(new StringReader(content), Settings);
+
+            if(strict)
             {
-                using var r = XmlReader.Create(tr);
-                if(r.MoveToContent() != Element || r.Name != "DIDL-Lite" || r.NamespaceURI != Ns) return objects;
-                while(r.Read())
+                while(r.Read() && r.Depth == 0)
                 {
-                    if(r.NodeType != Element) continue;
-
-                    var item = ReadItem(r);
-
-                    if(item != null) objects.Add(item);
+                    if(r.NodeType != Element || r.Name != "DIDL-Lite" || r.NamespaceURI != Ns) continue;
+                    while(r.Read() && r.Depth == 1)
+                    {
+                        if(r.NodeType != Element || r.NamespaceURI != Ns) continue;
+                        var item = ReadItem(r);
+                        if(item != null) yield return item;
+                    }
                 }
             }
+            else
+            {
+                var list = new List<Item>();
+                try
+                {
+                    while(r.Read())
+                    {
+                        if(r.NodeType != Element || r.Name != "DIDL-Lite" || r.NamespaceURI != Ns) continue;
+                        var depth = r.Depth + 1;
+                        while(r.Read() && r.Depth == depth)
+                        {
+                            if(r.NodeType != Element || r.NamespaceURI != Ns) continue;
+                            var item = ReadItem(r);
+                            if(item != null) list.Add(item);
+                        }
+                    }
+                }
+                catch(XmlException) {}
 
-            return objects;
+                foreach(var item in list)
+                {
+                    yield return item;
+                }
+            }
         }
 
         private static Item ReadItem(XmlReader reader)
