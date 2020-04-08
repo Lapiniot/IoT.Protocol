@@ -61,7 +61,7 @@ namespace IoT.Protocol.Upnp
                     while(innerReader.Read() && innerReader.Depth == 2)
                     {
                         if(innerReader.NodeType != Element) continue;
-                        var name = innerReader.LocalName;
+                        var name = innerReader.Name;
                         if(innerReader.MoveToAttribute("val"))
                         {
                             map[name] = innerReader.ReadContentAsString();
