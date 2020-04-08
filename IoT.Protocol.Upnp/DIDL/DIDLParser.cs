@@ -19,47 +19,45 @@ namespace IoT.Protocol.Upnp.DIDL
             IgnoreWhitespace = true
         };
 
-        public static IEnumerable<Item> Parse(string content, bool strict = true)
+        public static IEnumerable<Item> Parse(string content)
         {
             using var r = XmlReader.Create(new StringReader(content), Settings);
 
-            if(strict)
+            while(r.Read() && r.Depth == 0)
             {
-                while(r.Read() && r.Depth == 0)
+                if(r.NodeType != Element || r.Name != "DIDL-Lite" || r.NamespaceURI != Ns) continue;
+                while(r.Read() && r.Depth == 1)
+                {
+                    if(r.NodeType != Element || r.NamespaceURI != Ns) continue;
+                    var item = ReadItem(r);
+                    if(item != null) yield return item;
+                }
+            }
+        }
+
+        public static IEnumerable<Item> ParseLoose(string content)
+        {
+            using var r = XmlReader.Create(new StringReader(content), Settings);
+
+            var items = new List<Item>();
+
+            try
+            {
+                while(r.Read())
                 {
                     if(r.NodeType != Element || r.Name != "DIDL-Lite" || r.NamespaceURI != Ns) continue;
-                    while(r.Read() && r.Depth == 1)
+                    var depth = r.Depth + 1;
+                    while(r.Read() && r.Depth == depth)
                     {
                         if(r.NodeType != Element || r.NamespaceURI != Ns) continue;
                         var item = ReadItem(r);
-                        if(item != null) yield return item;
+                        if(item != null) items.Add(item);
                     }
                 }
             }
-            else
-            {
-                var list = new List<Item>();
-                try
-                {
-                    while(r.Read())
-                    {
-                        if(r.NodeType != Element || r.Name != "DIDL-Lite" || r.NamespaceURI != Ns) continue;
-                        var depth = r.Depth + 1;
-                        while(r.Read() && r.Depth == depth)
-                        {
-                            if(r.NodeType != Element || r.NamespaceURI != Ns) continue;
-                            var item = ReadItem(r);
-                            if(item != null) list.Add(item);
-                        }
-                    }
-                }
-                catch(XmlException) {}
+            catch(XmlException) {}
 
-                foreach(var item in list)
-                {
-                    yield return item;
-                }
-            }
+            return items;
         }
 
         private static Item ReadItem(XmlReader reader)
