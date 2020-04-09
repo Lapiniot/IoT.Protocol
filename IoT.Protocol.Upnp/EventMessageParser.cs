@@ -35,46 +35,46 @@ namespace IoT.Protocol.Upnp
             return null;
         }
 
-        public static async Task<IDictionary<string, string>> ParseAsync(XmlReader reader)
+        public static async Task<(IDictionary<string, string> Metadata, IDictionary<string, string> Vendor)> ParseAsync(XmlReader reader)
         {
             var content = await ReadLastChangeContentAsync(reader).ConfigureAwait(false);
 
-            if(string.IsNullOrEmpty(content)) return null;
+            if(string.IsNullOrEmpty(content)) return default;
 
-            var map = new Dictionary<string, string>();
+            var metadata = new Dictionary<string, string>();
+            var vendor = new Dictionary<string, string>();
 
-            using var innerReader = XmlReader.Create(new StringReader(content),
+            using var ir = XmlReader.Create(new StringReader(content),
                 new XmlReaderSettings
                 {
                     CloseInput = true, ConformanceLevel = ConformanceLevel.Fragment,
                     IgnoreProcessingInstructions = true, IgnoreWhitespace = true, IgnoreComments = true
                 });
 
-            while(innerReader.Read() && innerReader.Depth == 0)
+            while(ir.Read() && ir.Depth == 0)
             {
-                if(innerReader.NodeType != Element || innerReader.LocalName != "Event" || innerReader.NamespaceURI != MetadataNS) continue;
+                if(ir.NodeType != Element || ir.LocalName != "Event" || ir.NamespaceURI != MetadataNS) continue;
 
-                while(innerReader.Read() && innerReader.Depth == 1)
+                while(ir.Read() && ir.Depth == 1)
                 {
-                    if(innerReader.NodeType != Element && innerReader.LocalName != "InstanceID" || innerReader.NamespaceURI != MetadataNS) continue;
+                    if(ir.NodeType != Element && ir.LocalName != "InstanceID" || ir.NamespaceURI != MetadataNS) continue;
 
-                    while(innerReader.Read() && innerReader.Depth == 2)
+                    while(ir.Read() && ir.Depth == 2)
                     {
-                        if(innerReader.NodeType != Element) continue;
-                        var name = innerReader.Name;
-                        if(innerReader.MoveToAttribute("val"))
+                        if(ir.NodeType != Element) continue;
+                        if(ir.NamespaceURI == MetadataNS)
                         {
-                            map[name] = innerReader.ReadContentAsString();
+                            metadata[ir.LocalName] = ir.MoveToAttribute("val") ? ir.ReadContentAsString() : ir.ReadElementContentAsString();
                         }
                         else
                         {
-                            map[name] = innerReader.ReadElementContentAsString();
+                            vendor[ir.Name] = ir.MoveToAttribute("val") ? ir.ReadContentAsString() : ir.ReadElementContentAsString();
                         }
                     }
                 }
             }
 
-            return map;
+            return (metadata, vendor);
         }
     }
 }
