@@ -13,6 +13,7 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
         public TElementType Read(XmlReader reader)
         {
             if(reader == null) throw new ArgumentNullException(nameof(reader));
+
             var nodeName = reader.Name;
             var depth = reader.Depth;
 

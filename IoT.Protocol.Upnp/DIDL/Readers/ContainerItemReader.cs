@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 
 namespace IoT.Protocol.Upnp.DIDL.Readers
@@ -14,10 +14,9 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
             return new Container(id, parentId, restricted);
         }
 
+        [SuppressMessage("Design", "CA1062:Validate arguments of public methods")]
         protected override Container CreateElement(XmlReader reader)
         {
-            if(reader == null) throw new ArgumentNullException(nameof(reader));
-
             var container = base.CreateElement(reader);
 
             container.Searchable = ParseBoolean(reader.GetAttribute("searchable"));

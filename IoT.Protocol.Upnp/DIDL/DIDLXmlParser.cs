@@ -6,7 +6,7 @@ using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Upnp.DIDL
 {
-    public static class DIDLParser
+    public static class DIDLXmlParser
     {
         private const string Ns = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
 

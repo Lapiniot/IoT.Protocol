@@ -1,23 +1,19 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Upnp.DIDL.Readers
 {
+    [SuppressMessage("Design", "CA1062:Validate arguments of public methods")]
     public abstract class ItemReader<TElementType> : ReaderBase<TElementType> where TElementType : Item
     {
         protected override TElementType CreateElement(XmlReader reader)
         {
-            if(reader == null) throw new ArgumentNullException(nameof(reader));
-
             return CreateElement(reader.GetAttribute("id"), reader.GetAttribute("parentID"), ParseBoolean(reader.GetAttribute("restricted")));
         }
 
         protected override bool TryReadChildNode(XmlReader reader, TElementType element)
         {
-            if(reader == null) throw new ArgumentNullException(nameof(reader));
-            if(element == null) throw new ArgumentNullException(nameof(element));
-
             if(reader.NodeType != Element) return false;
 
             switch(reader.NamespaceURI)

@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 using static System.Xml.XmlNodeType;
 
@@ -18,11 +18,9 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
             return new MediaItem(id, parentId, restricted);
         }
 
+        [SuppressMessage("Design", "CA1062:Validate arguments of public methods")]
         protected override bool TryReadChildNode(XmlReader reader, MediaItem element)
         {
-            if(reader == null) throw new ArgumentNullException(nameof(reader));
-            if(element == null) throw new ArgumentNullException(nameof(element));
-
             if(reader.NodeType != Element) return base.TryReadChildNode(reader, element);
             switch(reader.NamespaceURI)
             {
