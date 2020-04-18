@@ -59,6 +59,7 @@ namespace IoT.Protocol.Upnp.DIDL
                 writer.WriteString("id", parent.Id);
                 writer.WriteString("parentId", parent.ParentId);
                 writer.WriteString("title", parent.Title);
+                if(parent.Resource is { Url: { } url }) writer.WriteString("url", url);
                 writer.WriteEndObject();
             }
 
