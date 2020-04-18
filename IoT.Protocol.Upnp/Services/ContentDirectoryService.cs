@@ -7,6 +7,12 @@ using static IoT.Protocol.Upnp.UpnpServices;
 
 namespace IoT.Protocol.Upnp.Services
 {
+    public enum BrowseFlags
+    {
+        BrowseDirectChildren,
+        BrowseMetadata
+    }
+
     [ServiceSchema(ContentDirectory)]
     public sealed class ContentDirectoryService : SoapActionInvoker
     {
@@ -17,11 +23,11 @@ namespace IoT.Protocol.Upnp.Services
             base(endpoint, ContentDirectory) {}
 
         public Task<IDictionary<string, string>> BrowseAsync(string parent, string filter = null,
-            string flags = null, string sortCriteria = null,
+            BrowseFlags flags = default, string sortCriteria = null,
             uint index = 0, uint count = 50, CancellationToken cancellationToken = default)
         {
             return InvokeAsync("Browse", cancellationToken,
-                ("ObjectID", parent), ("BrowseFlag", flags ?? "BrowseDirectChildren"),
+                ("ObjectID", parent), ("BrowseFlag", flags),
                 ("Filter", filter ?? "*"), ("StartingIndex", index),
                 ("RequestedCount", count), ("SortCriteria", sortCriteria ?? ""));
         }

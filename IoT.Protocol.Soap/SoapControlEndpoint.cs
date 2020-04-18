@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
@@ -49,7 +50,15 @@ namespace IoT.Protocol.Soap
 
             using var request = CreateRequestMessage(actionUri, message);
             using var response = await Client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                response.EnsureSuccessStatusCode();
+            }
+            catch
+            {
+                Debug.WriteLine(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+                throw;
+            }
 
             var charSet = response.Content.Headers.ContentType?.CharSet?.Trim('"');
 
