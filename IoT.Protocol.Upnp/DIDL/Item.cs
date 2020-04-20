@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace IoT.Protocol.Upnp.DIDL
 {
+    [JsonConverter(typeof(ItemJsonConverter))]
     public abstract class Item
     {
         protected Item(string id, string parentId, bool restricted)
