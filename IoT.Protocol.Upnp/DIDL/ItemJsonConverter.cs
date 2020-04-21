@@ -13,7 +13,17 @@ namespace IoT.Protocol.Upnp.DIDL
 
         public override void Write(Utf8JsonWriter writer, Item value, JsonSerializerOptions options)
         {
-            JsonSerializer.Serialize<object>(writer, value, options);
+            switch(value)
+            {
+                case Container container:
+                    JsonSerializer.Serialize(writer, container, options);
+                    break;
+                case MediaItem mediaItem:
+                    JsonSerializer.Serialize(writer, mediaItem, options);
+                    break;
+                default:
+                    throw new NotSupportedException("Unsupported type");
+            }
         }
     }
 }
