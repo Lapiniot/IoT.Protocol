@@ -19,20 +19,18 @@ namespace IoT.Protocol.Upnp
 
         public string UniqueServiceName => this["USN"];
 
-        public string UniqueDeviceName
-        {
-            get
-            {
-                string v = this["USN"];
-                return v.Substring(0, v.IndexOf(':', v.IndexOf(':', StringComparison.InvariantCulture) + 1));
-            }
-        }
+        public string UniqueDeviceName => this.TryGetValue("USN", out var usn) && !string.IsNullOrWhiteSpace(usn) ?
+            usn.Substring(0, usn.IndexOf(':', usn.IndexOf(':', StringComparison.InvariantCulture) + 1)) : null;
 
         public string Server => this["SERVER"];
 
         public string SearchTarget => this["ST"];
 
         public string StartLine { get; }
+        
+        public double MaxAge => this.TryGetValue("CACHE-CONTROL", out var value) &&
+            value != null && value.Length > 8 &&
+            int.TryParse(value[8..], out var age) ? age : 0;
 
         public static SsdpReply Parse(Span<byte> buffer)
         {
