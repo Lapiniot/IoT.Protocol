@@ -9,28 +9,31 @@ using static IoT.Protocol.Upnp.UpnpServices;
 
 namespace IoT.Protocol.Upnp
 {
-    public class SsdpEnumerator : UdpEnumerator<SsdpReply>
+    public class SsdpSearchEnumerator : UdpEnumerator<SsdpReply>
     {
         private readonly string host;
         private readonly string searchTarget;
         private readonly string userAgent;
 
-        public SsdpEnumerator(int port, string searchTarget, TimeSpan pollInterval) :
-            base(SocketFactory.CreateIPv4UdpMulticastSender, new IPEndPoint(new IPAddress(0xfaffffef /* 239.255.255.250 */), port), false, pollInterval)
+        protected SsdpSearchEnumerator(IPEndPoint groupEndpoint, CreateSocketFactory socketFactory, string searchTarget, TimeSpan pollInterval) :
+            base(socketFactory, groupEndpoint, false, pollInterval)
         {
             if(string.IsNullOrEmpty(searchTarget)) throw new ArgumentException("Parameter couldn't be null or empty.", nameof(searchTarget));
 
             this.searchTarget = searchTarget;
             host = GroupEndpoint.ToString();
-            userAgent = $"USER-AGENT: {nameof(SsdpEnumerator)}/{typeof(SsdpEnumerator).Assembly.GetName().Version} ({OSDescription.TrimEnd()})";
+            userAgent = $"USER-AGENT: {nameof(SsdpSearchEnumerator)}/{typeof(SsdpSearchEnumerator).Assembly.GetName().Version} ({OSDescription.TrimEnd()})";
             SendBufferSize = 68 + host.Length + searchTarget.Length + userAgent.Length;
         }
 
-        public SsdpEnumerator(TimeSpan pollInterval, string searchTarget = All) :
-            this(1900, searchTarget, pollInterval) {}
+        public SsdpSearchEnumerator(IPEndPoint groupEndpoint, string searchTarget, TimeSpan pollInterval) :
+            base(SocketFactory.CreateIPv4UdpMulticastSender, groupEndpoint, false, pollInterval) {}
 
-        public SsdpEnumerator(string searchTarget = All) :
-            this(1900, searchTarget, TimeSpan.FromSeconds(5)) {}
+        public SsdpSearchEnumerator(TimeSpan pollInterval, string searchTarget = All) :
+            this(SocketFactory.GetIPv4SsdpGroup(), searchTarget, pollInterval) {}
+
+        public SsdpSearchEnumerator(string searchTarget = All) :
+            this(SocketFactory.GetIPv4SsdpGroup(), searchTarget, TimeSpan.FromSeconds(30)) {}
 
         protected override int SendBufferSize { get; }
 

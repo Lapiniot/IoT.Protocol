@@ -10,26 +10,40 @@ namespace IoT.Protocol.Upnp
         private const byte Colon = 0x3a;
         private const byte Space = 0x20;
 
-        public SsdpReply() : base(10, StringComparer.OrdinalIgnoreCase) {}
+        public SsdpReply(string startLine) : base(10, StringComparer.OrdinalIgnoreCase)
+        {
+            StartLine = startLine;
+        }
 
         public string Location => this["LOCATION"];
 
         public string UniqueServiceName => this["USN"];
 
+        public string UniqueDeviceName
+        {
+            get
+            {
+                string v = this["USN"];
+                return v.Substring(0, v.IndexOf(':', v.IndexOf(':') + 1));
+            }
+        }
+
         public string Server => this["SERVER"];
 
         public string SearchTarget => this["ST"];
+
+        public string StartLine { get; }
 
         public static SsdpReply Parse(Span<byte> buffer)
         {
             int i;
 
-            if((i = buffer.IndexOfEOL()) < 0 || ASCII.GetString(buffer.Slice(0, i++)) != "HTTP/1.1 200 OK")
+            if((i = buffer.IndexOfEOL()) < 0)
             {
                 throw new InvalidDataException("Not a SSDP success response");
             }
 
-            var reply = new SsdpReply();
+            var reply = new SsdpReply(ASCII.GetString(buffer.Slice(0, i++)));
 
             for(var r = buffer.Slice(++i); (i = r.IndexOfEOL()) >= 0; r = r.Slice(++i))
             {
