@@ -27,13 +27,13 @@ namespace IoT.Protocol.Upnp
         }
 
         public SsdpSearchEnumerator(IPEndPoint groupEndpoint, string searchTarget, TimeSpan pollInterval) :
-            base(SocketFactory.CreateIPv4UdpMulticastSender, groupEndpoint, false, pollInterval) {}
+            this(groupEndpoint, SocketFactory.CreateIPv4UdpMulticastSender, searchTarget, pollInterval) {}
 
         public SsdpSearchEnumerator(TimeSpan pollInterval, string searchTarget = All) :
             this(SocketFactory.GetIPv4SsdpGroup(), searchTarget, pollInterval) {}
 
         public SsdpSearchEnumerator(string searchTarget = All) :
-            this(SocketFactory.GetIPv4SsdpGroup(), searchTarget, TimeSpan.FromSeconds(30)) {}
+            this(TimeSpan.FromSeconds(30), searchTarget) {}
 
         protected override int SendBufferSize { get; }
 

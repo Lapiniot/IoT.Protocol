@@ -24,7 +24,7 @@ namespace IoT.Protocol.Upnp
             get
             {
                 string v = this["USN"];
-                return v.Substring(0, v.IndexOf(':', v.IndexOf(':') + 1));
+                return v.Substring(0, v.IndexOf(':', v.IndexOf(':', StringComparison.InvariantCulture) + 1));
             }
         }
 
