@@ -19,7 +19,8 @@ namespace IoT.Protocol.Upnp.Services
         public static string GetSchema(Type serviceType)
         {
             return serviceType.GetCustomAttribute<ServiceSchemaAttribute>()?.Schema ??
-                   throw new ArgumentException($"Valid service implementation must be marked with {nameof(ServiceSchemaAttribute)} to denote valid UPnP service schema it implements.");
+                   throw new ArgumentException(
+                       $"Valid service implementation must be marked with {nameof(ServiceSchemaAttribute)} to denote valid UPnP service schema it implements.");
         }
     }
 }

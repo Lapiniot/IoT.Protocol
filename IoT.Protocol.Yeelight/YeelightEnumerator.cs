@@ -6,6 +6,6 @@ namespace IoT.Protocol.Yeelight
 {
     public class YeelightEnumerator : SsdpSearchEnumerator
     {
-        public YeelightEnumerator() : base(SocketFactory.GetIPv4MulticastGroup(1982), "wifi_bulb", TimeSpan.FromSeconds(3)) {}
+        public YeelightEnumerator() : base(Factory.GetIPv4MulticastGroup(1982), "wifi_bulb", TimeSpan.FromSeconds(3)) {}
     }
 }

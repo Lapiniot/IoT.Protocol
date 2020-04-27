@@ -12,11 +12,16 @@ namespace IoT.Protocol.Lumi
 {
     public class LumiEnumerator : UdpEnumerator<(IPAddress Address, ushort Port, string Sid)>
     {
-        public LumiEnumerator() : base(SocketFactory.CreateIPv4UdpMulticastSender, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, FromMinutes(5)) {}
+        public LumiEnumerator() : base(CreateSocket, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, FromMinutes(5)) {}
 
         protected override int SendBufferSize { get; } = 0xF;
 
         protected override int ReceiveBufferSize { get; } = 0x100;
+
+        private static Socket CreateSocket(IPEndPoint _)
+        {
+            return Factory.CreateIPv4UdpMulticastSender();
+        }
 
         protected override ValueTask<(IPAddress Address, ushort Port, string Sid)> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp,
             CancellationToken cancellationToken)

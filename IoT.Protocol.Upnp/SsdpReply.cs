@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using static System.StringComparison;
 using static System.Text.Encoding;
 
 namespace IoT.Protocol.Upnp
@@ -19,18 +20,17 @@ namespace IoT.Protocol.Upnp
 
         public string UniqueServiceName => this["USN"];
 
-        public string UniqueDeviceName => this.TryGetValue("USN", out var usn) && !string.IsNullOrWhiteSpace(usn) ?
-            usn.Substring(0, usn.IndexOf(':', usn.IndexOf(':', StringComparison.InvariantCulture) + 1)) : null;
+        public string UniqueDeviceName => TryGetValue("USN", out var usn) && !string.IsNullOrWhiteSpace(usn)
+            ? usn.Substring(0, usn.IndexOf(':', usn.IndexOf(':', InvariantCulture) + 1))
+            : null;
 
         public string Server => this["SERVER"];
 
         public string SearchTarget => this["ST"];
 
         public string StartLine { get; }
-        
-        public double MaxAge => this.TryGetValue("CACHE-CONTROL", out var value) &&
-            value != null && value.Length > 8 &&
-            int.TryParse(value[8..], out var age) ? age : 0;
+
+        public double MaxAge => TryGetValue("CACHE-CONTROL", out var value) && value != null && value.Length > 8 && int.TryParse(value[8..], out var age) ? age : 0;
 
         public static SsdpReply Parse(Span<byte> buffer)
         {

@@ -20,8 +20,7 @@ namespace IoT.Protocol
         private readonly bool distinctAddress;
         private readonly TimeSpan pollInterval;
 
-        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint groupEndpoint,
-            bool distinctAddress, TimeSpan pollInterval)
+        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint groupEndpoint, bool distinctAddress, TimeSpan pollInterval)
         {
             createSocket = createSocketFactory;
             GroupEndpoint = groupEndpoint;
@@ -57,7 +56,7 @@ namespace IoT.Protocol
         {
             var addresses = new HashSet<IPAddress>(EqualityComparer<IPAddress>.Default);
 
-            using var socket = createSocket();
+            using var socket = createSocket(GroupEndpoint);
             socket.ReceiveBufferSize = ReceiveBufferSize;
             socket.SendBufferSize = SendBufferSize;
 
