@@ -87,7 +87,10 @@ namespace IoT.Protocol.Upnp.DIDL
 
             if(res.Attributes is { Count: var count } && count > 0)
             {
-                foreach(var (k, v) in res.Attributes) writer.WriteString(k, v);
+                foreach(var (k, v) in res.Attributes)
+                {
+                    writer.WriteString(k, v);
+                }
             }
 
             writer.WriteEndObject();
@@ -97,7 +100,11 @@ namespace IoT.Protocol.Upnp.DIDL
         private static void EmitAlbumArts(Utf8JsonWriter writer, Item item)
         {
             writer.WriteStartArray("albumArts");
-            foreach(var art in item.AlbumArts) writer.WriteStringValue(art);
+            foreach(var art in item.AlbumArts)
+            {
+                writer.WriteStringValue(art);
+            }
+
             writer.WriteEndArray();
         }
 
@@ -114,23 +121,34 @@ namespace IoT.Protocol.Upnp.DIDL
             if(item.Artists?.Count > 0)
             {
                 writer.WriteStartArray("artists");
-                foreach(var artist in item.Artists) writer.WriteStringValue(artist);
+                foreach(var artist in item.Artists)
+                {
+                    writer.WriteStringValue(artist);
+                }
+
                 writer.WriteEndArray();
             }
 
             if(item.Authors?.Count > 0)
             {
                 writer.WriteStartArray("authors");
-                foreach(var artist in item.Authors) writer.WriteStringValue(artist);
+                foreach(var artist in item.Authors)
+                {
+                    writer.WriteStringValue(artist);
+                }
+
                 writer.WriteEndArray();
             }
 
-            if(item.Genres?.Count > 0)
+            if(!(item.Genres?.Count > 0)) return;
+
+            writer.WriteStartArray("genres");
+            foreach(var artist in item.Genres)
             {
-                writer.WriteStartArray("genres");
-                foreach(var artist in item.Genres) writer.WriteStringValue(artist);
-                writer.WriteEndArray();
+                writer.WriteStringValue(artist);
             }
+
+            writer.WriteEndArray();
         }
     }
 }
