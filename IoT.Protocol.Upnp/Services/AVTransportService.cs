@@ -96,7 +96,7 @@ namespace IoT.Protocol.Upnp.Services
             return InvokeAsync("Previous", cancellationToken, ("InstanceID", instanceId));
         }
 
-        public Task SeekAsync(uint instanceId = 0, string seekMode = null, string target = null, CancellationToken cancellationToken = default)
+        public Task SeekAsync(uint instanceId = 0, string seekMode = "ABS_TIME", string target = null, CancellationToken cancellationToken = default)
         {
             // seekMode:
             //TRACK_NR
