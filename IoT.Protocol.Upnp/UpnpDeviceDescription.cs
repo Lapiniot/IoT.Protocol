@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.UriPartial;
 
@@ -15,7 +12,7 @@ namespace IoT.Protocol.Upnp
     {
         public static readonly XNamespace NS = "urn:schemas-upnp-org:device-1-0";
 
-        internal UpnpDeviceDescription(Uri location, IEnumerable<UpnpServiceDescription> services, IEnumerable<Icon> icons, string udn, string deviceType,
+        public UpnpDeviceDescription(Uri location, IEnumerable<UpnpServiceDescription> services, IEnumerable<Icon> icons, string udn, string deviceType,
             string friendlyName, string manufacturer, string modelDescription, string modelName, string modelNumber)
         {
             if(string.IsNullOrWhiteSpace(udn)) throw new ArgumentException("Shouldn't be null or empty", nameof(udn));
@@ -44,18 +41,16 @@ namespace IoT.Protocol.Upnp
         public string ModelName { get; }
         public string ModelNumber { get; }
 
-        public static async Task<UpnpDeviceDescription> LoadAsync(Uri location, CancellationToken cancellationToken)
+        public static UpnpDeviceDescription ParseXml(Stream stream, Uri location)
         {
-            if(location == null) throw new ArgumentNullException(nameof(location));
+            if(stream is null) throw new ArgumentNullException(nameof(stream));
+            if(location is null) throw new ArgumentNullException(nameof(location));
 
-            using var client = new HttpClient();
-            using var response = await client.GetAsync(location, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            var x = XDocument.Load(stream);
+            var xdoc = XDocument.Load(stream);
+
+            var dev = xdoc.Root.Element(NS + "device");
 
             var baseUri = new Uri(location.GetLeftPart(Authority));
-
-            var dev = x.Root.Element(NS + "device");
 
             var services = dev.Element(NS + "serviceList").Elements(NS + "service").Select(s => new UpnpServiceDescription(
                     s.Element(NS + "serviceType").Value,
