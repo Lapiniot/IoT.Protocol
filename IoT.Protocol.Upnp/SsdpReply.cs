@@ -20,19 +20,6 @@ namespace IoT.Protocol.Upnp
 
         public string UniqueServiceName => this["USN"];
 
-        public string UniqueDeviceName
-        {
-            get
-            {
-                if(!TryGetValue("USN", out var usn) || string.IsNullOrWhiteSpace(usn)) return null;
-                int index1 = usn.IndexOf(':', InvariantCulture) + 1;
-                if(index1 <= 0) return usn;
-                int index2 = usn.IndexOf(':', index1);
-                if(index2 < 0) return usn[index1..];
-                return usn[index1..index2];
-            }
-        }
-
         public string Server => this["SERVER"];
 
         public string SearchTarget => this["ST"];
