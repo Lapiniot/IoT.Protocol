@@ -36,7 +36,7 @@ namespace IoT.Protocol.Upnp
             return null;
         }
 
-        public static async Task<(IDictionary<string, string> Metadata, IDictionary<string, string> Vendor)> ParseAsync(XmlReader reader)
+        public static async Task<(IReadOnlyDictionary<string, string> Metadata, IReadOnlyDictionary<string, string> Vendor)> ParseAsync(XmlReader reader)
         {
             var content = await ReadLastChangeContentAsync(reader).ConfigureAwait(false);
 
