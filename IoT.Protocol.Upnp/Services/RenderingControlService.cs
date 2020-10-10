@@ -33,7 +33,8 @@ namespace IoT.Protocol.Upnp.Services
 
         public Task<IDictionary<string, string>> SetMuteAsync(uint instanceId, bool mute, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("SetMute", cancellationToken, ("InstanceID", instanceId), ("Channel", "Master"), ("DesiredMute", mute));
+            return InvokeAsync("SetMute", cancellationToken, ("InstanceID", instanceId), ("Channel", "Master"),
+                ("DesiredMute", mute ? "true" : "false"));
         }
 
         public Task<IDictionary<string, string>> GetPresetsAsync(uint instanceId, CancellationToken cancellationToken = default)
