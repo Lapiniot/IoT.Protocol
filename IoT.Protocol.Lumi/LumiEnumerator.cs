@@ -5,13 +5,14 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Policies;
 using static System.Globalization.CultureInfo;
 
 namespace IoT.Protocol.Lumi
 {
     public class LumiEnumerator : UdpEnumerator<(IPAddress Address, ushort Port, string Sid)>
     {
-        public LumiEnumerator(IRetryPolicy discoveryPolicy) :
+        public LumiEnumerator(IRepeatPolicy discoveryPolicy) :
             base(CreateSocket, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, discoveryPolicy)
         {
         }

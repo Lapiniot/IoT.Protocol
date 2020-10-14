@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Policies;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,9 +19,9 @@ namespace IoT.Protocol
     {
         private readonly CreateSocketFactory createSocket;
         private readonly bool distinctAddress;
-        private readonly IRetryPolicy discoveryPolicy;
+        private readonly IRepeatPolicy discoveryPolicy;
 
-        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint groupEndpoint, bool distinctAddress, IRetryPolicy discoveryPolicy)
+        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint groupEndpoint, bool distinctAddress, IRepeatPolicy discoveryPolicy)
         {
             createSocket = createSocketFactory;
             GroupEndpoint = groupEndpoint;
@@ -67,7 +68,7 @@ namespace IoT.Protocol
 
             var discoveryMessage = new ArraySegment<byte>(datagram, 0, count);
 
-            var _ = discoveryPolicy.RetryAsync(_ => socket.SendToAsync(discoveryMessage, default, GroupEndpoint), cancellationToken);
+            var _ = discoveryPolicy.RepeatAsync(_ => socket.SendToAsync(discoveryMessage, default, GroupEndpoint), cancellationToken);
 
             while(!cancellationToken.IsCancellationRequested)
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Policies;
 using System.Threading;
 using System.Threading.Tasks;
 using static System.Net.Sockets.Factory;
@@ -15,7 +16,7 @@ namespace IoT.Protocol.Upnp
         private readonly string searchTarget;
         private readonly string userAgent;
 
-        protected SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, CreateSocketFactory socketFactory, IRetryPolicy discoveryPolicy) :
+        protected SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, CreateSocketFactory socketFactory, IRepeatPolicy discoveryPolicy) :
             base(socketFactory, groupEndpoint, false, discoveryPolicy)
         {
             if(string.IsNullOrEmpty(searchTarget)) throw new ArgumentException("Parameter couldn't be null or empty.", nameof(searchTarget));
@@ -26,12 +27,12 @@ namespace IoT.Protocol.Upnp
             SendBufferSize = 68 + host.Length + searchTarget.Length + userAgent.Length;
         }
 
-        public SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRetryPolicy discoveryPolicy) :
+        public SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRepeatPolicy discoveryPolicy) :
             this(searchTarget, groupEndpoint, CreateSocket, discoveryPolicy)
         {
         }
 
-        public SsdpSearchEnumerator(string searchTarget, IRetryPolicy discoveryPolicy) :
+        public SsdpSearchEnumerator(string searchTarget, IRepeatPolicy discoveryPolicy) :
             this(searchTarget, GetIPv4SSDPGroup(), CreateSocket, discoveryPolicy)
         {
         }
