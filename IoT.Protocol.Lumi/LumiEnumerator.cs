@@ -6,13 +6,15 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using static System.Globalization.CultureInfo;
-using static System.TimeSpan;
 
 namespace IoT.Protocol.Lumi
 {
     public class LumiEnumerator : UdpEnumerator<(IPAddress Address, ushort Port, string Sid)>
     {
-        public LumiEnumerator() : base(CreateSocket, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, FromMinutes(5)) {}
+        public LumiEnumerator(IRetryPolicy discoveryPolicy) :
+            base(CreateSocket, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, discoveryPolicy)
+        {
+        }
 
         protected override int SendBufferSize { get; } = 0xF;
 

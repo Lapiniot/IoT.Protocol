@@ -1,17 +1,24 @@
 using System;
 using System.Net;
 using static System.Net.Sockets.Factory;
-using static IoT.Protocol.Upnp.UpnpServices;
 
 namespace IoT.Protocol.Upnp
 {
     public sealed class SsdpEventEnumerator : SsdpSearchEnumerator
     {
-        public SsdpEventEnumerator(IPEndPoint groupEndpoint, string searchTarget, TimeSpan pollInterval) :
-            base(groupEndpoint, CreateUdpMulticastSender, searchTarget, pollInterval) {}
+        public SsdpEventEnumerator(IRetryPolicy discoveryPolicy) :
+            this("ssdp:all", GetIPv4SSDPGroup(), discoveryPolicy)
+        {
+        }
 
-        public SsdpEventEnumerator(TimeSpan pollInterval, string searchTarget) : this(GetIPv4SSDPGroup(), searchTarget, pollInterval) {}
+        public SsdpEventEnumerator(string searchTarget, IRetryPolicy discoveryPolicy) :
+            this(searchTarget, GetIPv4SSDPGroup(), discoveryPolicy)
+        {
+        }
 
-        public SsdpEventEnumerator(string searchTarget = All) : this(TimeSpan.FromSeconds(30), searchTarget) {}
+        public SsdpEventEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRetryPolicy discoveryPolicy) :
+            base(searchTarget, groupEndpoint, CreateUdpMulticastSender, discoveryPolicy)
+        {
+        }
     }
 }

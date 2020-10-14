@@ -18,14 +18,14 @@ namespace IoT.Protocol
     {
         private readonly CreateSocketFactory createSocket;
         private readonly bool distinctAddress;
-        private readonly TimeSpan pollInterval;
+        private readonly IRetryPolicy discoveryPolicy;
 
-        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint groupEndpoint, bool distinctAddress, TimeSpan pollInterval)
+        protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint groupEndpoint, bool distinctAddress, IRetryPolicy discoveryPolicy)
         {
             createSocket = createSocketFactory;
             GroupEndpoint = groupEndpoint;
             this.distinctAddress = distinctAddress;
-            this.pollInterval = pollInterval;
+            this.discoveryPolicy = discoveryPolicy;
         }
 
         protected abstract int SendBufferSize { get; }
@@ -65,7 +65,9 @@ namespace IoT.Protocol
 
             var count = WriteDiscoveryDatagram(datagram);
 
-            var _ = StartDiscoverySenderAsync(socket, GroupEndpoint, new ArraySegment<byte>(datagram, 0, count), pollInterval, cancellationToken);
+            var discoveryMessage = new ArraySegment<byte>(datagram, 0, count);
+
+            var _ = discoveryPolicy.RetryAsync(_ => socket.SendToAsync(discoveryMessage, default, GroupEndpoint), cancellationToken);
 
             while(!cancellationToken.IsCancellationRequested)
             {
@@ -88,22 +90,6 @@ namespace IoT.Protocol
                 }
 
                 if(instance != null) yield return instance;
-            }
-        }
-
-        private static async Task StartDiscoverySenderAsync(Socket socket, EndPoint endpoint, ArraySegment<byte> datagram, TimeSpan interval, CancellationToken cancellationToken)
-        {
-            try
-            {
-                while(!cancellationToken.IsCancellationRequested)
-                {
-                    await socket.SendToAsync(datagram, default, endpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
-                    await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch(OperationCanceledException)
-            {
-                // ignored
             }
         }
 

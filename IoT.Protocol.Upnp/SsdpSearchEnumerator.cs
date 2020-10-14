@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using static System.Net.Sockets.Factory;
 using static System.Runtime.InteropServices.RuntimeInformation;
 using static System.Text.Encoding;
-using static IoT.Protocol.Upnp.UpnpServices;
 
 namespace IoT.Protocol.Upnp
 {
@@ -16,8 +15,8 @@ namespace IoT.Protocol.Upnp
         private readonly string searchTarget;
         private readonly string userAgent;
 
-        protected SsdpSearchEnumerator(IPEndPoint groupEndpoint, CreateSocketFactory socketFactory, string searchTarget, TimeSpan pollInterval) :
-            base(socketFactory, groupEndpoint, false, pollInterval)
+        protected SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, CreateSocketFactory socketFactory, IRetryPolicy discoveryPolicy) :
+            base(socketFactory, groupEndpoint, false, discoveryPolicy)
         {
             if(string.IsNullOrEmpty(searchTarget)) throw new ArgumentException("Parameter couldn't be null or empty.", nameof(searchTarget));
 
@@ -27,15 +26,17 @@ namespace IoT.Protocol.Upnp
             SendBufferSize = 68 + host.Length + searchTarget.Length + userAgent.Length;
         }
 
-        public SsdpSearchEnumerator(IPEndPoint groupEndpoint, string searchTarget, TimeSpan pollInterval) :
-            this(groupEndpoint, CreateSocket, searchTarget, pollInterval) {}
+        public SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRetryPolicy discoveryPolicy) :
+            this(searchTarget, groupEndpoint, CreateSocket, discoveryPolicy)
+        {
+        }
 
-        public SsdpSearchEnumerator(TimeSpan pollInterval, string searchTarget) : this(GetIPv4SSDPGroup(), searchTarget, pollInterval) {}
-
-        public SsdpSearchEnumerator(string searchTarget = All) : this(TimeSpan.FromSeconds(30), searchTarget) {}
+        public SsdpSearchEnumerator(string searchTarget, IRetryPolicy discoveryPolicy) :
+            this(searchTarget, GetIPv4SSDPGroup(), CreateSocket, discoveryPolicy)
+        {
+        }
 
         protected override int SendBufferSize { get; }
-
         protected override int ReceiveBufferSize { get; } = 0x400;
 
         private static Socket CreateSocket(IPEndPoint endPoint)
