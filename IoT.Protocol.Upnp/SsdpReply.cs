@@ -28,6 +28,10 @@ namespace IoT.Protocol.Upnp
 
         public double MaxAge => TryGetValue("CACHE-CONTROL", out var value) && value != null && value.Length > 8 && int.TryParse(value[8..], out var age) ? age : 0;
 
+        public string BootId => TryGetValue("BOOTID.UPNP.ORG", out var value) ? value : null;
+
+        public string ConfigId => TryGetValue("CONFIGID.UPNP.ORG", out var value) ? value : null;
+
         public static SsdpReply Parse(Span<byte> buffer)
         {
             int i;
