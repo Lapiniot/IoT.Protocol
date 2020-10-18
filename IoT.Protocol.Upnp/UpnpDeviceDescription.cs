@@ -13,7 +13,8 @@ namespace IoT.Protocol.Upnp
         public static readonly XNamespace NS = "urn:schemas-upnp-org:device-1-0";
 
         public UpnpDeviceDescription(Uri location, IEnumerable<UpnpServiceDescription> services, IEnumerable<Icon> icons, string udn, string deviceType,
-            string friendlyName, string manufacturer, string modelDescription, string modelName, string modelNumber)
+            string friendlyName, string manufacturer, string modelDescription, string modelName, string modelNumber,
+            Uri manufacturerUri, Uri modelUri, Uri presentationUri)
         {
             if(string.IsNullOrWhiteSpace(udn)) throw new ArgumentException("Shouldn't be null or empty", nameof(udn));
             if(string.IsNullOrWhiteSpace(deviceType)) throw new ArgumentException("Shouldn't be null or empty", nameof(deviceType));
@@ -28,6 +29,9 @@ namespace IoT.Protocol.Upnp
             ModelDescription = modelDescription;
             ModelName = modelName;
             ModelNumber = modelNumber;
+            ManufacturerUri = manufacturerUri;
+            ModelUri = modelUri;
+            PresentationUri = presentationUri;
         }
 
         public Uri Location { get; }
@@ -40,6 +44,9 @@ namespace IoT.Protocol.Upnp
         public string ModelDescription { get; }
         public string ModelName { get; }
         public string ModelNumber { get; }
+        public Uri ManufacturerUri { get; }
+        public Uri ModelUri { get; }
+        public Uri PresentationUri { get; }
 
         public static UpnpDeviceDescription ParseXml(Stream stream, Uri location)
         {
@@ -75,7 +82,17 @@ namespace IoT.Protocol.Upnp
                 dev.Element(NS + "manufacturer").Value,
                 dev.Element(NS + "modelDescription")?.Value,
                 dev.Element(NS + "modelName").Value,
-                dev.Element(NS + "modelNumber")?.Value);
+                dev.Element(NS + "modelNumber")?.Value,
+                BuildUri(dev.Element(NS + "manufacturerURL")?.Value),
+                BuildUri(dev.Element(NS + "modelURL")?.Value),
+                BuildUri(dev.Element(NS + "presentationURL")?.Value));
+
+            Uri BuildUri(string value)
+            {
+                return !string.IsNullOrWhiteSpace(value) && Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var uri)
+                    ? uri.IsAbsoluteUri ? uri : new Uri(baseUri, uri)
+                    : null;
+            }
         }
     }
 }
