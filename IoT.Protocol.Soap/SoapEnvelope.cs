@@ -27,12 +27,13 @@ namespace IoT.Protocol.Soap
         }
 
         public SoapEnvelope(string action, string schema, params (string name, object value)[] args) :
-            this(action, schema, args.ToDictionary(a => a.name, a => Convert.ToString(a.value, InvariantCulture))) {}
+            this(action, schema, args.ToDictionary(a => a.name, a => Convert.ToString(a.value, InvariantCulture)))
+        {
+        }
 
         public string Action { get; }
         public string Schema { get; }
         public IDictionary<string, string> Arguments { get; }
-
         public string this[string name] => Arguments[name];
 
         public override string ToString()
@@ -70,7 +71,6 @@ namespace IoT.Protocol.Soap
         {
             using var r = XmlReader.Create(textReader);
 
-            if(!r.Read() || r.NodeType != XmlNodeType.XmlDeclaration) throw new InvalidDataException("Invalid XML data");
             if(r.MoveToContent() != Element || r.LocalName != "Envelope" || r.NamespaceURI != Ns) throw new InvalidDataException("Invalid XML data");
             if(!r.ReadToDescendant("Body", Ns) || !r.Read()) throw new InvalidDataException("Invalid XML data");
             r.MoveToElement();
