@@ -1,7 +1,7 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -54,19 +54,15 @@ namespace IoT.Protocol.Soap
             {
                 response.EnsureSuccessStatusCode();
             }
-            catch
+            catch(HttpRequestException hre) when(response.StatusCode == HttpStatusCode.InternalServerError)
             {
-                Debug.WriteLine(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
-                throw;
+                var error = await ParseResponseAsync(response).ConfigureAwait(false);
+                var code = error.Arguments.TryGetValue("errorCode", out var value) && int.TryParse(value, out var c) ? c : 0;
+                var description = error.Arguments.TryGetValue("errorDescription", out value) ? value : string.Empty;
+                throw new SoapException($"SOAP action invocation error: {error["faultstring"]}", hre, code, description);
             }
 
-            var charSet = response.Content.Headers.ContentType?.CharSet?.Trim('"');
-
-            var encoding = charSet != null ? Encoding.GetEncoding(charSet) : Encoding.UTF8;
-
-            await using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            using var readerWithEncoding = new StreamReader(responseStream, encoding);
-            var envelope = SoapEnvelope.Deserialize(readerWithEncoding);
+            var envelope = await ParseResponseAsync(response).ConfigureAwait(false);
 
             if(envelope.Action != message.Action + "Response")
             {
@@ -74,6 +70,15 @@ namespace IoT.Protocol.Soap
             }
 
             return envelope;
+        }
+
+        private static async Task<SoapEnvelope> ParseResponseAsync(HttpResponseMessage response)
+        {
+            await using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            var charSet = response.Content.Headers.ContentType?.CharSet?.Trim('"');
+            var encoding = charSet != null ? Encoding.GetEncoding(charSet) : Encoding.UTF8;
+            using var reader = new StreamReader(responseStream, encoding);
+            return SoapEnvelope.Deserialize(reader);
         }
 
         private static HttpRequestMessage CreateRequestMessage(Uri actionUri, SoapEnvelope message)
