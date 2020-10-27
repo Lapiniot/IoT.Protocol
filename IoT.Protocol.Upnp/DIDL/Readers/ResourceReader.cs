@@ -31,14 +31,18 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                 {
                     reader.MoveToAttribute(i);
 
-                    if(reader.Name == "protocolInfo")
+                    switch(reader.Name)
                     {
-                        resource.Protocol = reader.Value;
-                    }
-                    else
-                    {
-                        resource.Attributes ??= new Dictionary<string, string>();
-                        resource.Attributes[reader.Name] = reader.Value;
+                        case "protocolInfo":
+                            resource.Protocol = reader.Value;
+                            break;
+                        case "size":
+                            resource.Size = reader.ReadContentAsLong();
+                            break;
+                        default:
+                            resource.Attributes ??= new Dictionary<string, string>();
+                            resource.Attributes[reader.Name] = reader.Value;
+                            break;
                     }
                 }
             }

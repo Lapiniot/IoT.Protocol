@@ -84,6 +84,7 @@ namespace IoT.Protocol.Upnp.DIDL
             writer.WriteStartObject("res");
             writer.WriteString("url", res.Url);
             writer.WriteString("proto", res.Protocol);
+            if(res.Size != null) writer.WriteNumber("size", res.Size.Value);
 
             if(res.Attributes is { Count: var count } && count > 0)
             {
