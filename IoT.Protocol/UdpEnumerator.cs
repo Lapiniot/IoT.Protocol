@@ -7,8 +7,6 @@ using System.Policies;
 using System.Threading;
 using System.Threading.Tasks;
 
-#pragma warning disable 8425
-
 namespace IoT.Protocol
 {
     /// <summary>
@@ -18,8 +16,8 @@ namespace IoT.Protocol
     public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     {
         private readonly CreateSocketFactory createSocket;
-        private readonly bool distinctAddress;
         private readonly IRepeatPolicy discoveryPolicy;
+        private readonly bool distinctAddress;
 
         protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint groupEndpoint, bool distinctAddress, IRepeatPolicy discoveryPolicy)
         {
@@ -32,24 +30,6 @@ namespace IoT.Protocol
         protected abstract int SendBufferSize { get; }
         protected abstract int ReceiveBufferSize { get; }
         public IPEndPoint GroupEndpoint { get; }
-
-        /// <summary>
-        /// Factory method to create IoT device instance by parsing discovery response datagram bytes
-        /// </summary>
-        /// <param name="buffer">Buffer containing message</param>
-        /// <param name="remoteEp">Responder endpoint information</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>
-        /// Instance of type
-        /// <typeparam name="TThing" />
-        /// </returns>
-        protected abstract ValueTask<TThing> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Returns datagram bytes to be send over the network for discovery
-        /// </summary>
-        /// <returns>Raw datagram bytes</returns>
-        protected abstract int WriteDiscoveryDatagram(Span<byte> span);
 
         #region Implementation of IAsyncEnumerable<out TThing>
 
@@ -68,7 +48,7 @@ namespace IoT.Protocol
 
             var discoveryMessage = new ArraySegment<byte>(datagram, 0, count);
 
-            var _ = discoveryPolicy.RepeatAsync(_ => socket.SendToAsync(discoveryMessage, default, GroupEndpoint), cancellationToken);
+            var _ = discoveryPolicy.RepeatAsync(__ => socket.SendToAsync(discoveryMessage, default, GroupEndpoint), cancellationToken);
 
             while(!cancellationToken.IsCancellationRequested)
             {
@@ -95,5 +75,23 @@ namespace IoT.Protocol
         }
 
         #endregion
+
+        /// <summary>
+        /// Factory method to create IoT device instance by parsing discovery response datagram bytes
+        /// </summary>
+        /// <param name="buffer">Buffer containing message</param>
+        /// <param name="remoteEp">Responder endpoint information</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>
+        /// Instance of type
+        /// <typeparam name="TThing" />
+        /// </returns>
+        protected abstract ValueTask<TThing> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns datagram bytes to be send over the network for discovery
+        /// </summary>
+        /// <returns>Raw datagram bytes</returns>
+        protected abstract int WriteDiscoveryDatagram(Span<byte> span);
     }
 }

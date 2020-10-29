@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
@@ -41,7 +40,7 @@ namespace IoT.Protocol.Upnp
 
             if(string.IsNullOrEmpty(content)) return default;
 
-            string eventNamesapce = null;
+            string eventNamespace = null;
             var metadata = new Dictionary<string, string>();
             var vendor = new Dictionary<string, string>();
 
@@ -56,16 +55,16 @@ namespace IoT.Protocol.Upnp
             {
                 if(xr.NodeType != Element || xr.LocalName != "Event") continue;
 
-                eventNamesapce = xr.NamespaceURI;
+                eventNamespace = xr.NamespaceURI;
 
                 while(xr.Read() && xr.Depth == 1)
                 {
-                    if(xr.NodeType != Element && xr.LocalName != "InstanceID" || xr.NamespaceURI != eventNamesapce) continue;
+                    if(xr.NodeType != Element && xr.LocalName != "InstanceID" || xr.NamespaceURI != eventNamespace) continue;
 
                     while(xr.Read() && xr.Depth == 2)
                     {
                         if(xr.NodeType != Element) continue;
-                        if(xr.NamespaceURI == eventNamesapce)
+                        if(xr.NamespaceURI == eventNamespace)
                         {
                             metadata[xr.LocalName] = xr.MoveToAttribute("val") ? xr.ReadContentAsString() : xr.ReadElementContentAsString();
                         }
@@ -79,7 +78,7 @@ namespace IoT.Protocol.Upnp
                 break;
             }
 
-            return (eventNamesapce, metadata, vendor);
+            return (eventNamespace, metadata, vendor);
         }
     }
 }

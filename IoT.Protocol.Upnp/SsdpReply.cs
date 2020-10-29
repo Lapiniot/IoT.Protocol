@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using static System.StringComparison;
 using static System.Text.Encoding;
 
 namespace IoT.Protocol.Upnp
@@ -43,7 +42,7 @@ namespace IoT.Protocol.Upnp
 
             var reply = new SsdpReply(ASCII.GetString(buffer.Slice(0, i++)));
 
-            for(var r = buffer.Slice(++i); (i = r.IndexOfEOL()) >= 0; r = r.Slice(++i))
+            for(var r = buffer[++i..]; (i = r.IndexOfEOL()) >= 0; r = r[++i..])
             {
                 var line = r.Slice(0, i++);
                 var index = line.IndexOf(Colon);
@@ -52,7 +51,7 @@ namespace IoT.Protocol.Upnp
 
                 var key = ASCII.GetString(line.Slice(0, index));
                 if(++index < line.Length && line[index] == Space) index++;
-                var value = ASCII.GetString(line.Slice(index));
+                var value = ASCII.GetString(line[index..]);
                 reply.Add(key, value);
             }
 

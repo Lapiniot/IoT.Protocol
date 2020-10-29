@@ -32,9 +32,9 @@ namespace IoT.Protocol.Upnp.DIDL
 
                     if(item.AlbumArts != null) EmitAlbumArts(writer, item);
 
-                    if(emitResourceData && item.Resource is { } r) EmitResource(writer, r);
+                    if(emitResourceData && item.Resource is {} r) EmitResource(writer, r);
 
-                    if(emitVendorData && item.Vendor is { } vendor && vendor.Count > 0) EmitVendorData(writer, vendor);
+                    if(emitVendorData && item.Vendor is {} vendor && vendor.Count > 0) EmitVendorData(writer, vendor);
 
                     writer.WriteEndObject();
                 }
@@ -59,7 +59,7 @@ namespace IoT.Protocol.Upnp.DIDL
                 writer.WriteString("id", parent.Id);
                 writer.WriteString("parentId", parent.ParentId);
                 writer.WriteString("title", parent.Title);
-                if(parent.Resource is { Url: { } url }) writer.WriteString("url", url);
+                if(parent.Resource is {Url: {} url}) writer.WriteString("url", url);
                 writer.WriteEndObject();
             }
 
@@ -86,7 +86,7 @@ namespace IoT.Protocol.Upnp.DIDL
             writer.WriteString("proto", res.Protocol);
             if(res.Size != null) writer.WriteNumber("size", res.Size.Value);
 
-            if(res.Attributes is { Count: var count } && count > 0)
+            if(res.Attributes is {Count: var count} && count > 0)
             {
                 foreach(var (k, v) in res.Attributes)
                 {

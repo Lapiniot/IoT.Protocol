@@ -1,23 +1,25 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using static System.Globalization.CultureInfo;
+using static System.String;
 using static System.UriPartial;
 
 namespace IoT.Protocol.Upnp
 {
     public class UpnpDeviceDescription
     {
+        private const string MissingElementFormat = "Missing mandatory \'{0}\' xml element";
         public static readonly XNamespace NS = "urn:schemas-upnp-org:device-1-0";
 
         public UpnpDeviceDescription(Uri location, IEnumerable<UpnpServiceDescription> services, IEnumerable<Icon> icons, string udn, string deviceType,
             string friendlyName, string manufacturer, string modelDescription, string modelName, string modelNumber,
             Uri manufacturerUri, Uri modelUri, Uri presentationUri)
         {
-            if(string.IsNullOrWhiteSpace(udn)) throw new ArgumentException("Shouldn't be null or empty", nameof(udn));
-            if(string.IsNullOrWhiteSpace(deviceType)) throw new ArgumentException("Shouldn't be null or empty", nameof(deviceType));
+            if(IsNullOrWhiteSpace(udn)) throw new ArgumentException("Shouldn't be null or empty", nameof(udn));
+            if(IsNullOrWhiteSpace(deviceType)) throw new ArgumentException("Shouldn't be null or empty", nameof(deviceType));
 
             Location = location ?? throw new ArgumentNullException(nameof(location));
             Services = services ?? throw new ArgumentNullException(nameof(services));
@@ -53,35 +55,37 @@ namespace IoT.Protocol.Upnp
             if(stream is null) throw new ArgumentNullException(nameof(stream));
             if(location is null) throw new ArgumentNullException(nameof(location));
 
-            var xdoc = XDocument.Load(stream);
+            var doc = XDocument.Load(stream);
 
-            var dev = xdoc.Root.Element(NS + "device");
+            var dev = (doc.Root ?? throw new InvalidDataException("Invalid XML document"))
+                .Element(NS + "device") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "device"));
 
             var baseUri = new Uri(location.GetLeftPart(Authority));
 
-            var services = dev.Element(NS + "serviceList").Elements(NS + "service").Select(s => new UpnpServiceDescription(
-                    s.Element(NS + "serviceType").Value,
-                    s.Element(NS + "serviceId").Value,
-                    new Uri(baseUri, s.Element(NS + "SCPDURL").Value),
-                    new Uri(baseUri, s.Element(NS + "controlURL").Value),
-                    new Uri(baseUri, s.Element(NS + "eventSubURL").Value)))
+            var servicesElement = dev.Element(NS + "serviceList") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "serviceList"));
+            var services = servicesElement.Elements(NS + "service").Select(s => new UpnpServiceDescription(
+                    (s.Element(NS + "serviceType") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "serviceType"))).Value,
+                    (s.Element(NS + "serviceId") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "serviceId"))).Value,
+                    new Uri(baseUri, (s.Element(NS + "SCPDURL") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "SCPDURL"))).Value),
+                    new Uri(baseUri, (s.Element(NS + "controlURL") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "controlURL"))).Value),
+                    new Uri(baseUri, (s.Element(NS + "eventSubURL") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "eventSubURL"))).Value)))
                 .ToArray();
 
             var icons = dev.Element(NS + "iconList")?.Elements(NS + "icon").Select(i => new Icon(
-                    new Uri(baseUri, i.Element(NS + "url").Value),
-                    i.Element(NS + "mimetype").Value,
-                    int.Parse(i.Element(NS + "depth").Value, CultureInfo.InvariantCulture),
-                    int.Parse(i.Element(NS + "width").Value, CultureInfo.InvariantCulture),
-                    int.Parse(i.Element(NS + "height").Value, CultureInfo.InvariantCulture)))
+                    new Uri(baseUri, (i.Element(NS + "url") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "url"))).Value),
+                    i.Element(NS + "mimetype")?.Value,
+                    int.Parse((i.Element(NS + "depth") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "depth"))).Value, InvariantCulture),
+                    int.Parse((i.Element(NS + "width") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "width"))).Value, InvariantCulture),
+                    int.Parse((i.Element(NS + "height") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "height"))).Value, InvariantCulture)))
                 .ToArray();
 
             return new UpnpDeviceDescription(location, services, icons ?? Array.Empty<Icon>(),
-                dev.Element(NS + "UDN").Value,
-                dev.Element(NS + "deviceType").Value,
-                dev.Element(NS + "friendlyName").Value,
-                dev.Element(NS + "manufacturer").Value,
+                (dev.Element(NS + "UDN") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "UDN"))).Value,
+                (dev.Element(NS + "deviceType") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "deviceType"))).Value,
+                dev.Element(NS + "friendlyName")?.Value,
+                dev.Element(NS + "manufacturer")?.Value,
                 dev.Element(NS + "modelDescription")?.Value,
-                dev.Element(NS + "modelName").Value,
+                dev.Element(NS + "modelName")?.Value,
                 dev.Element(NS + "modelNumber")?.Value,
                 BuildUri(dev.Element(NS + "manufacturerURL")?.Value),
                 BuildUri(dev.Element(NS + "modelURL")?.Value),
@@ -89,7 +93,7 @@ namespace IoT.Protocol.Upnp
 
             Uri BuildUri(string value)
             {
-                return !string.IsNullOrWhiteSpace(value) && Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var uri)
+                return !IsNullOrWhiteSpace(value) && Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var uri)
                     ? uri.IsAbsoluteUri ? uri : new Uri(baseUri, uri)
                     : null;
             }

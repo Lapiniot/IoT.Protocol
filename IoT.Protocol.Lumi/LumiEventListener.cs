@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace IoT.Protocol.Lumi
 {
-    public class LumiEventListener : ActivityObject, IObservable<JsonElement>
+    public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
     {
         private const int MaxReceiveBufferSize = 2048;
         private readonly IPEndPoint endpoint;
@@ -33,11 +33,14 @@ namespace IoT.Protocol.Lumi
 
         #region Overrides of ActivityObject
 
-        public override ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
-            using(observers) {}
-
-            return base.DisposeAsync();
+            using(observers)
+            using(socket)
+            using(tokenSource)
+            {
+                await base.DisposeAsync().ConfigureAwait(false);
+            }
         }
 
         #endregion

@@ -60,7 +60,7 @@ namespace IoT.Protocol.Lumi
             }
             catch(OperationCanceledException)
             {
-                completionSource.TrySetCanceled();
+                completionSource.TrySetCanceled(cancellationToken);
                 throw;
             }
             finally

@@ -28,14 +28,10 @@ namespace IoT.Protocol.Upnp
         }
 
         public SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRepeatPolicy discoveryPolicy) :
-            this(searchTarget, groupEndpoint, CreateSocket, discoveryPolicy)
-        {
-        }
+            this(searchTarget, groupEndpoint, CreateSocket, discoveryPolicy) {}
 
         public SsdpSearchEnumerator(string searchTarget, IRepeatPolicy discoveryPolicy) :
-            this(searchTarget, GetIPv4SSDPGroup(), CreateSocket, discoveryPolicy)
-        {
-        }
+            this(searchTarget, GetIPv4SSDPGroup(), CreateSocket, discoveryPolicy) {}
 
         protected override int SendBufferSize { get; }
         protected override int ReceiveBufferSize { get; } = 0x400;

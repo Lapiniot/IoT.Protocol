@@ -71,7 +71,7 @@ namespace IoT.Protocol.Yeelight
             }
             catch(OperationCanceledException)
             {
-                completionSource.TrySetCanceled();
+                completionSource.TrySetCanceled(cancellationToken);
                 throw;
             }
             finally
