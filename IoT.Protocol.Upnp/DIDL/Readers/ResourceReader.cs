@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Xml;
 using static System.Xml.XmlNodeType;
 
@@ -38,6 +40,13 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                             break;
                         case "size":
                             resource.Size = reader.ReadContentAsLong();
+                            break;
+                        case "duration":
+                            var content = reader.ReadContentAsString();
+                            if(TimeSpan.TryParse(content, CultureInfo.InvariantCulture, out var value))
+                            {
+                                resource.Duration = value;
+                            }
                             break;
                         default:
                             resource.Attributes ??= new Dictionary<string, string>();

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace IoT.Protocol.Upnp.DIDL
 {
@@ -11,5 +12,7 @@ namespace IoT.Protocol.Upnp.DIDL
         public string Url { get; set; }
 
         public long? Size { get; set; }
+
+        public TimeSpan? Duration { get; set; }
     }
 }

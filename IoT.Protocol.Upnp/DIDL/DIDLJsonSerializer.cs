@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
@@ -84,7 +85,10 @@ namespace IoT.Protocol.Upnp.DIDL
             writer.WriteStartObject("res");
             writer.WriteString("url", res.Url);
             writer.WriteString("proto", res.Protocol);
-            if(res.Size != null) writer.WriteNumber("size", res.Size.Value);
+            if(res.Size is {} size) writer.WriteNumber("size", size);
+            if(res.Duration is {} duration) writer.WriteString("duration", duration.ToString(
+                duration.Days == 0 ? (duration.Hours == 0 ? @"mm\:ss" : @"hh\:mm\:ss") : @"d\.hh\:mm\:ss",
+                CultureInfo.InvariantCulture));
 
             if(res.Attributes is {Count: var count} && count > 0)
             {
