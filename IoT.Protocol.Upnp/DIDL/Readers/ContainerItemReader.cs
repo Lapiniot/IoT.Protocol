@@ -5,9 +5,9 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
 {
     public class ContainerItemReader : ItemReader<Container>
     {
-        private static ContainerItemReader instance;
-
-        public static ContainerItemReader Instance => instance ??= new ContainerItemReader();
+        public ContainerItemReader(bool parseResourceProps, bool parseVendorProps) : base(parseResourceProps, parseVendorProps)
+        {
+        }
 
         protected override Container CreateElement(string id, string parentId, bool restricted)
         {

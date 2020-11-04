@@ -19,7 +19,7 @@ namespace IoT.Protocol.Upnp.DIDL
             IgnoreWhitespace = true
         };
 
-        public static IEnumerable<Item> Parse(string content)
+        public static IEnumerable<Item> Parse(string content, bool parseResourceProps, bool parseVendorProps)
         {
             using var r = XmlReader.Create(new StringReader(content), Settings);
 
@@ -29,7 +29,7 @@ namespace IoT.Protocol.Upnp.DIDL
                 while(r.Read() && r.Depth == 1)
                 {
                     if(r.NodeType != Element || r.NamespaceURI != Ns) continue;
-                    var item = ReadItem(r);
+                    var item = ReadItem(r, parseResourceProps, parseVendorProps);
                     if(item != null) yield return item;
                 }
             }
@@ -50,7 +50,7 @@ namespace IoT.Protocol.Upnp.DIDL
                     while(r.Read() && r.Depth == depth)
                     {
                         if(r.NodeType != Element || r.NamespaceURI != Ns) continue;
-                        var item = ReadItem(r);
+                        var item = ReadItem(r, true, true);
                         if(item != null) items.Add(item);
                     }
                 }
@@ -60,16 +60,16 @@ namespace IoT.Protocol.Upnp.DIDL
             return items;
         }
 
-        private static Item ReadItem(XmlReader reader)
+        private static Item ReadItem(XmlReader reader, bool parseResourceProps, bool parseVendorProps)
         {
             if(reader.NamespaceURI == Ns)
             {
                 switch(reader.Name)
                 {
                     case "container":
-                        return ContainerItemReader.Instance.Read(reader);
+                        return new ContainerItemReader(parseResourceProps, parseVendorProps).Read(reader);
                     case "item":
-                        return MediaItemReader.Instance.Read(reader);
+                        return new MediaItemReader(parseResourceProps, parseVendorProps).Read(reader);
                 }
             }
 

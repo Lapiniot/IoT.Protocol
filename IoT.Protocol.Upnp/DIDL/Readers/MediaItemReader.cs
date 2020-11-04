@@ -7,9 +7,9 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
 {
     public class MediaItemReader : ItemReader<MediaItem>
     {
-        private static MediaItemReader instance;
-
-        public static MediaItemReader Instance => instance ??= new MediaItemReader();
+        public MediaItemReader(bool parseResourceProps, bool parseVendorProps) : base(parseResourceProps, parseVendorProps)
+        {
+        }
 
         #region Overrides of ItemReader<MediaItem>
 
@@ -25,60 +25,60 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
             switch(reader.NamespaceURI)
             {
                 case DC:
-                {
-                    switch(reader.LocalName)
                     {
-                        case "creator":
-                            element.Creator = reader.ReadElementContentAsString();
-                            return true;
-                        case "date":
-                            element.Date = reader.ReadElementContentAsDateTime();
-                            return true;
-                        case "description":
-                            element.Description = reader.ReadElementContentAsString();
-                            return true;
-                    }
+                        switch(reader.LocalName)
+                        {
+                            case "creator":
+                                element.Creator = reader.ReadElementContentAsString();
+                                return true;
+                            case "date":
+                                element.Date = reader.ReadElementContentAsDateTime();
+                                return true;
+                            case "description":
+                                element.Description = reader.ReadElementContentAsString();
+                                return true;
+                        }
 
-                    break;
-                }
+                        break;
+                    }
                 case UPNP:
-                {
-                    switch(reader.LocalName)
                     {
-                        case "artist":
-                            (element.Artists ??= new List<string>()).Add(reader.ReadElementContentAsString());
-                            return true;
-                        case "album":
-                            element.Album = reader.ReadElementContentAsString();
-                            return true;
-                        case "artistDiscographyURI":
-                            element.DiscographyUrl = reader.ReadElementContentAsString();
-                            return true;
-                        case "lyricsURI":
-                            element.LyricsUrl = reader.ReadElementContentAsString();
-                            return true;
-                        case "genre":
-                            (element.Genres ??= new List<string>()).Add(reader.ReadElementContentAsString());
-                            return true;
-                        case "originalTrackNumber":
-                            element.TrackNumber = reader.ReadElementContentAsInt();
-                            return true;
-                        case "actor":
-                            (element.Actors ??= new List<string>()).Add(reader.ReadElementContentAsString());
-                            return true;
-                        case "author":
-                            (element.Authors ??= new List<string>()).Add(reader.ReadElementContentAsString());
-                            return true;
-                        case "producer":
-                            (element.Producers ??= new List<string>()).Add(reader.ReadElementContentAsString());
-                            return true;
-                        case "publisher":
-                            (element.Publishers ??= new List<string>()).Add(reader.ReadElementContentAsString());
-                            return true;
-                    }
+                        switch(reader.LocalName)
+                        {
+                            case "artist":
+                                (element.Artists ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                                return true;
+                            case "album":
+                                element.Album = reader.ReadElementContentAsString();
+                                return true;
+                            case "artistDiscographyURI":
+                                element.DiscographyUrl = reader.ReadElementContentAsString();
+                                return true;
+                            case "lyricsURI":
+                                element.LyricsUrl = reader.ReadElementContentAsString();
+                                return true;
+                            case "genre":
+                                (element.Genres ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                                return true;
+                            case "originalTrackNumber":
+                                element.TrackNumber = reader.ReadElementContentAsInt();
+                                return true;
+                            case "actor":
+                                (element.Actors ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                                return true;
+                            case "author":
+                                (element.Authors ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                                return true;
+                            case "producer":
+                                (element.Producers ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                                return true;
+                            case "publisher":
+                                (element.Publishers ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                                return true;
+                        }
 
-                    break;
-                }
+                        break;
+                    }
             }
 
             return base.TryReadChildNode(reader, element);
