@@ -21,6 +21,9 @@ namespace IoT.Protocol.Upnp.DIDL
 
         public static IEnumerable<Item> Parse(string content, bool parseResourceProps, bool parseVendorProps)
         {
+            var containerReader = new ContainerItemReader(parseResourceProps, parseVendorProps);
+            var mediaItemReader = new MediaItemReader(parseResourceProps, parseVendorProps);
+
             using var r = XmlReader.Create(new StringReader(content), Settings);
 
             while(r.Read() && r.Depth == 0)
@@ -29,7 +32,7 @@ namespace IoT.Protocol.Upnp.DIDL
                 while(r.Read() && r.Depth == 1)
                 {
                     if(r.NodeType != Element || r.NamespaceURI != Ns) continue;
-                    var item = ReadItem(r, parseResourceProps, parseVendorProps);
+                    var item = ReadItem(r, containerReader, mediaItemReader);
                     if(item != null) yield return item;
                 }
             }
@@ -37,6 +40,9 @@ namespace IoT.Protocol.Upnp.DIDL
 
         public static IEnumerable<Item> ParseLoose(string content)
         {
+            var containerReader = new ContainerItemReader(true, true);
+            var mediaItemReader = new MediaItemReader(true, true);
+
             using var r = XmlReader.Create(new StringReader(content), Settings);
 
             var items = new List<Item>();
@@ -50,7 +56,7 @@ namespace IoT.Protocol.Upnp.DIDL
                     while(r.Read() && r.Depth == depth)
                     {
                         if(r.NodeType != Element || r.NamespaceURI != Ns) continue;
-                        var item = ReadItem(r, true, true);
+                        var item = ReadItem(r, containerReader, mediaItemReader);
                         if(item != null) items.Add(item);
                     }
                 }
@@ -60,16 +66,16 @@ namespace IoT.Protocol.Upnp.DIDL
             return items;
         }
 
-        private static Item ReadItem(XmlReader reader, bool parseResourceProps, bool parseVendorProps)
+        private static Item ReadItem(XmlReader reader, ContainerItemReader containerReader, MediaItemReader mediaItemReader)
         {
             if(reader.NamespaceURI == Ns)
             {
                 switch(reader.Name)
                 {
                     case "container":
-                        return new ContainerItemReader(parseResourceProps, parseVendorProps).Read(reader);
+                        return containerReader.Read(reader);
                     case "item":
-                        return new MediaItemReader(parseResourceProps, parseVendorProps).Read(reader);
+                        return mediaItemReader.Read(reader);
                 }
             }
 
