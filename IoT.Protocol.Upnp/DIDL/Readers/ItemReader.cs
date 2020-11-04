@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 using static System.Xml.XmlNodeType;
 
@@ -37,7 +38,7 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                             element.StorageUsed = reader.ReadElementContentAsInt();
                             return true;
                         case "albumArtURI":
-                            element.AlbumArts.Add(reader.ReadElementContentAsString());
+                            (element.AlbumArts ??= new List<string>()).Add(reader.ReadElementContentAsString());
                             return true;
                     }
 
@@ -49,7 +50,7 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                     }
                     else
                     {
-                        element.Vendor[reader.Name] = reader.ReadElementContentAsString();
+                        (element.Vendor ??= new Dictionary<string, string>())[reader.Name] = reader.ReadElementContentAsString();
                     }
 
                     return true;
