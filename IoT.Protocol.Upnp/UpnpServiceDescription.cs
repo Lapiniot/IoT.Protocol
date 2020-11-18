@@ -29,7 +29,7 @@ namespace IoT.Protocol.Upnp
 
         public UpnpControlEndpoint CreateControlPoint()
         {
-            return new UpnpControlEndpoint(ControlUri, ServiceType);
+            return new(ControlUri, ServiceType);
         }
     }
 }

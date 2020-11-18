@@ -10,7 +10,7 @@ namespace IoT.Protocol.Upnp.DIDL
     {
         private const string Ns = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
 
-        private static readonly XmlReaderSettings Settings = new XmlReaderSettings
+        private static readonly XmlReaderSettings Settings = new()
         {
             CloseInput = true,
             ConformanceLevel = ConformanceLevel.Fragment,

@@ -5,13 +5,11 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
 {
     public class ContainerItemReader : ItemReader<Container>
     {
-        public ContainerItemReader(bool parseResourceProps, bool parseVendorProps) : base(parseResourceProps, parseVendorProps)
-        {
-        }
+        public ContainerItemReader(bool parseResourceProps, bool parseVendorProps) : base(parseResourceProps, parseVendorProps) {}
 
         protected override Container CreateElement(string id, string parentId, bool restricted)
         {
-            return new Container(id, parentId, restricted);
+            return new(id, parentId, restricted);
         }
 
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods")]

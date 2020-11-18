@@ -18,9 +18,7 @@ namespace IoT.Protocol.Yeelight
 {
     public class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonElement>, IConnectedEndpoint<RequestMessage, JsonElement>
     {
-        private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> completions =
-            new ConcurrentDictionary<long, TaskCompletionSource<JsonElement>>();
-
+        private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> completions = new();
         private readonly ObserversContainer<JsonElement> observers;
         private long counter;
         private Socket socket;

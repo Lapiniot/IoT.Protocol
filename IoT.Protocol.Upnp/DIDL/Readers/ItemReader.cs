@@ -8,8 +8,8 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
     [SuppressMessage("Design", "CA1062:Validate arguments of public methods")]
     public abstract class ItemReader<TElementType> : ReaderBase<TElementType> where TElementType : Item
     {
-        private bool parseResourceProps;
-        private bool parseVendorProps;
+        private readonly bool parseResourceProps;
+        private readonly bool parseVendorProps;
 
         protected ItemReader(bool parseResourceProps, bool parseVendorProps)
         {
@@ -56,16 +56,24 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                     if(reader.Name == "res")
                     {
                         if(parseResourceProps)
+                        {
                             element.Resource = ResourceReader.Instance.Read(reader);
+                        }
                         else
+                        {
                             reader.Skip();
+                        }
                     }
                     else
                     {
                         if(parseVendorProps)
+                        {
                             (element.Vendor ??= new Dictionary<string, string>())[reader.Name] = reader.ReadElementContentAsString();
+                        }
                         else
+                        {
                             reader.Skip();
+                        }
                     }
 
                     return true;

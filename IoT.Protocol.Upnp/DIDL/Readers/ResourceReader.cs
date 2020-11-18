@@ -47,6 +47,7 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                             {
                                 resource.Duration = value;
                             }
+
                             break;
                         default:
                             resource.Attributes ??= new Dictionary<string, string>();

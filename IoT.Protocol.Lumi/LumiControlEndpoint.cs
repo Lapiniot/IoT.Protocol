@@ -18,10 +18,7 @@ namespace IoT.Protocol.Lumi
     public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDictionary<string, object>, JsonElement>
     {
         private const int MaxReceiveBufferSize = 2048;
-
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<JsonElement>> completions =
-            new ConcurrentDictionary<string, TaskCompletionSource<JsonElement>>();
-
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<JsonElement>> completions = new();
         private readonly IPEndPoint endpoint;
         private Task dispatchTask;
         private Socket socket;

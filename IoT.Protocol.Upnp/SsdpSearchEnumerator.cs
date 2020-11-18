@@ -45,7 +45,7 @@ namespace IoT.Protocol.Upnp
 
         protected override ValueTask<SsdpReply> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken)
         {
-            return new ValueTask<SsdpReply>(SsdpReply.Parse(buffer.Span));
+            return new(SsdpReply.Parse(buffer.Span));
         }
 
         protected override int WriteDiscoveryDatagram(Span<byte> span)

@@ -83,7 +83,7 @@ namespace IoT.Protocol.Soap
 
         private static HttpRequestMessage CreateRequestMessage(Uri actionUri, SoapEnvelope message)
         {
-            return new HttpRequestMessage
+            return new()
             {
                 RequestUri = actionUri,
                 Method = Post,
