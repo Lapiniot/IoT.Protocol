@@ -60,7 +60,7 @@ namespace IoT.Protocol.Upnp
             var dev = (doc.Root ?? throw new InvalidDataException("Invalid XML document"))
                 .Element(NS + "device") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "device"));
 
-            var baseUri = new Uri(location.GetLeftPart(Authority));
+            var baseUri = new Uri((doc.Root.Element(NS + "URLBase")?.Value) ?? location.GetLeftPart(Authority));
 
             var servicesElement = dev.Element(NS + "serviceList") ?? throw new InvalidDataException(Format(InvariantCulture, MissingElementFormat, "serviceList"));
             var services = servicesElement.Elements(NS + "service").Select(s => new UpnpServiceDescription(
