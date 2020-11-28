@@ -46,7 +46,7 @@ namespace IoT.Protocol.Soap
             w.WriteAttributeString(Prefix, "encodingStyle", Ns, "http://schemas.xmlsoap.org/soap/encoding/");
             w.WriteStartElement(Prefix, "Body", Ns);
             w.WriteStartElement("u", Action, Schema);
-            
+
             if(Arguments != null)
             {
                 foreach(var (key, value) in Arguments)
@@ -79,11 +79,17 @@ namespace IoT.Protocol.Soap
 
             if(reader.IsEmptyElement) return new SoapEnvelope(name, schema, args);
 
-            while(reader.Read() && reader.Depth > depth)
+            reader.Read();
+
+            while(!reader.EOF && reader.Depth > depth)
             {
                 if(reader.NodeType == Element)
                 {
                     args[reader.LocalName] = reader.ReadElementContentAsString();
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
