@@ -10,7 +10,7 @@ using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Soap
 {
-    public class SoapEnvelope
+    public record SoapEnvelope
     {
         private const string CannotBeEmptyErrorMessage = "Cannot be null or empty or whitespace";
         private const string Ns = "http://schemas.xmlsoap.org/soap/envelope/";
@@ -26,11 +26,11 @@ namespace IoT.Protocol.Soap
             Action = action;
         }
 
-        public SoapEnvelope(string action, string schema, params (string name, object value)[] args) :
-            this(action, schema, args.ToDictionary(a => a.name, a => Convert.ToString(a.value, InvariantCulture))) {}
+        public SoapEnvelope(string action, string schema, params (string Name, object Value)[] args) :
+            this(action, schema, args.ToDictionary(a => a.Name, a => Convert.ToString(a.Value, InvariantCulture))) {}
 
-        public string Action { get; }
-        public string Schema { get; }
+        public string Action { get; init; }
+        public string Schema { get; init; }
         public IDictionary<string, string> Arguments { get; }
         public string this[string name] => Arguments[name];
 
@@ -41,11 +41,12 @@ namespace IoT.Protocol.Soap
 
         public void Serialize(Stream stream, Encoding encoding = null)
         {
-            using var w = XmlWriter.Create(stream, new XmlWriterSettings {Encoding = encoding ?? Encoding.UTF8});
+            using var w = XmlWriter.Create(stream, new XmlWriterSettings { Encoding = encoding ?? Encoding.UTF8 });
             w.WriteStartElement(Prefix, "Envelope", Ns);
             w.WriteAttributeString(Prefix, "encodingStyle", Ns, "http://schemas.xmlsoap.org/soap/encoding/");
             w.WriteStartElement(Prefix, "Body", Ns);
             w.WriteStartElement("u", Action, Schema);
+            
             if(Arguments != null)
             {
                 foreach(var (key, value) in Arguments)
@@ -59,40 +60,30 @@ namespace IoT.Protocol.Soap
             w.WriteEndElement();
         }
 
-        public static SoapEnvelope Deserialize(Stream stream)
-        {
-            using var sr = new StreamReader(stream, Encoding.UTF8);
-            return Deserialize(sr);
-        }
-
         public static SoapEnvelope Deserialize(TextReader textReader)
         {
-            using var r = XmlReader.Create(textReader);
+            using var reader = XmlReader.Create(textReader);
 
-            if(r.MoveToContent() != Element || r.LocalName != "Envelope" || r.NamespaceURI != Ns) throw new InvalidDataException("Invalid XML data");
-            if(!r.ReadToDescendant("Body", Ns) || !r.Read()) throw new InvalidDataException("Invalid XML data");
-            r.MoveToContent();
+            if(!(reader.ReadToDescendant("Envelope", Ns) && reader.ReadToDescendant("Body", Ns) && reader.Read()))
+            {
+                throw new InvalidDataException("Invalid XML data");
+            }
 
-            var name = r.LocalName;
-            var schema = r.NamespaceURI;
+            reader.MoveToContent();
+
+            var name = reader.LocalName;
+            var schema = reader.NamespaceURI;
+            var depth = reader.Depth;
+
             var args = new Dictionary<string, string>();
 
-            if(r.IsEmptyElement) return new SoapEnvelope(name, schema, args);
-            string argName = null;
-            while(r.Read() && (r.NodeType != EndElement || r.LocalName != name))
+            if(reader.IsEmptyElement) return new SoapEnvelope(name, schema, args);
+
+            while(reader.Read() && reader.Depth > depth)
             {
-                switch(r.NodeType)
+                if(reader.NodeType == Element)
                 {
-                    case Element:
-                        argName = r.LocalName;
-                        break;
-                    case EndElement:
-                        argName = null;
-                        break;
-                    case Text:
-                    case CDATA:
-                        if(argName != null) args[argName] = r.Value;
-                        break;
+                    args[reader.LocalName] = reader.ReadElementContentAsString();
                 }
             }
 
