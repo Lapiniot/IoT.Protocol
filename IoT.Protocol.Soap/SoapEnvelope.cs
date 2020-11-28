@@ -71,7 +71,7 @@ namespace IoT.Protocol.Soap
 
             if(r.MoveToContent() != Element || r.LocalName != "Envelope" || r.NamespaceURI != Ns) throw new InvalidDataException("Invalid XML data");
             if(!r.ReadToDescendant("Body", Ns) || !r.Read()) throw new InvalidDataException("Invalid XML data");
-            r.MoveToElement();
+            r.MoveToContent();
 
             var name = r.LocalName;
             var schema = r.NamespaceURI;
