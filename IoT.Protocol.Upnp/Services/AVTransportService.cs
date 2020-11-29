@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Soap;
+using static System.Globalization.CultureInfo;
 using static IoT.Protocol.Upnp.UpnpServices;
 
 namespace IoT.Protocol.Upnp.Services
@@ -16,130 +17,119 @@ namespace IoT.Protocol.Upnp.Services
         public AVTransportService(SoapControlEndpoint endpoint) :
             base(endpoint, AVTransport) {}
 
-        public Task<IDictionary<string, string>> GetMediaInfoAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, string>> GetMediaInfoAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            //UInt32 NrTracks,
-            //String MediaDuration,
-            //String CurrentURI,
-            //String CurrentURIMetaData,
-            //String NextURI,
-            //String NextURIMetaData,
-            //String PlayMedium,
-            //String RecordMedium,
-            //String WriteStatus
-            return InvokeAsync("GetMediaInfo", cancellationToken, ("InstanceID", instanceId));
+            return InvokeAsync("GetMediaInfo", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) } },
+                cancellationToken);
         }
 
-        //void SetRecordQualityMode(UInt32 instanceID, String newRecordQualityMode);
-
-        public Task<IDictionary<string, string>> GetPositionInfoAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, string>> GetPositionInfoAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            //UInt32 Track,
-            //String TrackDuration,
-            //String TrackMetaData,
-            //String TrackURI,
-            //String RelTime,
-            //String AbsTime,
-            //Int32 RelCount,
-            //Int32 AbsCount
-            return InvokeAsync("GetPositionInfo", cancellationToken, ("InstanceID", instanceId));
+            return InvokeAsync("GetPositionInfo", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) } },
+                cancellationToken);
         }
 
-        public Task<IDictionary<string, string>> GetTransportInfoAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, string>> GetTransportInfoAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            //String CurrentTransportState,
-            //String CurrentTransportStatus,
-            //String CurrentSpeed
-            return InvokeAsync("GetTransportInfo", cancellationToken, ("InstanceID", instanceId));
+            return InvokeAsync("GetTransportInfo", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) } },
+                cancellationToken);
         }
 
         public Task SetAVTransportUriAsync(uint instanceId = 0, string currentUri = null, string currentUriMetaData = null,
             CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("SetAVTransportURI", cancellationToken,
-                ("InstanceID", instanceId),
-                ("CurrentURI", currentUri),
-                ("CurrentURIMetaData", currentUriMetaData));
+            return InvokeAsync("SetAVTransportURI", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) },
+                { "CurrentURI", currentUri },
+                { "CurrentURIMetaData", currentUriMetaData } },
+                cancellationToken);
         }
 
         public Task SetNextAVTransportUriAsync(uint instanceId = 0, string nextUri = null, string nextUriMetaData = null,
             CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("SetNextAVTransportURI", cancellationToken,
-                ("InstanceID", instanceId),
-                ("NextURI", nextUri),
-                ("NextURIMetaData", nextUriMetaData));
+            return InvokeAsync("SetNextAVTransportURI", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) },
+                { "NextURI", nextUri },
+                { "NextURIMetaData", nextUriMetaData } },
+                cancellationToken);
         }
 
         public Task StopAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("Stop", cancellationToken, ("InstanceID", instanceId));
+            return InvokeAsync("Stop", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) } },
+                cancellationToken);
         }
 
         public Task PlayAsync(uint instanceId = 0, string speed = "1", CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("Play", cancellationToken, ("InstanceID", instanceId), ("Speed", speed));
+            return InvokeAsync("Play", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) },
+                { "Speed", speed } },
+                cancellationToken);
         }
 
         public Task PauseAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("Pause", cancellationToken, ("InstanceID", instanceId));
+            return InvokeAsync("Pause", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) } },
+                cancellationToken);
         }
 
         public Task NextAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("Next", cancellationToken, ("InstanceID", instanceId));
+            return InvokeAsync("Next", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) } },
+                cancellationToken);
         }
 
         public Task PreviousAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("Previous", cancellationToken, ("InstanceID", instanceId));
+            return InvokeAsync("Previous", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) } },
+                cancellationToken);
         }
 
         public Task SeekAsync(uint instanceId = 0, string seekMode = "ABS_TIME", string target = null, CancellationToken cancellationToken = default)
         {
-            // seekMode:
-            //TRACK_NR
-            //ABS_TIME
-            //REL_TIME
-            //ABS_COUNT
-            //REL_COUNT
-            //CHANNEL_FREQ
-            //TAPE-INDEX
-            //FRAME
-            return InvokeAsync("Seek", cancellationToken, ("InstanceID", instanceId), ("Unit", seekMode), ("Target", target));
+            return InvokeAsync("Seek", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) },
+                { "Unit", seekMode },
+                { "Target", target } },
+                cancellationToken);
         }
 
         public Task SetPlayModeAsync(uint instanceId = 0, string newPlayMode = "NORMAL", CancellationToken cancellationToken = default)
         {
-            //newPlayMode:
-            //NORMAL
-            //SHUFFLE
-            //REPEAT_SHUFFLE
-            //REPEAT_TRACK
-            //REPEAT_ONE
-            //REPEAT_ALL
-            //RANDOM
-            //DIRECT_1
-            //INTRO
-            return InvokeAsync("SetPlayMode", cancellationToken, ("InstanceID", instanceId), ("NewPlayMode", newPlayMode));
+            return InvokeAsync("SetPlayMode", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) },
+                { "NewPlayMode", newPlayMode } },
+                cancellationToken);
         }
 
-        public Task<IDictionary<string, string>> GetCurrentTransportActionsAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, string>> GetCurrentTransportActionsAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("GetCurrentTransportActions", cancellationToken, ("InstanceID", instanceId));
+            return InvokeAsync("GetCurrentTransportActions", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) } },
+                cancellationToken);
         }
 
-        public Task<IDictionary<string, string>> GetTransportSettingsAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, string>> GetTransportSettingsAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("GetTransportSettings", cancellationToken, ("InstanceID", instanceId));
+            return InvokeAsync("GetTransportSettings", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) } },
+                cancellationToken);
         }
 
-        public Task<IDictionary<string, string>> GetDeviceCapabilitiesAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, string>> GetDeviceCapabilitiesAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("GetDeviceCapabilities", cancellationToken, ("InstanceID", instanceId));
+            return InvokeAsync("GetDeviceCapabilities", new Dictionary<string, string>() {
+                { "InstanceID", instanceId.ToString(InvariantCulture) } },
+                cancellationToken);
         }
-
-        //void Record(UInt32 instanceID);
     }
 }

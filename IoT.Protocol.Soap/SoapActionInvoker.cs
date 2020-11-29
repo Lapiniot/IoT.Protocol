@@ -25,13 +25,8 @@ namespace IoT.Protocol.Soap
 
         public string Schema { get; }
 
-        public async Task<IDictionary<string, string>> InvokeAsync(string action, IDictionary<string, string> args,
-            CancellationToken cancellationToken = default)
-        {
-            return (await Target.InvokeAsync(ControlUri, new SoapEnvelope(action, Schema, args), cancellationToken).ConfigureAwait(false)).Arguments;
-        }
-
-        public async Task<IDictionary<string, string>> InvokeAsync(string action, CancellationToken cancellationToken = default, params (string, object)[] args)
+        public async Task<IReadOnlyDictionary<string, string>> InvokeAsync(string action,
+            IReadOnlyDictionary<string, string> args, CancellationToken cancellationToken = default)
         {
             return (await Target.InvokeAsync(ControlUri, new SoapEnvelope(action, Schema, args), cancellationToken).ConfigureAwait(false)).Arguments;
         }

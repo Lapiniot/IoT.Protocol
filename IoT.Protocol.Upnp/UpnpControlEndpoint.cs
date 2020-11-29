@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Soap;
@@ -14,9 +15,9 @@ namespace IoT.Protocol.Upnp
 
         public string ServiceType { get; }
 
-        public Task<SoapEnvelope> InvokeAsync(string action, (string Name, object Value)[] args, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyDictionary<string, string>> InvokeAsync(string action, IReadOnlyDictionary<string, string> args, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync(new SoapEnvelope(action, ServiceType, args), cancellationToken);
+            return (await InvokeAsync(new SoapEnvelope(action, ServiceType, args), cancellationToken).ConfigureAwait(false)).Arguments;
         }
     }
 }

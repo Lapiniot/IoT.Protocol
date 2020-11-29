@@ -16,7 +16,7 @@ namespace IoT.Protocol.Soap
         private const string Ns = "http://schemas.xmlsoap.org/soap/envelope/";
         private const string Prefix = "s";
 
-        public SoapEnvelope(string action, string schema, IDictionary<string, string> args = null)
+        public SoapEnvelope(string action, string schema, IReadOnlyDictionary<string, string> args = null)
         {
             if(IsNullOrWhiteSpace(action)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(action));
             if(IsNullOrWhiteSpace(schema)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(schema));
@@ -26,12 +26,9 @@ namespace IoT.Protocol.Soap
             Action = action;
         }
 
-        public SoapEnvelope(string action, string schema, params (string Name, object Value)[] args) :
-            this(action, schema, args.ToDictionary(a => a.Name, a => Convert.ToString(a.Value, InvariantCulture))) {}
-
         public string Action { get; init; }
         public string Schema { get; init; }
-        public IDictionary<string, string> Arguments { get; }
+        public IReadOnlyDictionary<string, string> Arguments { get; }
         public string this[string name] => Arguments[name];
 
         public override string ToString()

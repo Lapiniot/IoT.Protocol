@@ -16,19 +16,21 @@ namespace IoT.Protocol.Upnp.Services
         public ConnectionManagerService(SoapControlEndpoint endpoint) :
             base(endpoint, ConnectionManager) {}
 
-        public Task<IDictionary<string, string>> GetProtocolInfoAsync(CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, string>> GetProtocolInfoAsync(CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("GetProtocolInfo", cancellationToken);
+            return InvokeAsync("GetProtocolInfo", null, cancellationToken);
         }
 
-        public Task<IDictionary<string, string>> GetCurrentConnectionInfoAsync(string connectionId, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, string>> GetCurrentConnectionInfoAsync(string connectionId, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("GetCurrentConnectionInfo", cancellationToken, ("ConnectionID", connectionId));
+            return InvokeAsync("GetCurrentConnectionInfo", new Dictionary<string, string>() {
+                { "ConnectionID", connectionId } },
+                cancellationToken);
         }
 
-        public Task<IDictionary<string, string>> GetCurrentConnectionIDsAsync(CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, string>> GetCurrentConnectionIDsAsync(CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("GetCurrentConnectionIDs", cancellationToken);
+            return InvokeAsync("GetCurrentConnectionIDs", null, cancellationToken);
         }
     }
 }

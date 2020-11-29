@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Soap;
+using static System.Globalization.CultureInfo;
 using static IoT.Protocol.Upnp.UpnpServices;
 
 namespace IoT.Protocol.Upnp.Services
@@ -22,14 +23,18 @@ namespace IoT.Protocol.Upnp.Services
         public ContentDirectoryService(SoapControlEndpoint endpoint) :
             base(endpoint, ContentDirectory) {}
 
-        public Task<IDictionary<string, string>> BrowseAsync(string parent, string filter = null,
+        public Task<IReadOnlyDictionary<string, string>> BrowseAsync(string parent, string filter = null,
             BrowseMode mode = default, string sortCriteria = null,
             uint index = 0, uint count = 50, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync("Browse", cancellationToken,
-                ("ObjectID", parent), ("BrowseFlag", mode),
-                ("Filter", filter ?? "*"), ("StartingIndex", index),
-                ("RequestedCount", count), ("SortCriteria", sortCriteria ?? ""));
+            return InvokeAsync("Browse", new Dictionary<string, string>() {
+                { "ObjectID", parent },
+                { "BrowseFlag", mode.ToString() },
+                { "Filter", filter ?? "*" },
+                { "StartingIndex", index.ToString(InvariantCulture) },
+                { "RequestedCount", count.ToString(InvariantCulture) },
+                { "SortCriteria", sortCriteria ?? "" } },
+                cancellationToken);
         }
     }
 }
