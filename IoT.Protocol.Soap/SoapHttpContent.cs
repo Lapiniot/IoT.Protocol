@@ -9,41 +9,26 @@ namespace IoT.Protocol.Soap
 {
     internal class SoapHttpContent : HttpContent
     {
-        private readonly MemoryStream memStream;
+        private readonly SoapEnvelope soapEnvelope;
 
         public SoapHttpContent(SoapEnvelope soapEnvelope, Encoding encoding = null)
         {
-            memStream = new MemoryStream();
-            soapEnvelope.Serialize(memStream, encoding);
-
-            Headers.Add("Content-Type", $"text/xml; charset=\"{(encoding ?? UTF8).WebName}\"");
+            this.soapEnvelope = soapEnvelope ?? throw new System.ArgumentNullException(nameof(soapEnvelope));
+            Headers.Add("Content-Type", $"application/xml; charset=\"{(encoding ?? UTF8).WebName}\"");
         }
-
-        #region Overrides of HttpContent
-
-        protected override void Dispose(bool disposing)
-        {
-            memStream.Dispose();
-
-            base.Dispose(disposing);
-        }
-
-        #endregion
 
         #region Overrides of HttpContent
 
         protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
         {
-            memStream.Seek(0, SeekOrigin.Begin);
-
-            return memStream.CopyToAsync(stream);
+            soapEnvelope.Serialize(stream);
+            return Task.CompletedTask;
         }
 
         protected override bool TryComputeLength(out long length)
         {
-            length = memStream.Length;
-
-            return true;
+            length = 0;
+            return false;
         }
 
         #endregion
