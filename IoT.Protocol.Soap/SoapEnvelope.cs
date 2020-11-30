@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
-using static System.Globalization.CultureInfo;
 using static System.String;
 using static System.Xml.XmlNodeType;
 
@@ -13,7 +13,8 @@ namespace IoT.Protocol.Soap
     public record SoapEnvelope
     {
         private const string CannotBeEmptyErrorMessage = "Cannot be null or empty or whitespace";
-        private const string Ns = "http://schemas.xmlsoap.org/soap/envelope/";
+        private const string SoapEnvelopeNs = "http://schemas.xmlsoap.org/soap/envelope/";
+        private const string SoapEncodingNs = "http://schemas.xmlsoap.org/soap/encoding/";
         private const string Prefix = "s";
 
         public SoapEnvelope(string action, string schema, IReadOnlyDictionary<string, string> args = null)
@@ -36,32 +37,59 @@ namespace IoT.Protocol.Soap
             return $"{Schema}#{Action}: {{{Join(", ", Arguments.Select(a => $"{a.Key} = {a.Value}"))}}}";
         }
 
-        public void Serialize(Stream stream, Encoding encoding = null)
+        public async Task WriteAsync(Stream stream, Encoding encoding)
         {
-            using var w = XmlWriter.Create(stream, new XmlWriterSettings { Encoding = encoding ?? Encoding.UTF8 });
-            w.WriteStartElement(Prefix, "Envelope", Ns);
-            w.WriteAttributeString(Prefix, "encodingStyle", Ns, "http://schemas.xmlsoap.org/soap/encoding/");
-            w.WriteStartElement(Prefix, "Body", Ns);
-            w.WriteStartElement("u", Action, Schema);
+            using var writer = XmlWriter.Create(stream, new XmlWriterSettings
+            {
+                Encoding = encoding ?? Encoding.UTF8, CloseOutput = false, OmitXmlDeclaration = true, Async = true
+            });
+
+            await WriteAsync(writer).ConfigureAwait(false);
+        }
+
+        public async Task WriteAsync(TextWriter textWriter)
+        {
+            using var writer = XmlWriter.Create(textWriter, new XmlWriterSettings
+            {
+                CloseOutput = false, OmitXmlDeclaration = true, Async = true
+            });
+
+            await WriteAsync(writer).ConfigureAwait(false);
+        }
+
+        public async Task WriteAsync(XmlWriter writer)
+        {
+            if(writer is null) throw new ArgumentNullException(nameof(writer));
+
+            var task = writer.WriteStartElementAsync(Prefix, "Envelope", SoapEnvelopeNs);
+            if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+            task = writer.WriteAttributeStringAsync(Prefix, "encodingStyle", SoapEnvelopeNs, SoapEncodingNs);
+            if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+            task = writer.WriteStartElementAsync(Prefix, "Body", SoapEnvelopeNs);
+            if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+            task = writer.WriteStartElementAsync("u", Action, Schema);
+            if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
 
             if(Arguments != null)
             {
                 foreach(var (key, value) in Arguments)
                 {
-                    w.WriteElementString(Empty, key, Empty, Convert.ToString(value, InvariantCulture));
+                    task = writer.WriteElementStringAsync(Empty, key, Empty, value ?? Empty);
+                    if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
                 }
             }
 
-            w.WriteEndElement();
-            w.WriteEndElement();
-            w.WriteEndElement();
+            task = writer.WriteEndDocumentAsync();
+            if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+            task = writer.FlushAsync();
+            if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
         }
 
         public static SoapEnvelope Deserialize(TextReader textReader)
         {
             using var reader = XmlReader.Create(textReader);
 
-            if(!(reader.ReadToDescendant("Envelope", Ns) && reader.ReadToDescendant("Body", Ns) && reader.Read()))
+            if(!(reader.ReadToDescendant("Envelope", SoapEnvelopeNs) && reader.ReadToDescendant("Body", SoapEnvelopeNs) && reader.Read()))
             {
                 throw new InvalidDataException("Invalid XML data");
             }
@@ -71,7 +99,6 @@ namespace IoT.Protocol.Soap
             var name = reader.LocalName;
             var schema = reader.NamespaceURI;
             var depth = reader.Depth;
-
             var args = new Dictionary<string, string>();
 
             if(reader.IsEmptyElement) return new SoapEnvelope(name, schema, args);
@@ -82,7 +109,16 @@ namespace IoT.Protocol.Soap
             {
                 if(reader.NodeType == Element)
                 {
-                    args[reader.LocalName] = reader.ReadElementContentAsString();
+                    var key = reader.LocalName;
+
+                    if(reader.Read())
+                    {
+                        var nt = reader.MoveToContent();
+                        if(nt == XmlNodeType.Text || nt == XmlNodeType.CDATA)
+                        {
+                            args[key] = reader.ReadContentAsString();
+                        }
+                    }
                 }
                 else
                 {
