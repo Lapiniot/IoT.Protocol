@@ -85,6 +85,47 @@ namespace IoT.Protocol.Soap
             if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
         }
 
+        public void Write(Stream stream, Encoding encoding)
+        {
+            using var writer = XmlWriter.Create(stream, new XmlWriterSettings
+            {
+                Encoding = encoding ?? Encoding.UTF8, CloseOutput = false, OmitXmlDeclaration = true, Async = true
+            });
+
+            Write(writer);
+        }
+
+        public void Write(TextWriter textWriter)
+        {
+            using var writer = XmlWriter.Create(textWriter, new XmlWriterSettings
+            {
+                CloseOutput = false, OmitXmlDeclaration = true, Async = true
+            });
+
+            Write(writer);
+        }
+
+        public void Write(XmlWriter writer)
+        {
+            if(writer is null) throw new ArgumentNullException(nameof(writer));
+
+            writer.WriteStartElement(Prefix, "Envelope", SoapEnvelopeNs);
+            writer.WriteAttributeString(Prefix, "encodingStyle", SoapEnvelopeNs, SoapEncodingNs);
+            writer.WriteStartElement(Prefix, "Body", SoapEnvelopeNs);
+            writer.WriteStartElement("u", Action, Schema);
+
+            if(Arguments != null)
+            {
+                foreach(var (key, value) in Arguments)
+                {
+                    writer.WriteElementString(Empty, key, Empty, value ?? Empty);
+                }
+            }
+
+            writer.WriteEndDocument();
+            writer.Flush();
+        }
+
         public static SoapEnvelope Deserialize(TextReader textReader)
         {
             using var reader = XmlReader.Create(textReader);
