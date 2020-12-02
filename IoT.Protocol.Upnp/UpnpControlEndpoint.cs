@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Soap;
@@ -8,7 +8,7 @@ namespace IoT.Protocol.Upnp
 {
     public class UpnpControlEndpoint : SoapControlEndpoint
     {
-        public UpnpControlEndpoint(Uri baseAddress, string serviceType) : base(baseAddress)
+        public UpnpControlEndpoint(string serviceType, HttpClient httpClient) : base(httpClient)
         {
             ServiceType = serviceType;
         }

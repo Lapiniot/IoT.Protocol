@@ -26,10 +26,5 @@ namespace IoT.Protocol.Upnp
         {
             return ServiceMetadata.LoadAsync(MetadataUri, cancellationToken);
         }
-
-        public UpnpControlEndpoint CreateControlPoint()
-        {
-            return new(ControlUri, ServiceType);
-        }
     }
 }
