@@ -26,62 +26,24 @@ namespace IoT.Protocol.Upnp.DIDL
 
             using var r = XmlReader.Create(new StringReader(content), Settings);
 
-            while(r.Read() && r.Depth == 0)
+            if(!r.ReadToFollowing("DIDL-Lite", Ns)) yield break;
+
+            var depth = r.Depth;
+
+            while(r.Read() && r.Depth > depth)
             {
-                if(r.NodeType != Element || r.Name != "DIDL-Lite" || r.NamespaceURI != Ns) continue;
-                while(r.Read() && r.Depth == 1)
-                {
-                    if(r.NodeType != Element || r.NamespaceURI != Ns) continue;
-                    var item = ReadItem(r, containerReader, mediaItemReader);
-                    if(item != null) yield return item;
-                }
-            }
-        }
+                if(r.NodeType != Element || r.NamespaceURI != Ns) continue;
 
-        public static IEnumerable<Item> ParseLoose(string content)
-        {
-            var containerReader = new ContainerItemReader(true, true);
-            var mediaItemReader = new MediaItemReader(true, true);
-
-            using var r = XmlReader.Create(new StringReader(content), Settings);
-
-            var items = new List<Item>();
-
-            try
-            {
-                while(r.Read())
-                {
-                    if(r.NodeType != Element || r.Name != "DIDL-Lite" || r.NamespaceURI != Ns) continue;
-                    var depth = r.Depth + 1;
-                    while(r.Read() && r.Depth == depth)
-                    {
-                        if(r.NodeType != Element || r.NamespaceURI != Ns) continue;
-                        var item = ReadItem(r, containerReader, mediaItemReader);
-                        if(item != null) items.Add(item);
-                    }
-                }
-            }
-            catch(XmlException) {}
-
-            return items;
-        }
-
-        private static Item ReadItem(XmlReader reader, ContainerItemReader containerReader, MediaItemReader mediaItemReader)
-        {
-            if(reader.NamespaceURI == Ns)
-            {
-                switch(reader.Name)
+                switch(r.Name)
                 {
                     case "container":
-                        return containerReader.Read(reader);
+                        yield return containerReader.Read(r);
+                        break;
                     case "item":
-                        return mediaItemReader.Read(reader);
+                        yield return mediaItemReader.Read(r);
+                        break;
                 }
             }
-
-            reader.Skip();
-
-            return null;
         }
     }
 }
