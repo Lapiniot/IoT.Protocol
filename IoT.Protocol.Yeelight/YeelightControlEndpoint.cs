@@ -112,7 +112,7 @@ namespace IoT.Protocol.Yeelight
 
         protected override long Consume(in ReadOnlySequence<byte> buffer)
         {
-            if(!buffer.TryGetLine(out var line)) return 0;
+            if(!buffer.TryReadLine(out var line)) return 0;
 
             var consumed = line.Length + 2;
 
