@@ -15,7 +15,7 @@ namespace IoT.Protocol.Upnp
             return (await service.BrowseAsync(itemId, mode: BrowseMode.BrowseMetadata, filter: "id", cancellationToken: cancellationToken).ConfigureAwait(false))["UpdateID"];
         }
 
-        public static async Task<int[]> GetItemIndices(ContentDirectoryService service, string parentId, IEnumerable<string> ids, CancellationToken cancellationToken)
+        public static async Task<int[]> GetItemIndicesAsync(ContentDirectoryService service, string parentId, IEnumerable<string> ids, CancellationToken cancellationToken)
         {
             var data = await service.BrowseAsync(parentId, count: uint.MaxValue, cancellationToken: cancellationToken).ConfigureAwait(false);
             var playlists = DIDLXmlParser.Parse(data["Result"], false, false);
@@ -23,7 +23,7 @@ namespace IoT.Protocol.Upnp
             return ids.Select(id => map[id]).ToArray();
         }
 
-        public static async Task WriteItemsMetadataTree(ContentDirectoryService service, IEnumerable<string> itemIds, XmlWriter writer, int maxDepth, CancellationToken cancellationToken)
+        public static async Task WriteItemsMetadataTreeAsync(ContentDirectoryService service, IEnumerable<string> itemIds, XmlWriter writer, int maxDepth, CancellationToken cancellationToken)
         {
             var containerIds = new Stack<(string Id, int Depth)>();
 
