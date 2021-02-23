@@ -43,11 +43,20 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                         case "class":
                             element.Class = reader.ReadElementContentAsString();
                             return true;
+                        case "albumArtURI":
+                            (element.AlbumArts ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                            return true;
                         case "storageUsed":
                             element.StorageUsed = reader.ReadElementContentAsInt();
                             return true;
-                        case "albumArtURI":
-                            (element.AlbumArts ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                        case "storageTotal":
+                            element.StorageTotal = reader.ReadElementContentAsInt();
+                            return true;
+                        case "storageFree":
+                            element.StorageFree = reader.ReadElementContentAsInt();
+                            return true;
+                        case "storageMedium":
+                            element.StorageMedium = reader.ReadElementContentAsInt();
                             return true;
                     }
 

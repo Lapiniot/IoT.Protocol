@@ -42,12 +42,35 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                             resource.Size = reader.ReadContentAsLong();
                             break;
                         case "duration":
-                            var content = reader.ReadContentAsString();
-                            if(TimeSpan.TryParse(content, CultureInfo.InvariantCulture, out var value))
+                            if(TimeSpan.TryParse(reader.ReadContentAsString(), CultureInfo.InvariantCulture, out var value))
                             {
                                 resource.Duration = value;
                             }
 
+                            break;
+                        case "bitrate":
+                            resource.Bitrate = reader.ReadContentAsInt();
+                            break;
+                        case "sampleFrequency":
+                            resource.SampleFrequency = reader.ReadContentAsInt();
+                            break;
+                        case "bitsPerSample":
+                            resource.BitsPerSample = reader.ReadContentAsInt();
+                            break;
+                        case "nrAudioChannels":
+                            resource.NrAudioChannels = reader.ReadContentAsInt();
+                            break;
+                        case "resolution":
+                            resource.Resolution = reader.ReadContentAsString();
+                            break;
+                        case "colorDepth":
+                            resource.ColorDepth = reader.ReadContentAsInt();
+                            break;
+                        case "contentInfoURI":
+                            resource.ContentInfoUrl = reader.ReadContentAsString();
+                            break;
+                        case "protection":
+                            resource.Protection = reader.ReadContentAsString();
                             break;
                         default:
                             resource.Attributes ??= new Dictionary<string, string>();

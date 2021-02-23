@@ -23,7 +23,6 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
             switch(reader.NamespaceURI)
             {
                 case DC:
-                {
                     switch(reader.LocalName)
                     {
                         case "creator":
@@ -35,12 +34,13 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                         case "description":
                             element.Description = reader.ReadElementContentAsString();
                             return true;
+                        case "publisher":
+                            (element.Publishers ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                            return true;
                     }
 
                     break;
-                }
                 case UPNP:
-                {
                     switch(reader.LocalName)
                     {
                         case "artist":
@@ -70,13 +70,12 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
                         case "producer":
                             (element.Producers ??= new List<string>()).Add(reader.ReadElementContentAsString());
                             return true;
-                        case "publisher":
-                            (element.Publishers ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                        case "director":
+                            (element.Directors ??= new List<string>()).Add(reader.ReadElementContentAsString());
                             return true;
                     }
 
                     break;
-                }
             }
 
             return base.TryReadChildNode(reader, element);
