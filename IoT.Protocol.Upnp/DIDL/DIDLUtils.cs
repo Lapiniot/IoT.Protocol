@@ -52,11 +52,11 @@ namespace IoT.Protocol.Upnp.DIDL
             }
         }
 
-        public static void CopyItems(string metadata, XmlWriter writer, Stack<(string Id, int Depth)> containerIds, int depth)
+        public static void CopyItems(string metadata, XmlWriter writer, Stack<(string Id, uint Depth)> containers, uint? nextDepth)
         {
             if(string.IsNullOrEmpty(metadata)) return;
             if(writer is null) throw new ArgumentNullException(nameof(writer));
-            if(containerIds is null) throw new ArgumentNullException(nameof(containerIds));
+            if(containers is null) throw new ArgumentNullException(nameof(containers));
 
             using(var input = new StringReader(metadata))
             using(var reader = XmlReader.Create(input))
@@ -78,8 +78,7 @@ namespace IoT.Protocol.Upnp.DIDL
                                 writer.WriteNode(reader, true);
                                 break;
                             case "container":
-                                var id = reader.GetAttribute("id");
-                                if(!string.IsNullOrEmpty(id)) containerIds.Push((id, depth));
+                                if(nextDepth is { } value) containers.Push((reader.GetAttribute("id"), value));
                                 reader.Skip();
                                 break;
                         }

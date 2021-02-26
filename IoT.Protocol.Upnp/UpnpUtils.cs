@@ -25,22 +25,22 @@ namespace IoT.Protocol.Upnp
 
         public static async Task WriteItemsMetadataTreeAsync(ContentDirectoryService service, IEnumerable<string> itemIds, XmlWriter writer, int maxDepth, CancellationToken cancellationToken)
         {
-            var containerIds = new Stack<(string Id, int Depth)>();
+            var containers = new Stack<(string Id, uint Depth)>();
 
             // Phase 1: get items metadata and sort out items and containers, items are copied immidiatelly to the output xml writer,
             // container ids are scheduled for future expansion by pushing to the containerIds stack structure
             foreach(var item in itemIds)
             {
                 var data = await service.BrowseAsync(item, mode: BrowseMode.BrowseMetadata, cancellationToken: cancellationToken).ConfigureAwait(false);
-                DIDLUtils.CopyItems(data["Result"], writer, containerIds, 0);
+                DIDLUtils.CopyItems(data["Result"], writer, containers, maxDepth > 0 ? 1 : null);
             }
 
             // Phase 2: iteratively pop container id from the stack and browse for its direct children sorting items and child containers again
-            while(containerIds.TryPop(out var result))
+            while(containers.TryPop(out var result))
             {
-                if(result.Depth >= maxDepth) continue;
-                var data = await service.BrowseAsync(result.Id, mode: BrowseMode.BrowseDirectChildren, cancellationToken: cancellationToken).ConfigureAwait(false);
-                DIDLUtils.CopyItems(data["Result"], writer, containerIds, result.Depth + 1);
+                var (id, depth) = result;
+                var data = await service.BrowseAsync(id, mode: BrowseMode.BrowseDirectChildren, cancellationToken: cancellationToken).ConfigureAwait(false);
+                DIDLUtils.CopyItems(data["Result"], writer, containers, depth < maxDepth ? depth + 1 : null);
             }
         }
     }
