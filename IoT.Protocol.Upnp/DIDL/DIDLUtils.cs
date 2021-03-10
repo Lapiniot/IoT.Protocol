@@ -41,17 +41,6 @@ namespace IoT.Protocol.Upnp.DIDL
             writer.WriteEndElement();
         }
 
-        public static void CopyItems(string metadata, XmlWriter writer)
-        {
-            using(var input = new StringReader(metadata))
-            using(var reader = XmlReader.Create(input))
-            {
-                if(!reader.ReadToDescendant("DIDL-Lite") || reader.NamespaceURI != DIDLUtils.DIDLLiteNamespace) return;
-                if(!reader.ReadToDescendant("item") || reader.NamespaceURI != DIDLUtils.DIDLLiteNamespace) return;
-                writer.WriteNode(reader, true);
-            }
-        }
-
         public static void CopyItems(string metadata, XmlWriter writer, Stack<(string Id, uint Depth)> containers, uint? nextDepth)
         {
             if(string.IsNullOrEmpty(metadata)) return;
@@ -66,22 +55,24 @@ namespace IoT.Protocol.Upnp.DIDL
                     return;
                 }
 
-                while(reader.Read() && reader.NodeType != XmlNodeType.Element) ;
+                var depth = reader.Depth + 1;
 
-                while(reader.NodeType != XmlNodeType.EndElement)
+                while(reader.Read())
                 {
-                    if(reader.NamespaceURI == DIDLLiteNamespace)
+                    if(reader.NamespaceURI != DIDLLiteNamespace || reader.Depth != depth)
                     {
-                        switch(reader.Name)
-                        {
-                            case "item":
-                                writer.WriteNode(reader, true);
-                                break;
-                            case "container":
-                                if(nextDepth is { } value) containers.Push((reader.GetAttribute("id"), value));
-                                reader.Skip();
-                                break;
-                        }
+                        continue;
+                    }
+
+                    switch(reader.Name)
+                    {
+                        case "item":
+                            writer.WriteNode(reader, true);
+                            break;
+                        case "container":
+                            if(nextDepth is { } value) containers.Push((reader.GetAttribute("id"), value));
+                            reader.Skip();
+                            break;
                     }
                 }
             }
