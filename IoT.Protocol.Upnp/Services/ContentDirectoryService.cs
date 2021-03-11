@@ -36,5 +36,19 @@ namespace IoT.Protocol.Upnp.Services
                 { "SortCriteria", sortCriteria ?? "" } },
                 cancellationToken);
         }
+
+        public Task<IReadOnlyDictionary<string, string>> SearchAsync(string container, string query, string filter = null,
+            BrowseMode mode = default, string sortCriteria = null,
+            uint index = 0, uint count = 50, CancellationToken cancellationToken = default)
+        {
+            return InvokeAsync("Search", new Dictionary<string, string>() {
+                { "ContainerID", container },
+                { "SearchCriteria", query },
+                { "Filter", filter ?? "*" },
+                { "StartingIndex", index.ToString(InvariantCulture) },
+                { "RequestedCount", count.ToString(InvariantCulture) },
+                { "SortCriteria", sortCriteria ?? "" } },
+                cancellationToken);
+        }
     }
 }
