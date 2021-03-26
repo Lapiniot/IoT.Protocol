@@ -50,19 +50,16 @@ namespace IoT.Protocol.Upnp.DIDL
             using(var input = new StringReader(metadata))
             using(var reader = XmlReader.Create(input))
             {
-                if(!reader.ReadToDescendant("DIDL-Lite") || reader.NamespaceURI != DIDLLiteNamespace)
+                if(!reader.ReadToDescendant("DIDL-Lite") || reader.NamespaceURI != DIDLLiteNamespace || !reader.Read())
                 {
                     return;
                 }
 
-                var depth = reader.Depth + 1;
-
-                while(reader.Read())
+                while(!reader.EOF)
                 {
-                    if(reader.NamespaceURI != DIDLLiteNamespace || reader.Depth != depth)
-                    {
-                        continue;
-                    }
+                    while((reader.NamespaceURI != DIDLLiteNamespace || reader.NodeType != XmlNodeType.Element) && reader.Read()) ;
+
+                    if(reader.EOF) break;
 
                     switch(reader.Name)
                     {
@@ -71,6 +68,9 @@ namespace IoT.Protocol.Upnp.DIDL
                             break;
                         case "container":
                             if(nextDepth is { } value) containers.Push((reader.GetAttribute("id"), value));
+                            reader.Skip();
+                            break;
+                        default:
                             reader.Skip();
                             break;
                     }
