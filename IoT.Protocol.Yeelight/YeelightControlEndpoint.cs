@@ -16,6 +16,7 @@ using static System.TimeSpan;
 
 namespace IoT.Protocol.Yeelight
 {
+    [CLSCompliant(false)]
     public class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonElement>, IConnectedEndpoint<RequestMessage, JsonElement>
     {
         private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> completions = new();

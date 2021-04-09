@@ -1,3 +1,7 @@
+using System;
+
+[assembly: CLSCompliant(true)]
+
 namespace System.Runtime.CompilerServices
 {
     using System.ComponentModel;

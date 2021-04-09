@@ -44,7 +44,7 @@ namespace IoT.Protocol.Upnp.DIDL
             writer.WriteEndElement();
         }
 
-        public static void CopyItems(string metadata, XmlWriter writer, Stack<(string Id, uint Depth)> containers, uint? nextDepth)
+        public static void CopyItems(string metadata, XmlWriter writer, Stack<(string Id, int Depth)> containers, int? nextDepth)
         {
             if(string.IsNullOrEmpty(metadata)) return;
             if(writer is null) throw new ArgumentNullException(nameof(writer));

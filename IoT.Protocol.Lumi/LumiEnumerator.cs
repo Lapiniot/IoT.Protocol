@@ -10,10 +10,11 @@ using static System.Globalization.CultureInfo;
 
 namespace IoT.Protocol.Lumi
 {
-    public class LumiEnumerator : UdpEnumerator<(IPAddress Address, ushort Port, string Sid)>
+    public class LumiEnumerator : UdpEnumerator<(IPAddress Address, int Port, string Sid)>
     {
         public LumiEnumerator(IRepeatPolicy discoveryPolicy) :
-            base(CreateSocket, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, discoveryPolicy) {}
+            base(CreateSocket, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, discoveryPolicy)
+        { }
 
         protected override int SendBufferSize { get; } = 0xF;
 
@@ -24,16 +25,16 @@ namespace IoT.Protocol.Lumi
             return Factory.CreateIPv4UdpMulticastSender();
         }
 
-        protected override ValueTask<(IPAddress Address, ushort Port, string Sid)> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp,
+        protected override ValueTask<(IPAddress Address, int Port, string Sid)> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp,
             CancellationToken cancellationToken)
         {
             var json = JsonSerializer.Deserialize<JsonElement>(buffer.Span);
 
             if(!json.TryGetProperty("cmd", out var cmd) || cmd.GetString() != "iam") throw new InvalidDataException("Invalid discovery response message");
             var result = (Address: IPAddress.Parse(json.GetProperty("ip").GetString() ?? throw new InvalidDataException("Missing value for property 'ip'")),
-                Port: ushort.Parse(json.GetProperty("port").GetString() ?? throw new InvalidDataException("Missing value for property 'port'"), InvariantCulture),
+                Port: int.Parse(json.GetProperty("port").GetString() ?? throw new InvalidDataException("Missing value for property 'port'"), InvariantCulture),
                 Sid: json.GetProperty("sid").GetString());
-            return new ValueTask<(IPAddress, ushort, string)>(result);
+            return new ValueTask<(IPAddress, int, string)>(result);
         }
 
         protected override int WriteDiscoveryDatagram(Span<byte> span)

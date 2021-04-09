@@ -9,13 +9,16 @@ using static IoT.Protocol.Upnp.UpnpServices;
 namespace IoT.Protocol.Upnp.Services
 {
     [ServiceSchema(AVTransport)]
+    [CLSCompliant(false)]
     public sealed class AVTransportService : SoapActionInvoker
     {
         public AVTransportService(SoapControlEndpoint endpoint, Uri controlUri) :
-            base(endpoint, controlUri, AVTransport) {}
+            base(endpoint, controlUri, AVTransport)
+        { }
 
         public AVTransportService(SoapControlEndpoint endpoint) :
-            base(endpoint, AVTransport) {}
+            base(endpoint, AVTransport)
+        { }
 
         public Task<IReadOnlyDictionary<string, string>> GetMediaInfoAsync(uint instanceId = 0, CancellationToken cancellationToken = default)
         {

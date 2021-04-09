@@ -15,6 +15,7 @@ namespace IoT.Protocol.Upnp.Services
     }
 
     [ServiceSchema(ContentDirectory)]
+    [CLSCompliant(false)]
     public sealed class ContentDirectoryService : SoapActionInvoker
     {
         public ContentDirectoryService(SoapControlEndpoint endpoint, Uri controlUri) :

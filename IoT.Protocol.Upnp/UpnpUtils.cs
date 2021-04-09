@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,6 +9,7 @@ using IoT.Protocol.Upnp.Services;
 
 namespace IoT.Protocol.Upnp
 {
+    [CLSCompliant(false)]
     public static class UpnpUtils
     {
         public static async Task<string> GetUpdateIdAsync(ContentDirectoryService service, string itemId, CancellationToken cancellationToken)
@@ -32,7 +34,7 @@ namespace IoT.Protocol.Upnp
             if(service is null) throw new System.ArgumentNullException(nameof(service));
             if(itemIds is null) throw new System.ArgumentNullException(nameof(itemIds));
 
-            var containers = new Stack<(string Id, uint Depth)>();
+            var containers = new Stack<(string Id, int Depth)>();
 
             // Phase 1: get items metadata and sort out items and containers, items are copied immidiatelly to the output xml writer,
             // container ids are scheduled for future expansion by pushing to the containerIds stack structure
