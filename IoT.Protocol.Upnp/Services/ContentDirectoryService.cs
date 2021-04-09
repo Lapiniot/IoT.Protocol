@@ -18,10 +18,12 @@ namespace IoT.Protocol.Upnp.Services
     public sealed class ContentDirectoryService : SoapActionInvoker
     {
         public ContentDirectoryService(SoapControlEndpoint endpoint, Uri controlUri) :
-            base(endpoint, controlUri, ContentDirectory) {}
+            base(endpoint, controlUri, ContentDirectory)
+        { }
 
         public ContentDirectoryService(SoapControlEndpoint endpoint) :
-            base(endpoint, ContentDirectory) {}
+            base(endpoint, ContentDirectory)
+        { }
 
         public Task<IReadOnlyDictionary<string, string>> BrowseAsync(string parent, string filter = null,
             BrowseMode mode = default, string sortCriteria = null,
@@ -38,8 +40,7 @@ namespace IoT.Protocol.Upnp.Services
         }
 
         public Task<IReadOnlyDictionary<string, string>> SearchAsync(string container, string query, string filter = null,
-            BrowseMode mode = default, string sortCriteria = null,
-            uint index = 0, uint count = 50, CancellationToken cancellationToken = default)
+            string sortCriteria = null, uint index = 0, uint count = 50, CancellationToken cancellationToken = default)
         {
             return InvokeAsync("Search", new Dictionary<string, string>() {
                 { "ContainerID", container },

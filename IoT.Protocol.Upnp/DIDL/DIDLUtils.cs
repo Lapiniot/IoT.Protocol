@@ -27,6 +27,9 @@ namespace IoT.Protocol.Upnp.DIDL
 
         public static void WriteItem(XmlWriter writer, string title, string description, string genre, Uri url, long? length, string contentType, int? br)
         {
+            if(writer is null) throw new ArgumentNullException(nameof(writer));
+            if(url is null) throw new ArgumentNullException(nameof(url));
+
             writer.WriteStartElement("item");
             writer.WriteElementString("title", DCNamespace, title);
             if(!string.IsNullOrEmpty(description)) writer.WriteElementString("description", DCNamespace, description);

@@ -15,12 +15,12 @@ namespace IoT.Protocol.Upnp.DIDL
         public int? TrackNumber { get; set; }
         public string DiscographyUrl { get; internal set; }
         public string LyricsUrl { get; internal set; }
-        public List<string> Artists { get; internal set; }
-        public List<string> Actors { get; internal set; }
-        public List<string> Authors { get; internal set; }
-        public List<string> Producers { get; internal set; }
-        public List<string> Directors { get; internal set; }
-        public List<string> Publishers { get; internal set; }
-        public List<string> Genres { get; internal set; }
+        public ICollection<string> Artists { get; internal set; }
+        public ICollection<string> Actors { get; internal set; }
+        public ICollection<string> Authors { get; internal set; }
+        public ICollection<string> Producers { get; internal set; }
+        public ICollection<string> Directors { get; internal set; }
+        public ICollection<string> Publishers { get; internal set; }
+        public ICollection<string> Genres { get; internal set; }
     }
 }

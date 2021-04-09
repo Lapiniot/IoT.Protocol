@@ -145,7 +145,7 @@ namespace IoT.Protocol.Yeelight
         protected override async Task StartingAsync(CancellationToken cancellationToken)
         {
             socket = new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            await socket.ConnectAsync(Endpoint).ConfigureAwait(false);
+            await socket.ConnectAsync(Endpoint, cancellationToken).ConfigureAwait(false);
             await base.StartingAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -155,7 +155,7 @@ namespace IoT.Protocol.Yeelight
 
             var tcs = new TaskCompletionSource<bool>();
 
-            var args = new SocketAsyncEventArgs {UserToken = tcs};
+            var args = new SocketAsyncEventArgs { UserToken = tcs };
 
             args.Completed += OnDisconnectAsyncCompleted;
 

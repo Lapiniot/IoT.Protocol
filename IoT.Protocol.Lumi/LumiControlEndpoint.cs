@@ -140,7 +140,7 @@ namespace IoT.Protocol.Lumi
         {
             socket = new Socket(endpoint.AddressFamily, Dgram, Udp);
 
-            await socket.ConnectAsync(endpoint).ConfigureAwait(false);
+            await socket.ConnectAsync(endpoint, cancellationToken).ConfigureAwait(false);
 
             tokenSource = new CancellationTokenSource();
 

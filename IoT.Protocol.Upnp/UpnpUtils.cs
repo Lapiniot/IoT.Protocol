@@ -12,11 +12,15 @@ namespace IoT.Protocol.Upnp
     {
         public static async Task<string> GetUpdateIdAsync(ContentDirectoryService service, string itemId, CancellationToken cancellationToken)
         {
+            if(service is null) throw new System.ArgumentNullException(nameof(service));
+
             return (await service.BrowseAsync(itemId, mode: BrowseMode.BrowseMetadata, filter: "id", cancellationToken: cancellationToken).ConfigureAwait(false))["UpdateID"];
         }
 
         public static async Task<int[]> GetItemIndicesAsync(ContentDirectoryService service, string parentId, IEnumerable<string> ids, CancellationToken cancellationToken)
         {
+            if(service is null) throw new System.ArgumentNullException(nameof(service));
+
             var data = await service.BrowseAsync(parentId, count: uint.MaxValue, cancellationToken: cancellationToken).ConfigureAwait(false);
             var playlists = DIDLXmlParser.Parse(data["Result"], false, false);
             var map = playlists.Select((p, index) => (p.Id, index)).ToDictionary(p => p.Id, p => p.index + 1);
@@ -25,6 +29,9 @@ namespace IoT.Protocol.Upnp
 
         public static async Task WriteItemsMetadataTreeAsync(ContentDirectoryService service, IEnumerable<string> itemIds, XmlWriter writer, int maxDepth, CancellationToken cancellationToken)
         {
+            if(service is null) throw new System.ArgumentNullException(nameof(service));
+            if(itemIds is null) throw new System.ArgumentNullException(nameof(itemIds));
+
             var containers = new Stack<(string Id, uint Depth)>();
 
             // Phase 1: get items metadata and sort out items and containers, items are copied immidiatelly to the output xml writer,

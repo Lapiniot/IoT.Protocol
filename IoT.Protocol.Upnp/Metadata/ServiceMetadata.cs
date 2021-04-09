@@ -27,7 +27,7 @@ namespace IoT.Protocol.Upnp.Metadata
         {
             using var client = new HttpClient();
             using var response = await client.GetAsync(location, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var x = XDocument.Load(stream);
 
             var stateTable = x.Root.Element(NS + "serviceStateTable").Elements(NS + "stateVariable").ToDictionary(

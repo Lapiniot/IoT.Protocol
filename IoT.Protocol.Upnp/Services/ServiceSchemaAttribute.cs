@@ -4,7 +4,7 @@ using System.Reflection;
 namespace IoT.Protocol.Upnp.Services
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public class ServiceSchemaAttribute : Attribute
+    public sealed class ServiceSchemaAttribute : Attribute
     {
         public ServiceSchemaAttribute(string schema)
         {
