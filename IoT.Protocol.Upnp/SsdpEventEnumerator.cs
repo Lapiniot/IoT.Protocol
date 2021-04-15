@@ -15,7 +15,8 @@ namespace IoT.Protocol.Upnp
         { }
 
         public SsdpEventEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRepeatPolicy discoveryPolicy) :
-            base(searchTarget, groupEndpoint, group => CreateUdp().JoinMulticastGroup(group), discoveryPolicy)
+            base(searchTarget, groupEndpoint, discoveryPolicy,
+                group => CreateUdp().ConfigureMulticastSender().JoinMulticastGroup(group))
         { }
     }
 }
