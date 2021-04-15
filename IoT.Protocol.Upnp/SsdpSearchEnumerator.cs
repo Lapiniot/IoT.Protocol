@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Policies;
 using System.Threading;
 using System.Threading.Tasks;
-using static System.Net.Sockets.Factory;
+using static System.Net.Sockets.SocketBuilderExtensions;
 using static System.Runtime.InteropServices.RuntimeInformation;
 using static System.Text.Encoding;
 
@@ -28,20 +28,19 @@ namespace IoT.Protocol.Upnp
         }
 
         public SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRepeatPolicy discoveryPolicy) :
-            this(searchTarget, groupEndpoint, CreateSocket, discoveryPolicy) {}
+            this(searchTarget, groupEndpoint,
+                ep => CreateUdp(ep.AddressFamily).ConfigureMulticastSender().JoinMulticastGroup(ep),
+                discoveryPolicy)
+        { }
 
         public SsdpSearchEnumerator(string searchTarget, IRepeatPolicy discoveryPolicy) :
-            this(searchTarget, GetIPv4SSDPGroup(), CreateSocket, discoveryPolicy) {}
+            this(searchTarget, GetIPv4SSDPGroup(),
+                ep => CreateUdp(ep.AddressFamily).ConfigureMulticastSender().JoinMulticastGroup(ep),
+                discoveryPolicy)
+        { }
 
         protected override int SendBufferSize { get; }
         protected override int ReceiveBufferSize { get; } = 0x400;
-
-        private static Socket CreateSocket(IPEndPoint endPoint)
-        {
-            // Do not join multicast group in order to avoid SSDP NOTIFY noise,
-            // just create multicast enabled socket for sending
-            return CreateUdpMulticastSender(endPoint.AddressFamily);
-        }
 
         protected override ValueTask<SsdpReply> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken)
         {

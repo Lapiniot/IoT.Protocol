@@ -13,17 +13,13 @@ namespace IoT.Protocol.Lumi
     public class LumiEnumerator : UdpEnumerator<(IPAddress Address, int Port, string Sid)>
     {
         public LumiEnumerator(IRepeatPolicy discoveryPolicy) :
-            base(CreateSocket, new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, discoveryPolicy)
+            base(_ => SocketBuilderExtensions.CreateUdp().ConfigureMulticastSender(),
+                new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, discoveryPolicy)
         { }
 
         protected override int SendBufferSize { get; } = 0xF;
 
         protected override int ReceiveBufferSize { get; } = 0x100;
-
-        private static Socket CreateSocket(IPEndPoint _)
-        {
-            return Factory.CreateIPv4UdpMulticastSender();
-        }
 
         protected override ValueTask<(IPAddress Address, int Port, string Sid)> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp,
             CancellationToken cancellationToken)

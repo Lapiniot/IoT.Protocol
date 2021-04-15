@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -83,9 +84,10 @@ namespace IoT.Protocol.Lumi
 
         #region Overrides of ActivityObject
 
+        [SuppressMessage("Reliability", "CA2000: Dispose objects before losing scope")]
         protected override Task StartingAsync(CancellationToken cancellationToken)
         {
-            socket = Factory.CreateUdpMulticastListener(endpoint);
+            socket = SocketBuilderExtensions.CreateUdp().JoinMulticastGroup(endpoint);
 
             tokenSource = new CancellationTokenSource();
 
