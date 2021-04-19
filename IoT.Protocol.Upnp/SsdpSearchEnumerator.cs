@@ -16,7 +16,7 @@ namespace IoT.Protocol.Upnp
         private readonly string searchTarget;
         private readonly string userAgent;
 
-        protected SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRepeatPolicy discoveryPolicy, CreateSocketFactory socketFactory) :
+        public SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRepeatPolicy discoveryPolicy, CreateSocketFactory socketFactory) :
             base(socketFactory, groupEndpoint, false, discoveryPolicy)
         {
             if(string.IsNullOrEmpty(searchTarget)) throw new ArgumentException("Parameter couldn't be null or empty.", nameof(searchTarget));
@@ -26,6 +26,10 @@ namespace IoT.Protocol.Upnp
             userAgent = $"USER-AGENT: {nameof(SsdpSearchEnumerator)}/{typeof(SsdpSearchEnumerator).Assembly.GetName().Version} ({OSDescription.TrimEnd()})";
             SendBufferSize = 68 + host.Length + searchTarget.Length + userAgent.Length;
         }
+
+        public SsdpSearchEnumerator(string searchTarget, IRepeatPolicy discoveryPolicy, CreateSocketFactory socketFactory) :
+            this(searchTarget, GetIPv4SSDPGroup(), discoveryPolicy, socketFactory)
+        { }
 
         public SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRepeatPolicy discoveryPolicy) :
             this(searchTarget, groupEndpoint, discoveryPolicy,
