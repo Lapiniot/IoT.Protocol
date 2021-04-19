@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using static System.Net.Sockets.SocketBuilderExtensions;
 using static System.Runtime.InteropServices.RuntimeInformation;
 using static System.Text.Encoding;
+using static System.Net.NetworkInterfaceExtensions;
 
 namespace IoT.Protocol.Upnp
 {
@@ -33,12 +34,14 @@ namespace IoT.Protocol.Upnp
 
         public SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRepeatPolicy discoveryPolicy) :
             this(searchTarget, groupEndpoint, discoveryPolicy,
-                ep => CreateUdp(ep.AddressFamily).ConfigureMulticastSender())
+                ep => CreateUdp(ep.AddressFamily).ConfigureMulticastSender(
+                    FindBestMulticastInterface().GetIndex(ep.AddressFamily)))
         { }
 
         public SsdpSearchEnumerator(string searchTarget, IRepeatPolicy discoveryPolicy) :
             this(searchTarget, GetIPv4SSDPGroup(), discoveryPolicy,
-                ep => CreateUdp(ep.AddressFamily).ConfigureMulticastSender())
+                ep => CreateUdp(ep.AddressFamily).ConfigureMulticastSender(
+                    FindBestMulticastInterface().GetIndex(ep.AddressFamily)))
         { }
 
         protected override int SendBufferSize { get; }

@@ -7,13 +7,15 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using static System.Globalization.CultureInfo;
+using static System.Net.Sockets.AddressFamily;
+using static System.Net.NetworkInterfaceExtensions;
 
 namespace IoT.Protocol.Lumi
 {
     public class LumiEnumerator : UdpEnumerator<(IPAddress Address, int Port, string Sid)>
     {
         public LumiEnumerator(IRepeatPolicy discoveryPolicy) :
-            base(_ => SocketBuilderExtensions.CreateUdp().ConfigureMulticastSender(),
+            base(_ => SocketBuilderExtensions.CreateUdp().ConfigureMulticastSender(FindBestMulticastInterface().GetIndex(InterNetwork)),
                 new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, discoveryPolicy)
         { }
 
