@@ -34,13 +34,13 @@ namespace IoT.Protocol.Upnp
 
         public SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRepeatPolicy discoveryPolicy) :
             this(searchTarget, groupEndpoint, discoveryPolicy,
-                ep => CreateUdp(ep.AddressFamily).ConfigureMulticastSender(
+                ep => CreateUdp(ep.AddressFamily).ConfigureMulticast(
                     FindBestMulticastInterface().GetIndex(ep.AddressFamily)))
         { }
 
         public SsdpSearchEnumerator(string searchTarget, IRepeatPolicy discoveryPolicy) :
             this(searchTarget, GetIPv4SSDPGroup(), discoveryPolicy,
-                ep => CreateUdp(ep.AddressFamily).ConfigureMulticastSender(
+                ep => CreateUdp(ep.AddressFamily).ConfigureMulticast(
                     FindBestMulticastInterface().GetIndex(ep.AddressFamily)))
         { }
 

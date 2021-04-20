@@ -15,7 +15,7 @@ namespace IoT.Protocol.Lumi
     public class LumiEnumerator : UdpEnumerator<(IPAddress Address, int Port, string Sid)>
     {
         public LumiEnumerator(IRepeatPolicy discoveryPolicy) :
-            base(_ => SocketBuilderExtensions.CreateUdp().ConfigureMulticastSender(FindBestMulticastInterface().GetIndex(InterNetwork)),
+            base(_ => SocketBuilderExtensions.CreateUdp().ConfigureMulticast(FindBestMulticastInterface().GetIndex(InterNetwork)),
                 new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, discoveryPolicy)
         { }
 
