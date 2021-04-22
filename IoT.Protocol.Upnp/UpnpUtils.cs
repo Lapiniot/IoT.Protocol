@@ -23,7 +23,7 @@ namespace IoT.Protocol.Upnp
         {
             if(service is null) throw new System.ArgumentNullException(nameof(service));
 
-            var data = await service.BrowseAsync(parentId, count: uint.MaxValue, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var data = await service.BrowseAsync(parentId, filter: "id", count: uint.MaxValue, cancellationToken: cancellationToken).ConfigureAwait(false);
             var playlists = DIDLXmlParser.Parse(data["Result"], false, false);
             var map = playlists.Select((p, index) => (p.Id, index)).ToDictionary(p => p.Id, p => p.index + 1);
             return ids.Select(id => map[id]).ToArray();
@@ -48,8 +48,12 @@ namespace IoT.Protocol.Upnp
             while(containers.TryPop(out var result))
             {
                 var (id, depth) = result;
-                var data = await service.BrowseAsync(id, mode: BrowseMode.BrowseDirectChildren, cancellationToken: cancellationToken).ConfigureAwait(false);
-                DIDLUtils.CopyItems(data["Result"], writer, containers, depth < maxDepth ? depth + 1 : null);
+#pragma warning disable CA1508 // Looks like bug in the analyzer code 
+                await foreach(var (content, _, _) in service.BrowseChildrenAsync(id, null, null, 100, cancellationToken).ConfigureAwait(false))
+#pragma warning restore CA1508 // Looks like bug in the analyzer code 
+                {
+                    DIDLUtils.CopyItems(content, writer, containers, depth < maxDepth ? depth + 1 : null);
+                }
             }
         }
     }
