@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using IoT.Protocol.Soap;
@@ -38,6 +40,23 @@ namespace IoT.Protocol.Upnp.Services
                 { "RequestedCount", count.ToString(InvariantCulture) },
                 { "SortCriteria", sortCriteria ?? "" } },
                 cancellationToken);
+        }
+
+        public async IAsyncEnumerable<(string Content, int matches, int total)> BrowseChildrenAsync(string parent,
+            string filter = null, string sortCriteria = null, uint pageSize = 50,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var total = 0u;
+            var fetched = 0u;
+            do
+            {
+                var data = await BrowseAsync(parent, filter, BrowseMode.BrowseDirectChildren, sortCriteria, fetched, pageSize, cancellationToken).ConfigureAwait(false);
+                total = uint.Parse(data["TotalMatches"], CultureInfo.InvariantCulture);
+                uint count = uint.Parse(data["NumberReturned"], CultureInfo.InvariantCulture);
+                fetched += count;
+                yield return (data["Result"], (int)count, (int)total);
+            }
+            while(fetched < total);
         }
 
         public Task<IReadOnlyDictionary<string, string>> SearchAsync(string container, string query, string filter = null,
