@@ -96,7 +96,7 @@ namespace IoT.Protocol.Lumi
 
         public Task<JsonElement> InvokeAsync(string command, string sid, CancellationToken cancellationToken = default)
         {
-            return InvokeAsync(new Dictionary<string, object> {{"cmd", command}, {"sid", sid}}, cancellationToken);
+            return InvokeAsync(new Dictionary<string, object> { { "cmd", command }, { "sid", sid } }, cancellationToken);
         }
 
         private void OnDataAvailable(Span<byte> span)
@@ -136,7 +136,7 @@ namespace IoT.Protocol.Lumi
 
         #region Overrides of ActivityObject
 
-        protected override async Task StartingAsync(CancellationToken cancellationToken)
+        protected override async Task StartingAsync(object state, CancellationToken cancellationToken)
         {
             socket = new Socket(endpoint.AddressFamily, Dgram, Udp);
 

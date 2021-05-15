@@ -85,7 +85,7 @@ namespace IoT.Protocol.Lumi
         #region Overrides of ActivityObject
 
         [SuppressMessage("Reliability", "CA2000: Dispose objects before losing scope")]
-        protected override Task StartingAsync(CancellationToken cancellationToken)
+        protected override Task StartingAsync(object state, CancellationToken cancellationToken)
         {
             socket = SocketBuilderExtensions.CreateUdp().JoinMulticastGroup(endpoint);
 

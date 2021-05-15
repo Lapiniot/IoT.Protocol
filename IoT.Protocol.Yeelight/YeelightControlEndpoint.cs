@@ -143,11 +143,11 @@ namespace IoT.Protocol.Yeelight
             return consumed;
         }
 
-        protected override async Task StartingAsync(CancellationToken cancellationToken)
+        protected override async Task StartingAsync(object state, CancellationToken cancellationToken)
         {
             socket = new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             await socket.ConnectAsync(Endpoint, cancellationToken).ConfigureAwait(false);
-            await base.StartingAsync(cancellationToken).ConfigureAwait(false);
+            await base.StartingAsync(state, cancellationToken).ConfigureAwait(false);
         }
 
         protected override async Task StoppingAsync()
