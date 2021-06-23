@@ -136,7 +136,7 @@ namespace IoT.Protocol.Lumi
 
         #region Overrides of ActivityObject
 
-        protected override async Task StartingAsync(object state, CancellationToken cancellationToken)
+        protected override async Task StartingAsync(CancellationToken cancellationToken)
         {
             socket = new Socket(endpoint.AddressFamily, Dgram, Udp);
 
