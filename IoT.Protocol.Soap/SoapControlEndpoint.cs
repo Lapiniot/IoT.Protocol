@@ -56,11 +56,15 @@ namespace IoT.Protocol.Soap
 
         private static async Task<SoapEnvelope> ParseResponseAsync(HttpResponseMessage response)
         {
-            await using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            var charSet = response.Content.Headers.ContentType?.CharSet?.Trim('"');
-            var encoding = charSet != null ? Encoding.GetEncoding(charSet) : Encoding.UTF8;
-            using var reader = new StreamReader(responseStream, encoding);
-            return SoapEnvelope.Deserialize(reader);
+            var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
+            await using(responseStream.ConfigureAwait(false))
+            {
+                var charSet = response.Content.Headers.ContentType?.CharSet?.Trim('"');
+                var encoding = charSet != null ? Encoding.GetEncoding(charSet) : Encoding.UTF8;
+                using var reader = new StreamReader(responseStream, encoding);
+                return SoapEnvelope.Deserialize(reader);
+            }
         }
     }
 }

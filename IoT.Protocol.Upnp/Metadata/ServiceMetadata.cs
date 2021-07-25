@@ -27,30 +27,34 @@ namespace IoT.Protocol.Upnp.Metadata
         {
             using var client = new HttpClient();
             using var response = await client.GetAsync(location, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var x = XDocument.Load(stream);
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
-            var stateTable = x.Root.Element(NS + "serviceStateTable").Elements(NS + "stateVariable").ToDictionary(
-                sv => sv.Element(NS + "name").Value,
-                sv => new StateVariable(
-                    sv.Element(NS + "name").Value,
-                    CreateType(sv.Element(NS + "dataType")),
-                    sv.Element(NS + "defaultValue")?.Value,
-                    sv.Attribute(NS + "sendEvents")?.Value != "no",
-                    sv.Element(NS + "allowedValueList")?.Elements(NS + "allowedValue").Select(av => av.Value).ToArray(),
-                    CreateRange(sv.Element(NS + "allowedValueRange"))));
+            await using(stream.ConfigureAwait(false))
+            {
+                var x = XDocument.Load(stream);
 
-            var actions = x.Root.Element(NS + "actionList").Elements(NS + "action").Select(a => new ServiceAction(
-                a.Element(NS + "name").Value,
-                a.Element(NS + "argumentList").Elements(NS + "argument").Select(arg => new Argument(
-                    arg.Element(NS + "name").Value,
-                    arg.Element(NS + "direction").Value,
-                    arg.Element(NS + "retval") != null,
-                    stateTable[arg.Element(NS + "relatedStateVariable").Value]
-                )).ToArray()
-            )).ToArray();
+                var stateTable = x.Root.Element(NS + "serviceStateTable").Elements(NS + "stateVariable").ToDictionary(
+                    sv => sv.Element(NS + "name").Value,
+                    sv => new StateVariable(
+                        sv.Element(NS + "name").Value,
+                        CreateType(sv.Element(NS + "dataType")),
+                        sv.Element(NS + "defaultValue")?.Value,
+                        sv.Attribute(NS + "sendEvents")?.Value != "no",
+                        sv.Element(NS + "allowedValueList")?.Elements(NS + "allowedValue").Select(av => av.Value).ToArray(),
+                        CreateRange(sv.Element(NS + "allowedValueRange"))));
 
-            return new ServiceMetadata(actions, stateTable);
+                var actions = x.Root.Element(NS + "actionList").Elements(NS + "action").Select(a => new ServiceAction(
+                    a.Element(NS + "name").Value,
+                    a.Element(NS + "argumentList").Elements(NS + "argument").Select(arg => new Argument(
+                        arg.Element(NS + "name").Value,
+                        arg.Element(NS + "direction").Value,
+                        arg.Element(NS + "retval") != null,
+                        stateTable[arg.Element(NS + "relatedStateVariable").Value]
+                    )).ToArray()
+                )).ToArray();
+
+                return new ServiceMetadata(actions, stateTable);
+            }
         }
 
         private static string CreateType(XElement element)
