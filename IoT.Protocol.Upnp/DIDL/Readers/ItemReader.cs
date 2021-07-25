@@ -5,7 +5,6 @@ using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Upnp.DIDL.Readers
 {
-    [SuppressMessage("Design", "CA1062:Validate arguments of public methods")]
     public abstract class ItemReader<TElementType> : ReaderBase<TElementType> where TElementType : Item
     {
         private readonly bool parseResourceProps;
@@ -17,12 +16,12 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
             this.parseVendorProps = parseVendorProps;
         }
 
-        protected override TElementType CreateElement(XmlReader reader)
+        protected override TElementType CreateElement([NotNull] XmlReader reader)
         {
             return CreateElement(reader.GetAttribute("id"), reader.GetAttribute("parentID"), ParseBoolean(reader.GetAttribute("restricted")));
         }
 
-        protected override bool TryReadChildNode(XmlReader reader, TElementType element)
+        protected override bool TryReadChildNode([NotNull] XmlReader reader, [NotNull] TElementType element)
         {
             if(reader.NodeType != Element) return false;
 

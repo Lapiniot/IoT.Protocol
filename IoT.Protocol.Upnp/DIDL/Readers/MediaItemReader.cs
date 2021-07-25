@@ -7,7 +7,7 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
 {
     public class MediaItemReader : ItemReader<MediaItem>
     {
-        public MediaItemReader(bool parseResourceProps, bool parseVendorProps) : base(parseResourceProps, parseVendorProps) {}
+        public MediaItemReader(bool parseResourceProps, bool parseVendorProps) : base(parseResourceProps, parseVendorProps) { }
 
         #region Overrides of ItemReader<MediaItem>
 
@@ -16,10 +16,10 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
             return new(id, parentId, restricted);
         }
 
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods")]
-        protected override bool TryReadChildNode(XmlReader reader, MediaItem element)
+        protected override bool TryReadChildNode([NotNull] XmlReader reader, [NotNull] MediaItem element)
         {
             if(reader.NodeType != Element) return base.TryReadChildNode(reader, element);
+
             switch(reader.NamespaceURI)
             {
                 case DC:

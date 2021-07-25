@@ -22,9 +22,7 @@ namespace IoT.Protocol
         {
             var set = new HashSet<TThing1>(comparer);
 
-#pragma warning disable CA1508 // Looks like bug in the analyzer code 
             await foreach(var thing in enumerator.WithCancellation(cancellationToken).ConfigureAwait(false))
-#pragma warning restore CA1508 // Looks like bug in the analyzer code 
             {
                 if(set.Add(thing)) yield return Convert(thing);
             }

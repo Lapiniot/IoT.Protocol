@@ -7,7 +7,6 @@ using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Upnp.DIDL.Readers
 {
-    [SuppressMessage("Design", "CA1062:Validate arguments of public methods")]
     public class ResourceReader : ReaderBase<Resource>
     {
         private static ResourceReader instance;
@@ -16,14 +15,14 @@ namespace IoT.Protocol.Upnp.DIDL.Readers
 
         #region Overrides of ReaderBase<Resource>
 
-        protected override bool TryReadChildNode(XmlReader reader, Resource element)
+        protected override bool TryReadChildNode([NotNull] XmlReader reader, [NotNull] Resource element)
         {
             if(reader.NodeType != CDATA && reader.NodeType != Text) return false;
             element.Url = reader.ReadContentAsString();
             return true;
         }
 
-        protected override Resource CreateElement(XmlReader reader)
+        protected override Resource CreateElement([NotNull] XmlReader reader)
         {
             var resource = new Resource();
 
