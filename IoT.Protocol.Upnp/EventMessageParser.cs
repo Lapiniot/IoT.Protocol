@@ -9,7 +9,7 @@ public static class EventMessageParser
 
     public static async Task<string> ReadLastChangeContentAsync(XmlReader reader)
     {
-        if(reader is null) throw new ArgumentNullException(nameof(reader));
+        ArgumentNullException.ThrowIfNull(reader);
 
         while(await reader.ReadAsync().ConfigureAwait(false) && reader.Depth == 0)
         {

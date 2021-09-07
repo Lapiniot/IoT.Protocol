@@ -8,7 +8,8 @@ public class SsdpReplyComparer : IEqualityComparer<SsdpReply>
 
     public SsdpReplyComparer(string key)
     {
-        this.key = key ?? throw new ArgumentNullException(nameof(key));
+        ArgumentNullException.ThrowIfNull(key);
+        this.key = key;
     }
 
     #region Implementation of IEqualityComparer<in SsdpReply>

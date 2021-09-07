@@ -4,8 +4,11 @@ public class SoapActionInvoker
 {
     public SoapActionInvoker(SoapControlEndpoint endpoint, Uri controlUri, string schema)
     {
-        Target = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
-        Schema = schema ?? throw new ArgumentNullException(nameof(schema));
+        ArgumentNullException.ThrowIfNull(endpoint);
+        ArgumentNullException.ThrowIfNull(schema);
+
+        Target = endpoint;
+        Schema = schema;
 
         if(controlUri?.IsAbsoluteUri == true) throw new ArgumentException("Must be valid uri relative to the base endpoint uri", nameof(controlUri));
 

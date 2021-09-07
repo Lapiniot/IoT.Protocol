@@ -11,7 +11,7 @@ public abstract class ReaderBase<TElementType> where TElementType : class
 
     public TElementType Read(XmlReader reader)
     {
-        if(reader == null) throw new ArgumentNullException(nameof(reader));
+        ArgumentNullException.ThrowIfNull(reader);
 
         var nodeName = reader.Name;
         var depth = reader.Depth;

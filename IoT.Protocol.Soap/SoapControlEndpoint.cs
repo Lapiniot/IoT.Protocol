@@ -11,7 +11,8 @@ public class SoapControlEndpoint : IControlEndpoint<SoapEnvelope, SoapEnvelope>
 
     public SoapControlEndpoint(HttpClient httpClient)
     {
-        client = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        ArgumentNullException.ThrowIfNull(httpClient);
+        client = httpClient;
     }
 
     public Task<SoapEnvelope> InvokeAsync(SoapEnvelope message, CancellationToken cancellationToken = default)
@@ -21,8 +22,8 @@ public class SoapControlEndpoint : IControlEndpoint<SoapEnvelope, SoapEnvelope>
 
     protected internal async Task<SoapEnvelope> InvokeAsync(Uri actionUri, SoapEnvelope message, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(message);
         if(actionUri != null && actionUri.IsAbsoluteUri) throw new ArgumentException("Invalid uri type. Must be valid relative uri.");
-        if(message == null) throw new ArgumentNullException(nameof(message));
 
         using var request = new HttpRequestMessage(Post, actionUri) { Content = new SoapHttpContent(message, false) };
         using var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);

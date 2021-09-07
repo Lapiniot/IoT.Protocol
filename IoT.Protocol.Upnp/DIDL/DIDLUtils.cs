@@ -27,9 +27,6 @@ namespace IoT.Protocol.Upnp.DIDL
 
         public static void WriteItem(XmlWriter writer, string title, string description, string genre, Uri url, long? length, string contentType, int? br)
         {
-            if(writer is null) throw new ArgumentNullException(nameof(writer));
-            if(url is null) throw new ArgumentNullException(nameof(url));
-
             writer.WriteStartElement("item");
             writer.WriteElementString("title", DCNamespace, title);
             if(!string.IsNullOrEmpty(description)) writer.WriteElementString("description", DCNamespace, description);
@@ -47,8 +44,6 @@ namespace IoT.Protocol.Upnp.DIDL
         public static void CopyItems(string metadata, XmlWriter writer, Stack<(string Id, int Depth)> containers, int? nextDepth)
         {
             if(string.IsNullOrEmpty(metadata)) return;
-            if(writer is null) throw new ArgumentNullException(nameof(writer));
-            if(containers is null) throw new ArgumentNullException(nameof(containers));
 
             using(var input = new StringReader(metadata))
             using(var reader = XmlReader.Create(input))

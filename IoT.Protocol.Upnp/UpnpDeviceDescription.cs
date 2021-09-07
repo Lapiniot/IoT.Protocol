@@ -14,11 +14,14 @@ public class UpnpDeviceDescription
         string friendlyName, string manufacturer, string modelDescription, string modelName, string modelNumber,
         Uri manufacturerUri, Uri modelUri, Uri presentationUri)
     {
+        ArgumentNullException.ThrowIfNull(location);
+        ArgumentNullException.ThrowIfNull(services);
+
         if(IsNullOrWhiteSpace(udn)) throw new ArgumentException("Shouldn't be null or empty", nameof(udn));
         if(IsNullOrWhiteSpace(deviceType)) throw new ArgumentException("Shouldn't be null or empty", nameof(deviceType));
 
-        Location = location ?? throw new ArgumentNullException(nameof(location));
-        Services = services ?? throw new ArgumentNullException(nameof(services));
+        Location = location;
+        Services = services;
         Icons = icons;
         Udn = udn;
         DeviceType = deviceType;
@@ -48,8 +51,8 @@ public class UpnpDeviceDescription
 
     public static UpnpDeviceDescription ParseXml(Stream stream, Uri location)
     {
-        if(stream is null) throw new ArgumentNullException(nameof(stream));
-        if(location is null) throw new ArgumentNullException(nameof(location));
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(location);
 
         var doc = XDocument.Load(stream);
 

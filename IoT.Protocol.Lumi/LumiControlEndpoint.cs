@@ -31,7 +31,7 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
     public async Task<JsonElement> InvokeAsync(IDictionary<string, object> message, CancellationToken cancellationToken)
     {
-        if(message == null) throw new ArgumentNullException(nameof(message));
+        ArgumentNullException.ThrowIfNull(message);
 
         var completionSource = new TaskCompletionSource<JsonElement>(cancellationToken);
 

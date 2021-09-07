@@ -7,7 +7,7 @@ public sealed class ServiceSchemaAttribute : Attribute
 {
     public ServiceSchemaAttribute(string schema)
     {
-        if(schema == null) throw new ArgumentNullException(nameof(schema));
+        ArgumentNullException.ThrowIfNull(schema);
         if(schema.Length == 0) throw new ArgumentException("Cannot be empty string.", nameof(schema));
 
         Schema = schema;

@@ -4,8 +4,8 @@ public static class DebugExtensions
 {
     public static void DebugDump(this ServiceMetadata metadata, TextWriter textWriter)
     {
-        if(metadata == null) throw new ArgumentNullException(nameof(metadata));
-        if(textWriter == null) throw new ArgumentNullException(nameof(textWriter));
+        ArgumentNullException.ThrowIfNull(metadata);
+        ArgumentNullException.ThrowIfNull(textWriter);
 
         foreach(var action in metadata.Actions)
         {
@@ -15,8 +15,8 @@ public static class DebugExtensions
 
     public static void DebugDump(this ServiceAction action, TextWriter textWriter)
     {
-        if(action == null) throw new ArgumentNullException(nameof(action));
-        if(textWriter == null) throw new ArgumentNullException(nameof(textWriter));
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(textWriter);
 
         var outArgs = action.Arguments.Where(a => a.Direction == "out").ToArray();
         var inArgs = action.Arguments.Where(a => a.Direction == "in").ToArray();

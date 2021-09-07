@@ -7,8 +7,11 @@ public abstract class ConvertingEnumerator<TThing1, TThing2> : IAsyncEnumerable<
 
     protected ConvertingEnumerator(IAsyncEnumerable<TThing1> enumerator, IEqualityComparer<TThing1> comparer)
     {
-        this.enumerator = enumerator ?? throw new ArgumentNullException(nameof(enumerator));
-        this.comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
+        ArgumentNullException.ThrowIfNull(enumerator);
+        ArgumentNullException.ThrowIfNull(comparer);
+
+        this.enumerator = enumerator;
+        this.comparer = comparer;
     }
 
     #region Implementation of IAsyncEnumerable<out TThing2>
