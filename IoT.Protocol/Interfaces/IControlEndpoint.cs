@@ -1,10 +1,6 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿namespace IoT.Protocol.Interfaces;
 
-namespace IoT.Protocol.Interfaces
+public interface IControlEndpoint<in TRequest, TResponse>
 {
-    public interface IControlEndpoint<in TRequest, TResponse>
-    {
-        Task<TResponse> InvokeAsync(TRequest message, CancellationToken cancellationToken);
-    }
+    Task<TResponse> InvokeAsync(TRequest message, CancellationToken cancellationToken);
 }

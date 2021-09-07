@@ -1,75 +1,70 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using IoT.Protocol.Soap;
 using static System.Globalization.CultureInfo;
 using static IoT.Protocol.Upnp.UpnpServices;
 
-namespace IoT.Protocol.Upnp.Services
+namespace IoT.Protocol.Upnp.Services;
+
+public enum BrowseMode
 {
-    public enum BrowseMode
+    BrowseDirectChildren,
+    BrowseMetadata
+}
+
+[ServiceSchema(ContentDirectory)]
+[CLSCompliant(false)]
+public sealed class ContentDirectoryService : SoapActionInvoker
+{
+    public ContentDirectoryService(SoapControlEndpoint endpoint, Uri controlUri) :
+        base(endpoint, controlUri, ContentDirectory)
+    { }
+
+    public ContentDirectoryService(SoapControlEndpoint endpoint) :
+        base(endpoint, ContentDirectory)
+    { }
+
+    public Task<IReadOnlyDictionary<string, string>> BrowseAsync(string parent, string filter = null,
+        BrowseMode mode = default, string sortCriteria = null,
+        uint index = 0, uint count = 50, CancellationToken cancellationToken = default)
     {
-        BrowseDirectChildren,
-        BrowseMetadata
-    }
-
-    [ServiceSchema(ContentDirectory)]
-    [CLSCompliant(false)]
-    public sealed class ContentDirectoryService : SoapActionInvoker
-    {
-        public ContentDirectoryService(SoapControlEndpoint endpoint, Uri controlUri) :
-            base(endpoint, controlUri, ContentDirectory)
-        { }
-
-        public ContentDirectoryService(SoapControlEndpoint endpoint) :
-            base(endpoint, ContentDirectory)
-        { }
-
-        public Task<IReadOnlyDictionary<string, string>> BrowseAsync(string parent, string filter = null,
-            BrowseMode mode = default, string sortCriteria = null,
-            uint index = 0, uint count = 50, CancellationToken cancellationToken = default)
-        {
-            return InvokeAsync("Browse", new Dictionary<string, string>() {
+        return InvokeAsync("Browse", new Dictionary<string, string>() {
                 { "ObjectID", parent },
                 { "BrowseFlag", mode.ToString() },
                 { "Filter", filter ?? "*" },
                 { "StartingIndex", index.ToString(InvariantCulture) },
                 { "RequestedCount", count.ToString(InvariantCulture) },
                 { "SortCriteria", sortCriteria ?? "" } },
-                cancellationToken);
-        }
+            cancellationToken);
+    }
 
-        public async IAsyncEnumerable<(string Content, int matches, int total)> BrowseChildrenAsync(string parent,
-            string filter = null, string sortCriteria = null, uint pageSize = 50,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<(string Content, int matches, int total)> BrowseChildrenAsync(string parent,
+        string filter = null, string sortCriteria = null, uint pageSize = 50,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var total = 0u;
+        var fetched = 0u;
+        do
         {
-            var total = 0u;
-            var fetched = 0u;
-            do
-            {
-                var data = await BrowseAsync(parent, filter, BrowseMode.BrowseDirectChildren, sortCriteria, fetched, pageSize, cancellationToken).ConfigureAwait(false);
-                total = uint.Parse(data["TotalMatches"], CultureInfo.InvariantCulture);
-                uint count = uint.Parse(data["NumberReturned"], CultureInfo.InvariantCulture);
-                fetched += count;
-                yield return (data["Result"], (int)count, (int)total);
-            }
-            while(fetched < total);
+            var data = await BrowseAsync(parent, filter, BrowseMode.BrowseDirectChildren, sortCriteria, fetched, pageSize, cancellationToken).ConfigureAwait(false);
+            total = uint.Parse(data["TotalMatches"], CultureInfo.InvariantCulture);
+            uint count = uint.Parse(data["NumberReturned"], CultureInfo.InvariantCulture);
+            fetched += count;
+            yield return (data["Result"], (int)count, (int)total);
         }
+        while(fetched < total);
+    }
 
-        public Task<IReadOnlyDictionary<string, string>> SearchAsync(string container, string query, string filter = null,
-            string sortCriteria = null, uint index = 0, uint count = 50, CancellationToken cancellationToken = default)
-        {
-            return InvokeAsync("Search", new Dictionary<string, string>() {
+    public Task<IReadOnlyDictionary<string, string>> SearchAsync(string container, string query, string filter = null,
+        string sortCriteria = null, uint index = 0, uint count = 50, CancellationToken cancellationToken = default)
+    {
+        return InvokeAsync("Search", new Dictionary<string, string>() {
                 { "ContainerID", container },
                 { "SearchCriteria", query },
                 { "Filter", filter ?? "*" },
                 { "StartingIndex", index.ToString(InvariantCulture) },
                 { "RequestedCount", count.ToString(InvariantCulture) },
                 { "SortCriteria", sortCriteria ?? "" } },
-                cancellationToken);
-        }
+            cancellationToken);
     }
 }

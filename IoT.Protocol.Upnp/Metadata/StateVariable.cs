@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
+namespace IoT.Protocol.Upnp.Metadata;
 
-namespace IoT.Protocol.Upnp.Metadata
+public class StateVariable
 {
-    public class StateVariable
-    {
-        private static readonly IDictionary<string, Type> Map = new Dictionary<string, Type>
+    private static readonly IDictionary<string, Type> Map = new Dictionary<string, Type>
         {
             {"ui1", typeof(byte)},
             {"ui2", typeof(ushort)},
@@ -35,24 +32,23 @@ namespace IoT.Protocol.Upnp.Metadata
             {"uuid", typeof(string)}
         };
 
-        internal StateVariable(string name, string dataTypeName, string defaultValue, bool sendsEvent,
-            IEnumerable<string> allowedValues, ArgumentValueRange valueRange)
-        {
-            Name = name;
-            DataTypeName = dataTypeName;
-            DefaultValue = defaultValue;
-            SendsEvent = sendsEvent;
-            AllowedValues = allowedValues;
-            ValueRange = valueRange;
-            DataType = Map[dataTypeName];
-        }
-
-        public string Name { get; }
-        public string DataTypeName { get; }
-        public Type DataType { get; }
-        public string DefaultValue { get; }
-        public bool SendsEvent { get; }
-        public IEnumerable<string> AllowedValues { get; }
-        public ArgumentValueRange ValueRange { get; }
+    internal StateVariable(string name, string dataTypeName, string defaultValue, bool sendsEvent,
+        IEnumerable<string> allowedValues, ArgumentValueRange valueRange)
+    {
+        Name = name;
+        DataTypeName = dataTypeName;
+        DefaultValue = defaultValue;
+        SendsEvent = sendsEvent;
+        AllowedValues = allowedValues;
+        ValueRange = valueRange;
+        DataType = Map[dataTypeName];
     }
+
+    public string Name { get; }
+    public string DataTypeName { get; }
+    public Type DataType { get; }
+    public string DefaultValue { get; }
+    public bool SendsEvent { get; }
+    public IEnumerable<string> AllowedValues { get; }
+    public ArgumentValueRange ValueRange { get; }
 }

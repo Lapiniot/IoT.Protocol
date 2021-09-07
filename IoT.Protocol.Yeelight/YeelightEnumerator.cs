@@ -1,13 +1,12 @@
+using System.Net.Sockets;
 using System.Policies;
 using IoT.Protocol.Upnp;
-using static System.Net.Sockets.SocketBuilderExtensions;
 
-namespace IoT.Protocol.Yeelight
+namespace IoT.Protocol.Yeelight;
+
+public class YeelightEnumerator : SsdpSearchEnumerator
 {
-    public class YeelightEnumerator : SsdpSearchEnumerator
-    {
-        public YeelightEnumerator(IRepeatPolicy discoveryPolicy) :
-            base("wifi_bulb", GetIPv4MulticastGroup(1982), discoveryPolicy)
-        { }
-    }
+    public YeelightEnumerator(IRepeatPolicy discoveryPolicy) :
+        base("wifi_bulb", SocketBuilderExtensions.GetIPv4MulticastGroup(1982), discoveryPolicy)
+    { }
 }

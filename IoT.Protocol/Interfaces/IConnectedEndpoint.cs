@@ -1,6 +1,3 @@
-﻿using System;
+﻿namespace IoT.Protocol.Interfaces;
 
-namespace IoT.Protocol.Interfaces
-{
-    public interface IConnectedEndpoint<in TRequest, TResponse> : IControlEndpoint<TRequest, TResponse>, IConnectedObject, IAsyncDisposable {}
-}
+public interface IConnectedEndpoint<in TRequest, TResponse> : IControlEndpoint<TRequest, TResponse>, IConnectedObject, IAsyncDisposable { }
