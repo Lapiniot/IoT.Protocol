@@ -1,11 +1,13 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace IoT.Protocol;
 
-public abstract class ConvertingEnumerator<TThing1, TThing2> : IAsyncEnumerable<TThing2>
+public abstract class ConvertingEnumerator<TIn, TOut> : IAsyncEnumerable<TOut>
 {
-    private readonly IEqualityComparer<TThing1> comparer;
-    private readonly IAsyncEnumerable<TThing1> enumerator;
+    private readonly IEqualityComparer<TIn> comparer;
+    private readonly IAsyncEnumerable<TIn> enumerator;
 
-    protected ConvertingEnumerator(IAsyncEnumerable<TThing1> enumerator, IEqualityComparer<TThing1> comparer)
+    protected ConvertingEnumerator(IAsyncEnumerable<TIn> enumerator, IEqualityComparer<TIn> comparer)
     {
         ArgumentNullException.ThrowIfNull(enumerator);
         ArgumentNullException.ThrowIfNull(comparer);
@@ -16,9 +18,9 @@ public abstract class ConvertingEnumerator<TThing1, TThing2> : IAsyncEnumerable<
 
     #region Implementation of IAsyncEnumerable<out TThing2>
 
-    public async IAsyncEnumerator<TThing2> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+    public async IAsyncEnumerator<TOut> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        var set = new HashSet<TThing1>(comparer);
+        var set = new HashSet<TIn>(comparer);
 
         await foreach(var thing in enumerator.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
@@ -28,5 +30,5 @@ public abstract class ConvertingEnumerator<TThing1, TThing2> : IAsyncEnumerable<
 
     #endregion
 
-    protected abstract TThing2 Convert(TThing1 thing);
+    protected abstract TOut Convert([NotNull] TIn thing);
 }
