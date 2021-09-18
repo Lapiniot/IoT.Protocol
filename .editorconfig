@@ -19,6 +19,7 @@ csharp_space_within_single_line_array_initializer_braces=false
 dotnet_analyzer_diagnostic.category-Style.severity = warning
 dotnet_diagnostic.IDE0160.severity=none
 dotnet_diagnostic.IDE0008.severity=default
+dotnet_diagnostic.IDE0010.severity=default
 dotnet_diagnostic.IDE0011.severity=default
 dotnet_diagnostic.IDE0032.severity=default
 dotnet_diagnostic.IDE0048.severity=default
@@ -36,8 +37,8 @@ dotnet_diagnostic.CA1710.severity = silent
 # CA1054: Uri parameters should not be strings
 dotnet_diagnostic.CA1054.severity = silent
 
-# IDE0010: Add missing cases
-dotnet_diagnostic.IDE0010.severity = none
+# CA1308: Normalize strings to uppercase
+dotnet_diagnostic.CA1308.severity = warning
 
 [*.proto]
 indent_style=tab
