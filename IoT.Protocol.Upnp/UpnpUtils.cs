@@ -9,14 +9,13 @@ public static class UpnpUtils
 {
     public static async Task<string> GetUpdateIdAsync(ContentDirectoryService service, string itemId, CancellationToken cancellationToken)
     {
-        if(service is null) throw new System.ArgumentNullException(nameof(service));
-
+        ArgumentNullException.ThrowIfNull(service);
         return (await service.BrowseAsync(itemId, mode: BrowseMode.BrowseMetadata, filter: "id", cancellationToken: cancellationToken).ConfigureAwait(false))["UpdateID"];
     }
 
     public static async Task<int[]> GetItemIndicesAsync(ContentDirectoryService service, string parentId, IEnumerable<string> ids, CancellationToken cancellationToken)
     {
-        if(service is null) throw new System.ArgumentNullException(nameof(service));
+        ArgumentNullException.ThrowIfNull(service);
 
         var data = await service.BrowseAsync(parentId, filter: "id", count: uint.MaxValue, cancellationToken: cancellationToken).ConfigureAwait(false);
         var playlists = DIDLXmlParser.Parse(data["Result"], false, false);
@@ -26,8 +25,8 @@ public static class UpnpUtils
 
     public static async Task WriteItemsMetadataTreeAsync(ContentDirectoryService service, IEnumerable<string> itemIds, XmlWriter writer, int maxDepth, CancellationToken cancellationToken)
     {
-        if(service is null) throw new System.ArgumentNullException(nameof(service));
-        if(itemIds is null) throw new System.ArgumentNullException(nameof(itemIds));
+        ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(itemIds);
 
         var containers = new Stack<(string Id, int Depth)>();
 

@@ -44,7 +44,7 @@ public class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonEle
 
         try
         {
-            completions.TryAdd(id, completionSource);
+            _ = completions.TryAdd(id, completionSource);
 
             var buffer = Shared.Rent(2048);
 
@@ -54,7 +54,7 @@ public class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonEle
                 buffer[emitted] = SequenceExtensions.CR;
                 buffer[emitted + 1] = SequenceExtensions.LF;
                 var vt = socket.SendAsync(buffer.AsMemory(0, emitted + 2), None, cancellationToken);
-                if(!vt.IsCompletedSuccessfully) await vt.ConfigureAwait(false);
+                if(!vt.IsCompletedSuccessfully) _ = await vt.ConfigureAwait(false);
             }
             finally
             {
@@ -67,12 +67,12 @@ public class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonEle
         }
         catch(OperationCanceledException)
         {
-            completionSource.TrySetCanceled(cancellationToken);
+            _ = completionSource.TrySetCanceled(cancellationToken);
             throw;
         }
         finally
         {
-            completions.TryRemove(id, out _);
+            _ = completions.TryRemove(id, out _);
         }
     }
 
@@ -122,7 +122,7 @@ public class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonEle
             {
                 if(completions.TryRemove(id.GetInt64(), out var completion))
                 {
-                    completion.TrySetResult(message);
+                    _ = completion.TrySetResult(message);
                 }
             }
             else if(message.TryGetProperty("method", out var m) && m.GetString() == "props" &&
@@ -159,8 +159,8 @@ public class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonEle
 
         try
         {
-            socket.DisconnectAsync(args);
-            await tcs.Task.ConfigureAwait(false);
+            _ = socket.DisconnectAsync(args);
+            _ = await tcs.Task.ConfigureAwait(false);
         }
         finally
         {

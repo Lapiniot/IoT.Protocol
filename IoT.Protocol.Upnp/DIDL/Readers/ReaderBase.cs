@@ -18,7 +18,7 @@ public abstract class ReaderBase<TElementType> where TElementType : class
 
         var element = CreateElement(reader);
 
-        reader.Read();
+        _ = reader.Read();
 
         while(!(reader.NodeType == EndElement && reader.Name == nodeName) && reader.Depth > depth)
         {
@@ -28,7 +28,7 @@ public abstract class ReaderBase<TElementType> where TElementType : class
                 continue;
             }
 
-            reader.Read();
+            _ = reader.Read();
         }
 
         return element;
@@ -40,7 +40,7 @@ public abstract class ReaderBase<TElementType> where TElementType : class
 
     protected static int? ParseInt(string str)
     {
-        return int.TryParse(str, out var value) ? (int?)value : null;
+        return int.TryParse(str, out var value) ? value : null;
     }
 
     protected static bool ParseBoolean(string str)

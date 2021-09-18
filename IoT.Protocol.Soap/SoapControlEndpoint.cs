@@ -30,7 +30,7 @@ public class SoapControlEndpoint : IControlEndpoint<SoapEnvelope, SoapEnvelope>
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            _ = response.EnsureSuccessStatusCode();
         }
         catch(HttpRequestException hre) when(response.StatusCode == HttpStatusCode.InternalServerError)
         {
@@ -42,12 +42,9 @@ public class SoapControlEndpoint : IControlEndpoint<SoapEnvelope, SoapEnvelope>
 
         var envelope = await ParseResponseAsync(response).ConfigureAwait(false);
 
-        if(envelope.Action != message.Action + "Response")
-        {
-            throw new InvalidDataException("Invalid SOAP action response");
-        }
-
-        return envelope;
+        return envelope.Action == message.Action + "Response"
+            ? envelope
+            : throw new InvalidDataException("Invalid SOAP action response");
     }
 
     private static async Task<SoapEnvelope> ParseResponseAsync(HttpResponseMessage response)

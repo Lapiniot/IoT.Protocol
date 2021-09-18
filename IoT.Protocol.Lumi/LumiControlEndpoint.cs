@@ -39,12 +39,12 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
         try
         {
-            completions.TryAdd(id, completionSource);
+            _ = completions.TryAdd(id, completionSource);
 
             var vt = socket.SendAsync(datagram, None, cancellationToken);
             if(!vt.IsCompletedSuccessfully)
             {
-                await vt.ConfigureAwait(false);
+                _ = await vt.ConfigureAwait(false);
             }
 
             using var timeoutSource = new CancellationTokenSource(CommandTimeout);
@@ -53,12 +53,12 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
         }
         catch(OperationCanceledException)
         {
-            completionSource.TrySetCanceled(cancellationToken);
+            _ = completionSource.TrySetCanceled(cancellationToken);
             throw;
         }
         finally
         {
-            completions.TryRemove(id, out _);
+            _ = completions.TryRemove(id, out _);
         }
     }
 
@@ -101,7 +101,7 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
         if(!completions.TryRemove(id, out var completionSource)) return;
 
-        completionSource.TrySetResult(response);
+        _ = completionSource.TrySetResult(response);
     }
 
     private async Task DispatchAsync(CancellationToken cancellationToken)

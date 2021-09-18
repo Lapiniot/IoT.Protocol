@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using IoT.Protocol.Soap;
 using static System.Globalization.CultureInfo;
 using static IoT.Protocol.Upnp.UpnpServices;
@@ -42,13 +41,13 @@ public sealed class ContentDirectoryService : SoapActionInvoker
         string filter = null, string sortCriteria = null, uint pageSize = 50,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var total = 0u;
+        uint total;
         var fetched = 0u;
         do
         {
             var data = await BrowseAsync(parent, filter, BrowseMode.BrowseDirectChildren, sortCriteria, fetched, pageSize, cancellationToken).ConfigureAwait(false);
-            total = uint.Parse(data["TotalMatches"], CultureInfo.InvariantCulture);
-            uint count = uint.Parse(data["NumberReturned"], CultureInfo.InvariantCulture);
+            total = uint.Parse(data["TotalMatches"], InvariantCulture);
+            uint count = uint.Parse(data["NumberReturned"], InvariantCulture);
             fetched += count;
             yield return (data["Result"], (int)count, (int)total);
         }

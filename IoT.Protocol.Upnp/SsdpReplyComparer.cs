@@ -16,11 +16,10 @@ public class SsdpReplyComparer : IEqualityComparer<SsdpReply>
 
     public bool Equals(SsdpReply x, SsdpReply y)
     {
-        if(ReferenceEquals(x, y)) return true;
-        if(x == null || y == null) return false;
-        return x.TryGetValue(key, out var v1) &&
-               y.TryGetValue(key, out var v2) &&
-               string.Equals(v1, v2, OrdinalIgnoreCase);
+        return ReferenceEquals(x, y) || (x != null && y != null &&
+            x.TryGetValue(key, out var v1) &&
+            y.TryGetValue(key, out var v2) &&
+            string.Equals(v1, v2, OrdinalIgnoreCase));
     }
 
     public int GetHashCode(SsdpReply obj)

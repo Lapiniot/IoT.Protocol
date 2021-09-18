@@ -15,7 +15,7 @@ public class ResourceReader : ReaderBase<Resource>
 
     protected override bool TryReadChildNode([NotNull] XmlReader reader, [NotNull] Resource element)
     {
-        if(reader.NodeType != CDATA && reader.NodeType != Text) return false;
+        if(reader.NodeType is not CDATA and not Text) return false;
         element.Url = reader.ReadContentAsString();
         return true;
     }
@@ -77,7 +77,7 @@ public class ResourceReader : ReaderBase<Resource>
             }
         }
 
-        reader.MoveToElement();
+        _ = reader.MoveToElement();
 
         return resource;
     }

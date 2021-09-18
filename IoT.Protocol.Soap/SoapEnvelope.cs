@@ -126,7 +126,7 @@ public record SoapEnvelope
             throw new InvalidDataException("Invalid XML data");
         }
 
-        reader.MoveToContent();
+        _ = reader.MoveToContent();
 
         var name = reader.LocalName;
         var schema = reader.NamespaceURI;
@@ -135,7 +135,7 @@ public record SoapEnvelope
 
         if(reader.IsEmptyElement) return new SoapEnvelope(name, schema, args);
 
-        reader.Read();
+        _ = reader.Read();
 
         while(!reader.EOF && reader.Depth > depth)
         {
@@ -146,7 +146,7 @@ public record SoapEnvelope
                 if(reader.Read())
                 {
                     var nt = reader.MoveToContent();
-                    if(nt == XmlNodeType.Text || nt == XmlNodeType.CDATA)
+                    if(nt is Text or CDATA)
                     {
                         args[key] = reader.ReadContentAsString();
                     }
@@ -154,7 +154,7 @@ public record SoapEnvelope
             }
             else
             {
-                reader.Read();
+                _ = reader.Read();
             }
         }
 

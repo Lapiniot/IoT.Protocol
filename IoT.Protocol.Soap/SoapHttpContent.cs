@@ -30,7 +30,7 @@ internal sealed class SoapHttpContent : HttpContent
     {
         if(memoryStream is not null)
         {
-            memoryStream.Seek(0, SeekOrigin.Begin);
+            _ = memoryStream.Seek(0, SeekOrigin.Begin);
             var vt = stream.WriteAsync(memoryStream.GetBuffer());
             return vt.IsCompletedSuccessfully ? Task.CompletedTask : vt.AsTask();
         }

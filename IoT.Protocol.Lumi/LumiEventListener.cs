@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -81,7 +80,6 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
 
     #region Overrides of ActivityObject
 
-    [SuppressMessage("Reliability", "CA2000: Dispose objects before losing scope")]
     protected override Task StartingAsync(CancellationToken cancellationToken)
     {
         socket = SocketBuilderExtensions.CreateUdp().JoinMulticastGroup(endpoint);
@@ -90,7 +88,7 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
 
         var token = tokenSource.Token;
 
-        Task.Run(() => DispatchAsync(token), token);
+        _ = Task.Run(() => DispatchAsync(token), token);
 
         return Task.CompletedTask;
     }
