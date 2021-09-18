@@ -1,12 +1,11 @@
 {
     "files.exclude": {
         ".gitignore": true,
+        ".gitmodules": true,
         ".vs": true,
         "*.DotSettings": true,
-        "**/.hg": false,
-        "**/.svn": false,
         "**/bin": true,
-        "**/CVS": false,
         "**/obj": true
-    }
+    },
+    "omnisharp.enableRoslynAnalyzers": true
 }
