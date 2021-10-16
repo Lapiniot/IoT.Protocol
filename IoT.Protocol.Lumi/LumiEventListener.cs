@@ -82,7 +82,9 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
 
     protected override Task StartingAsync(CancellationToken cancellationToken)
     {
-        socket = SocketBuilderExtensions.CreateUdp().JoinMulticastGroup(endpoint);
+        socket = SocketBuilderExtensions.CreateUdp();
+
+        socket.JoinMulticastGroup(endpoint);
 
         tokenSource = new CancellationTokenSource();
 

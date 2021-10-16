@@ -37,16 +37,16 @@ public class SsdpReply : Dictionary<string, string>
             throw new InvalidDataException("Not a SSDP success response");
         }
 
-        var reply = new SsdpReply(ASCII.GetString(buffer.Slice(0, i++)));
+        var reply = new SsdpReply(ASCII.GetString(buffer[..i++]));
 
         for(var r = buffer[++i..]; (i = r.IndexOfEOL()) >= 0; r = r[++i..])
         {
-            var line = r.Slice(0, i++);
+            var line = r[..i++];
             var index = line.IndexOf(Colon);
 
             if(index <= 0) continue;
 
-            var key = ASCII.GetString(line.Slice(0, index));
+            var key = ASCII.GetString(line[..index]);
             if(++index < line.Length && line[index] == Space) index++;
             var value = ASCII.GetString(line[index..]);
             reply.Add(key, value);

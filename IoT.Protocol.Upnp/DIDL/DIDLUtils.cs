@@ -24,6 +24,9 @@ public static class DIDLUtils
 
     public static void WriteItem(XmlWriter writer, string title, string description, string genre, Uri url, long? length, string contentType, int? br)
     {
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(url);
+
         writer.WriteStartElement("item");
         writer.WriteElementString("title", DCNamespace, title);
         if(!string.IsNullOrEmpty(description)) writer.WriteElementString("description", DCNamespace, description);
@@ -40,6 +43,8 @@ public static class DIDLUtils
 
     public static void CopyItems(string metadata, XmlWriter writer, Stack<(string Id, int Depth)> containers, int? nextDepth)
     {
+        ArgumentNullException.ThrowIfNull(writer);
+
         if(string.IsNullOrEmpty(metadata)) return;
 
         using var input = new StringReader(metadata);

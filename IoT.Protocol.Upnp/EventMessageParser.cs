@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 using static System.Xml.XmlNodeType;
 
@@ -30,6 +31,7 @@ public static class EventMessageParser
         return null;
     }
 
+    [SuppressMessage("Performance", "CA1849: Call async methods when in an async method")]
     public static async Task<(string Namespace, IReadOnlyDictionary<string, string> Metadata, IReadOnlyDictionary<string, string> Vendor)> ParseAsync(XmlReader reader)
     {
         var content = await ReadLastChangeContentAsync(reader).ConfigureAwait(false);

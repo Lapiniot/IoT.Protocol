@@ -54,6 +54,8 @@ public record SoapEnvelope
 
     public async Task WriteAsync(XmlWriter writer)
     {
+        ArgumentNullException.ThrowIfNull(writer);
+
         var task = writer.WriteStartElementAsync(Prefix, "Envelope", SoapEnvelopeNs);
         if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
         task = writer.WriteAttributeStringAsync(Prefix, "encodingStyle", SoapEnvelopeNs, SoapEncodingNs);
@@ -100,6 +102,8 @@ public record SoapEnvelope
 
     public void Write(XmlWriter writer)
     {
+        ArgumentNullException.ThrowIfNull(writer);
+
         writer.WriteStartElement(Prefix, "Envelope", SoapEnvelopeNs);
         writer.WriteAttributeString(Prefix, "encodingStyle", SoapEnvelopeNs, SoapEncodingNs);
         writer.WriteStartElement(Prefix, "Body", SoapEnvelopeNs);
