@@ -4,7 +4,7 @@ namespace IoT.Protocol.Upnp;
 
 public class UpnpControlEndpoint : SoapControlEndpoint
 {
-    public UpnpControlEndpoint(string serviceType, HttpClient httpClient) : base(httpClient)
+    public UpnpControlEndpoint(string serviceType, ISoapHttpClient soapHttpClient) : base(soapHttpClient)
     {
         ServiceType = serviceType;
     }
