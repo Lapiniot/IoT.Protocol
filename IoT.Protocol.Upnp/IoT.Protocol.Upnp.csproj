@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
     <Import Project="../common.props" />
 
     <ItemGroup>
-        <ProjectReference Include="..\IoT.Protocol.Soap\IoT.Protocol.Soap.csproj" />
+        <ProjectReference Include="../IoT.Protocol.Soap/IoT.Protocol.Soap.csproj" />
     </ItemGroup>
+
 </Project>
