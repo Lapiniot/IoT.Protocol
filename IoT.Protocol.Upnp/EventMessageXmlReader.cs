@@ -1,10 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Xml;
+
 using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Upnp;
 
-public static class EventMessageParser
+public record struct EventMessage(string Namespace, IReadOnlyDictionary<string, string> Properties, IReadOnlyDictionary<string, string> VendorProperties);
+
+public static class EventMessageXmlReader
 {
     private const string EventNS = "urn:schemas-upnp-org:event-1-0";
 
@@ -32,7 +35,7 @@ public static class EventMessageParser
     }
 
     [SuppressMessage("Performance", "CA1849: Call async methods when in an async method")]
-    public static async Task<(string Namespace, IReadOnlyDictionary<string, string> Metadata, IReadOnlyDictionary<string, string> Vendor)> ParseAsync(XmlReader reader)
+    public static async Task<EventMessage> ReadAsync(XmlReader reader)
     {
         var content = await ReadLastChangeContentAsync(reader).ConfigureAwait(false);
 
@@ -76,6 +79,6 @@ public static class EventMessageParser
             break;
         }
 
-        return (eventNamespace, metadata, vendor);
+        return new(eventNamespace, metadata, vendor);
     }
 }

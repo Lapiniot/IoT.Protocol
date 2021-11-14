@@ -18,8 +18,8 @@ public static class UpnpUtils
         ArgumentNullException.ThrowIfNull(service);
 
         var data = await service.BrowseAsync(parentId, filter: "id", count: uint.MaxValue, cancellationToken: cancellationToken).ConfigureAwait(false);
-        var playlists = DIDLXmlParser.Parse(data["Result"], false, false);
-        var map = playlists.Select((p, index) => (p.Id, index)).ToDictionary(p => p.Id, p => p.index + 1);
+        var items = DIDLXmlReader.Read(data["Result"], false, false);
+        var map = items.Select((p, index) => (p.Id, index)).ToDictionary(p => p.Id, p => p.index + 1);
         return ids.Select(id => map[id]).ToArray();
     }
 
