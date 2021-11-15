@@ -2,7 +2,7 @@ namespace IoT.Protocol.Upnp.Metadata;
 
 public static class DebugExtensions
 {
-    public static void DebugDump(this ServiceMetadata metadata, TextWriter textWriter)
+    public static void DebugDump(this ServiceDescription metadata, TextWriter textWriter)
     {
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(textWriter);
@@ -18,8 +18,8 @@ public static class DebugExtensions
         ArgumentNullException.ThrowIfNull(action);
         ArgumentNullException.ThrowIfNull(textWriter);
 
-        var outArgs = action.Arguments.Where(a => a.Direction == "out").ToArray();
-        var inArgs = action.Arguments.Where(a => a.Direction == "in").ToArray();
+        var outArgs = action.Arguments.Where(a => a.Direction == ArgumentDirection.Out).ToArray();
+        var inArgs = action.Arguments.Where(a => a.Direction == ArgumentDirection.In).ToArray();
         if(outArgs.Length > 0)
         {
             DumpPrototype(textWriter, outArgs, n => n);
@@ -42,7 +42,7 @@ public static class DebugExtensions
         {
             if(i != 0) tw.Write(", ");
             var arg = args[i];
-            tw.Write(arg.StateVariable.DataType.Name);
+            tw.Write(arg.RelatedStateVar);
             tw.Write(" ");
             tw.Write(nameHandler(arg.Name));
         }

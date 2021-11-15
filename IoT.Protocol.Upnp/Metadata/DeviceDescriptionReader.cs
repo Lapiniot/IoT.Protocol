@@ -1,13 +1,12 @@
 using System.Xml;
-
 using static System.UriKind;
 using static System.Xml.XmlNodeType;
 
-namespace IoT.Protocol.Upnp;
+namespace IoT.Protocol.Upnp.Metadata;
 
-public static class DeviceDescriptionXmlReader
+public static class DeviceDescriptionReader
 {
-    public static readonly string NS = "urn:schemas-upnp-org:device-1-0";
+    public const string NS = "urn:schemas-upnp-org:device-1-0";
 
     public static async Task<DeviceDescription> ReadAsync(Stream input, CancellationToken cancellationToken)
     {
@@ -96,8 +95,8 @@ public static class DeviceDescriptionXmlReader
     {
         string deviceType = null, friendlyName = null, serialNumber = null, udn = null, manufacturer = null;
         string modelDescription = null, modelName = null, modelNumber = null;
-        IEnumerable<ServiceDescription> services = null;
-        IEnumerable<IconDescription> icons = null;
+        IEnumerable<Service> services = null;
+        IEnumerable<Icon> icons = null;
         Uri manufacturerUrl = null, modelUrl = null, presentationUrl = null;
 
         var depth = reader.Depth + 1;
@@ -164,9 +163,9 @@ public static class DeviceDescriptionXmlReader
             manufacturer, manufacturerUrl, modelName, modelDescription, modelNumber, modelUrl, icons, services);
     }
 
-    private static async Task<IEnumerable<ServiceDescription>> ReadServiceListNodeAsync(XmlReader reader, CancellationToken cancellationToken)
+    private static async Task<IEnumerable<Service>> ReadServiceListNodeAsync(XmlReader reader, CancellationToken cancellationToken)
     {
-        var list = new List<ServiceDescription>();
+        var list = new List<Service>();
 
         var depth = reader.Depth + 1;
 
@@ -195,7 +194,7 @@ public static class DeviceDescriptionXmlReader
         return list;
     }
 
-    private static async Task<ServiceDescription> ReadServiceNodeAsync(XmlReader reader, CancellationToken cancellationToken)
+    private static async Task<Service> ReadServiceNodeAsync(XmlReader reader, CancellationToken cancellationToken)
     {
         string serviceType = null, serviceId = null;
         Uri metadataUrl = null, controlUrl = null, eventSubUrl = null;
@@ -239,9 +238,9 @@ public static class DeviceDescriptionXmlReader
         return new(serviceType, serviceId, metadataUrl, controlUrl, eventSubUrl);
     }
 
-    private static async Task<IEnumerable<IconDescription>> ReadIconListNodeAsync(XmlReader reader, CancellationToken cancellationToken)
+    private static async Task<IEnumerable<Icon>> ReadIconListNodeAsync(XmlReader reader, CancellationToken cancellationToken)
     {
-        var list = new List<IconDescription>();
+        var list = new List<Icon>();
 
         var depth = reader.Depth + 1;
 
@@ -270,7 +269,7 @@ public static class DeviceDescriptionXmlReader
         return list;
     }
 
-    private static async Task<IconDescription> ReadIconNodeAsync(XmlReader reader, CancellationToken cancellationToken)
+    private static async Task<Icon> ReadIconNodeAsync(XmlReader reader, CancellationToken cancellationToken)
     {
         int width = 0, height = 0, colorDepth = 0;
         string mimeType = null;
