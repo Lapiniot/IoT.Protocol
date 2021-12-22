@@ -49,7 +49,7 @@ public class SsdpSearchEnumerator : UdpEnumerator<SsdpReply>
         return new(SsdpReply.Parse(buffer.Span));
     }
 
-    protected override int WriteDiscoveryDatagram(Span<byte> span)
+    protected override void WriteDiscoveryDatagram(Span<byte> span, out int bytesWritten)
     {
         var count = ASCII.GetBytes("M-SEARCH * HTTP/1.1\r\nHOST: ", span);
         count += ASCII.GetBytes(host, span[count..]);
@@ -62,6 +62,6 @@ public class SsdpSearchEnumerator : UdpEnumerator<SsdpReply>
         span[count++] = 10;
         span[count++] = 13;
         span[count++] = 10;
-        return count;
+        bytesWritten = count;
     }
 }

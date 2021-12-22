@@ -34,16 +34,23 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 
         using var socket = createSocket(GroupEndpoint);
         socket.ReceiveBufferSize = ReceiveBufferSize;
-        socket.SendBufferSize = SendBufferSize;
 
-        var datagram = new byte[SendBufferSize];
-        var buffer = new byte[ReceiveBufferSize];
+        Memory<byte> buffer = new byte[ReceiveBufferSize];
 
-        var count = WriteDiscoveryDatagram(datagram);
+        if(SendBufferSize > 0)
+        {
+            socket.SendBufferSize = SendBufferSize;
+            var datagram = new byte[SendBufferSize];
+            WriteDiscoveryDatagram(datagram, out var written);
 
-        var discoveryMessage = new ArraySegment<byte>(datagram, 0, count);
-
-        var _ = discoveryPolicy.RepeatAsync(_ => socket.SendToAsync(discoveryMessage, default, GroupEndpoint), cancellationToken);
+            if(written > 0)
+            {
+                var message = datagram.AsMemory(0, written);
+                var _ = discoveryPolicy.RepeatAsync(async token =>
+                    await socket.SendToAsync(message, SocketFlags.None, GroupEndpoint, token).ConfigureAwait(false),
+                cancellationToken);
+            }
+        }
 
         while(!cancellationToken.IsCancellationRequested)
         {
@@ -51,10 +58,13 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 
             try
             {
-                var result = await socket.ReceiveFromAsync(buffer, default, GroupEndpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
+                var rvt = socket.ReceiveFromAsync(buffer, SocketFlags.None, GroupEndpoint, cancellationToken);
+                var result = rvt.IsCompletedSuccessfully ? rvt.Result : await rvt.ConfigureAwait(false);
+
                 if(distinctAddress && !addresses.Add(((IPEndPoint)result.RemoteEndPoint).Address)) continue;
-                var vt = CreateInstanceAsync(buffer.AsMemory(0, result.ReceivedBytes), (IPEndPoint)result.RemoteEndPoint, cancellationToken);
-                instance = vt.IsCompletedSuccessfully ? vt.Result : await vt.ConfigureAwait(false);
+
+                var cvt = CreateInstanceAsync(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, cancellationToken);
+                instance = cvt.IsCompletedSuccessfully ? cvt.Result : await cvt.ConfigureAwait(false);
             }
             catch(OperationCanceledException)
             {
@@ -63,9 +73,10 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
             catch(InvalidDataException)
             {
                 // ignored as expected if received datagram has wrong format
+                continue;
             }
 
-            if(instance != null) yield return instance;
+            yield return instance;
         }
     }
 
@@ -87,5 +98,5 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     /// Returns datagram bytes to be send over the network for discovery
     /// </summary>
     /// <returns>Raw datagram bytes</returns>
-    protected abstract int WriteDiscoveryDatagram(Span<byte> span);
+    protected abstract void WriteDiscoveryDatagram(Span<byte> span, out int bytesWritten);
 }

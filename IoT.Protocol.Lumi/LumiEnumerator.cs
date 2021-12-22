@@ -31,7 +31,7 @@ public class LumiEnumerator : UdpEnumerator<(IPAddress Address, int Port, string
         return new ValueTask<(IPAddress, int, string)>(result);
     }
 
-    protected override int WriteDiscoveryDatagram(Span<byte> span)
+    protected override void WriteDiscoveryDatagram(Span<byte> span, out int bytesWritten)
     {
         // {"cmd":"whois"}
 
@@ -51,6 +51,6 @@ public class LumiEnumerator : UdpEnumerator<(IPAddress Address, int Port, string
         span[13] = 0x22;
         span[14] = 0x7D;
 
-        return 15;
+        bytesWritten = 15;
     }
 }
