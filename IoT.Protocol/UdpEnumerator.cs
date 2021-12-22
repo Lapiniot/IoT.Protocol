@@ -14,7 +14,8 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     private readonly IRepeatPolicy discoveryPolicy;
     private readonly bool distinctAddress;
 
-    protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint groupEndpoint, bool distinctAddress, IRepeatPolicy discoveryPolicy)
+    protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint groupEndpoint,
+        bool distinctAddress, IRepeatPolicy discoveryPolicy)
     {
         createSocket = createSocketFactory;
         GroupEndpoint = groupEndpoint;
@@ -46,9 +47,16 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
             if(written > 0)
             {
                 var message = datagram.AsMemory(0, written);
-                var _ = discoveryPolicy.RepeatAsync(async token =>
-                    await socket.SendToAsync(message, SocketFlags.None, GroupEndpoint, token).ConfigureAwait(false),
-                cancellationToken);
+                var _ = discoveryPolicy.RepeatAsync(SendDiscoveryDatagramAsync, cancellationToken);
+
+                async ValueTask SendDiscoveryDatagramAsync(CancellationToken token)
+                {
+                    var vt = socket.SendToAsync(message, SocketFlags.None, GroupEndpoint, token);
+                    if(!vt.IsCompletedSuccessfully)
+                    {
+                        await vt.ConfigureAwait(false);
+                    }
+                }
             }
         }
 
