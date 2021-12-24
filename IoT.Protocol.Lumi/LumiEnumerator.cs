@@ -19,7 +19,7 @@ public class LumiEnumerator : UdpEnumerator<(IPAddress Address, int Port, string
 
     protected override int ReceiveBufferSize { get; } = 0x100;
 
-    protected override ValueTask<(IPAddress Address, int Port, string Sid)> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp,
+    protected override ValueTask<(IPAddress Address, int Port, string Sid)> CreateInstanceAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEp,
         CancellationToken cancellationToken)
     {
         var json = JsonSerializer.Deserialize<JsonElement>(buffer.Span);

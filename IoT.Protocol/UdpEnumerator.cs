@@ -100,7 +100,7 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     /// Instance of type
     /// <typeparam name="TThing" />
     /// </returns>
-    protected abstract ValueTask<TThing> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken);
+    protected abstract ValueTask<TThing> CreateInstanceAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken);
 
     /// <summary>
     /// Returns datagram bytes to be send over the network for discovery

@@ -44,7 +44,7 @@ public class SsdpSearchEnumerator : UdpEnumerator<SsdpReply>
     protected override int SendBufferSize { get; }
     protected override int ReceiveBufferSize { get; } = 0x400;
 
-    protected override ValueTask<SsdpReply> CreateInstanceAsync(Memory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken)
+    protected override ValueTask<SsdpReply> CreateInstanceAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken)
     {
         return new(SsdpReply.Parse(buffer.Span));
     }

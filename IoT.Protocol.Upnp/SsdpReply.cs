@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using static System.Text.Encoding;
 
 namespace IoT.Protocol.Upnp;
@@ -6,6 +7,8 @@ public class SsdpReply : Dictionary<string, string>
 {
     private const byte Colon = 0x3a;
     private const byte Space = 0x20;
+    private const byte CR = 0x0d;
+    private const byte LF = 0x0a;
 
     public SsdpReply(string startLine) : base(10, StringComparer.OrdinalIgnoreCase)
     {
@@ -28,18 +31,18 @@ public class SsdpReply : Dictionary<string, string>
 
     public string ConfigId => TryGetValue("CONFIGID.UPNP.ORG", out var value) ? value : null;
 
-    public static SsdpReply Parse(Span<byte> buffer)
+    public static SsdpReply Parse(ReadOnlySpan<byte> span)
     {
         int i;
 
-        if((i = buffer.IndexOfEOL()) < 0)
+        if((i = IndexOfEOL(span)) < 0)
         {
             throw new InvalidDataException("Not a SSDP success response");
         }
 
-        var reply = new SsdpReply(ASCII.GetString(buffer[..i++]));
+        var reply = new SsdpReply(ASCII.GetString(span[..i++]));
 
-        for(var r = buffer[++i..]; (i = r.IndexOfEOL()) >= 0; r = r[++i..])
+        for(var r = span[++i..]; (i = IndexOfEOL(r)) >= 0; r = r[++i..])
         {
             var line = r[..i++];
             var index = line.IndexOf(Colon);
@@ -53,5 +56,12 @@ public class SsdpReply : Dictionary<string, string>
         }
 
         return reply;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int IndexOfEOL(ReadOnlySpan<byte> span)
+    {
+        int index;
+        return (index = span.IndexOf(CR)) > 0 && index < span.Length - 1 && span[index + 1] == LF ? index : -1;
     }
 }
