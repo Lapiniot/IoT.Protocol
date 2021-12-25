@@ -74,9 +74,16 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
                 var cvt = CreateInstanceAsync(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, cancellationToken);
                 instance = cvt.IsCompletedSuccessfully ? cvt.Result : await cvt.ConfigureAwait(false);
             }
+            catch(OperationCanceledException oce) when(oce.CancellationToken == cancellationToken)
+            {
+                // expected external cancellation signal
+                yield break;
+            }
             catch(OperationCanceledException)
             {
-                // ignored as expected cancellation signal
+                // ignored by design: this can be cancellation comming 
+                // from CreateInstanceAsync internals (some timeout e.g.)
+                continue;
             }
             catch(InvalidDataException)
             {
