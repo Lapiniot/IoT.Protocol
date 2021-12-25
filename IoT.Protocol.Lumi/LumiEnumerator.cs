@@ -8,7 +8,9 @@ using static System.Net.NetworkInterfaceExtensions;
 
 namespace IoT.Protocol.Lumi;
 
-public class LumiEnumerator : UdpEnumerator<(IPAddress Address, int Port, string Sid)>
+public record struct LumiEndpoint(IPEndPoint EndPoint, string Sid);
+
+public class LumiEnumerator : UdpEnumerator<LumiEndpoint>
 {
     public LumiEnumerator(IRepeatPolicy discoveryPolicy) :
         base(_ => SocketBuilderExtensions.CreateUdp().ConfigureMulticast(FindBestMulticastInterface().GetIndex(InterNetwork)),
@@ -19,16 +21,16 @@ public class LumiEnumerator : UdpEnumerator<(IPAddress Address, int Port, string
 
     protected override int ReceiveBufferSize { get; } = 0x100;
 
-    protected override ValueTask<(IPAddress Address, int Port, string Sid)> CreateInstanceAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEp,
+    protected override ValueTask<LumiEndpoint> CreateInstanceAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEp,
         CancellationToken cancellationToken)
     {
         var json = JsonSerializer.Deserialize<JsonElement>(buffer.Span);
 
         if(!json.TryGetProperty("cmd", out var cmd) || cmd.GetString() != "iam") throw new InvalidDataException("Invalid discovery response message");
-        var result = (Address: IPAddress.Parse(json.GetProperty("ip").GetString() ?? throw new InvalidDataException("Missing value for property 'ip'")),
-            Port: int.Parse(json.GetProperty("port").GetString() ?? throw new InvalidDataException("Missing value for property 'port'"), InvariantCulture),
-            Sid: json.GetProperty("sid").GetString());
-        return new ValueTask<(IPAddress, int, string)>(result);
+        var address = IPAddress.Parse(json.GetProperty("ip").GetString() ?? throw new InvalidDataException("Missing value for property 'ip'"));
+        int port = int.Parse(json.GetProperty("port").GetString() ?? throw new InvalidDataException("Missing value for property 'port'"), InvariantCulture);
+        var sid = json.GetProperty("sid").GetString();
+        return new ValueTask<LumiEndpoint>(new LumiEndpoint(new IPEndPoint(address, port), sid));
     }
 
     protected override void WriteDiscoveryDatagram(Span<byte> span, out int bytesWritten)
