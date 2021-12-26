@@ -30,6 +30,8 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 
         ConfigureSocket(socket, out IPEndPoint receiveEndPoint);
 
+        var auxWorker = StartAuxiliaryWorkerAsync(socket, cancellationToken);
+
         using var memory = MemoryPool<byte>.Shared.Rent(socket.ReceiveBufferSize);
         var buffer = memory.Memory;
 
@@ -63,9 +65,33 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 
             yield return instance;
         }
+
+        try
+        {
+            await auxWorker.ConfigureAwait(false);
+        }
+        catch(OperationCanceledException)
+        {
+            // Expected
+        }
     }
 
     #endregion
+
+    /// <summary>
+    /// Denotes auxiliary worker task has to be started and run in parallel with the main datagram receiver loop.
+    /// </summary>
+    /// <param name="socket">UDP datagram socket instance, same as it is currently used in the iterator receiver loop</param>
+    /// <param name="stoppingToken">Stopping <see cref="CancellationToken" /> for external cancellation notification</param>
+    /// <returns><see cref="Task" /> which represents current asynchronous worker task</returns>
+    /// <remarks>
+    /// Implementors may provide any custom logic performed on socket instance. 
+    /// This can be periodic discovery datagram emition e.g., in case discovery protocol supposes active searching. 
+    /// </remarks>
+    protected virtual Task StartAuxiliaryWorkerAsync(Socket socket, CancellationToken stoppingToken)
+    {
+        return Task.CompletedTask;
+    }
 
     /// <summary>
     /// Configures UDP dgram socket instance
