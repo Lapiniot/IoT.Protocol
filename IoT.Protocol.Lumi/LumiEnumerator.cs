@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Policies;
 using System.Text.Json;
+using System.Diagnostics.CodeAnalysis;
 using static System.Globalization.CultureInfo;
 using static System.Net.Sockets.AddressFamily;
 using static System.Net.NetworkInterfaceExtensions;
@@ -12,17 +13,20 @@ public record struct LumiEndpoint(IPEndPoint EndPoint, string Sid);
 
 public class LumiEnumerator : UdpSearchEnumerator<LumiEndpoint>
 {
-    public LumiEnumerator(IRepeatPolicy discoveryPolicy) :
-        base(_ => SocketBuilderExtensions.CreateUdp().ConfigureMulticast(FindBestMulticastInterface().GetIndex(InterNetwork)),
-            new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), true, discoveryPolicy)
-    { }
+    public LumiEnumerator(IRepeatPolicy repeatPolicy) : base(new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), repeatPolicy)
+    {
+    }
 
-    protected override int SendBufferSize { get; } = 0xF;
+    protected override void ConfigureSocket([NotNull] Socket socket, out IPEndPoint receiveEP)
+    {
+        socket.ConfigureMulticast(FindBestMulticastInterface().GetIndex(InterNetwork));
+        socket.SendBufferSize = 0x0F;
+        socket.ReceiveBufferSize = 0x100;
+        receiveEP = GroupEP;
+    }
 
-    protected override int ReceiveBufferSize { get; } = 0x100;
-
-    protected override ValueTask<LumiEndpoint> CreateInstanceAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEp,
-        CancellationToken cancellationToken)
+    protected override ValueTask<LumiEndpoint> ParseDatagramAsync(ReadOnlyMemory<byte> buffer,
+        IPEndPoint remoteEP, CancellationToken cancellationToken)
     {
         var json = JsonSerializer.Deserialize<JsonElement>(buffer.Span);
 

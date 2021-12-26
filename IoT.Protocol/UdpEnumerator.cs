@@ -28,7 +28,7 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     {
         using var socket = new Socket(addressFamily, SocketType.Dgram, ProtocolType.Udp);
 
-        ConfigureSocket(socket, out IPEndPoint receiveEndPoint);
+        ConfigureSocket(socket, out var receiveEP);
 
         var auxWorker = StartAuxiliaryWorkerAsync(socket, cancellationToken);
 
@@ -41,7 +41,7 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 
             try
             {
-                var rvt = socket.ReceiveFromAsync(buffer, SocketFlags.None, receiveEndPoint, cancellationToken);
+                var rvt = socket.ReceiveFromAsync(buffer, SocketFlags.None, receiveEP, cancellationToken);
                 var result = rvt.IsCompletedSuccessfully ? rvt.Result : await rvt.ConfigureAwait(false);
                 var cvt = ParseDatagramAsync(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, cancellationToken);
                 instance = cvt.IsCompletedSuccessfully ? cvt.Result : await cvt.ConfigureAwait(false);
@@ -97,18 +97,18 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     /// Configures UDP dgram socket instance
     /// </summary>
     /// <param name="socket">Datagram receiver socket instance to be configured</param>
-    /// <param name="receiveEndPoint">Remote network endpoint to receive datagrams from</param>
-    protected abstract void ConfigureSocket(Socket socket, out IPEndPoint receiveEndPoint);
+    /// <param name="receiveEP">Remote network endpoint to receive datagrams from</param>
+    protected abstract void ConfigureSocket(Socket socket, out IPEndPoint receiveEP);
 
     /// <summary>
     /// Factory method to create IoT device instance by parsing discovery response datagram bytes
     /// </summary>
     /// <param name="buffer">Buffer containing message</param>
-    /// <param name="remoteEp">Responder endpoint information</param>
+    /// <param name="remoteEP">Responder endpoint information</param>
     /// <param name="cancellationToken"></param>
     /// <returns>
     /// Instance of type
     /// <typeparam name="TThing" />
     /// </returns>
-    protected abstract ValueTask<TThing> ParseDatagramAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken);
+    protected abstract ValueTask<TThing> ParseDatagramAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEP, CancellationToken cancellationToken);
 }

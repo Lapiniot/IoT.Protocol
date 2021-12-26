@@ -1,8 +1,9 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Policies;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using static System.Net.Sockets.SocketBuilderExtensions;
-using static System.Runtime.InteropServices.RuntimeInformation;
 using static System.Text.Encoding;
 using static System.Net.NetworkInterfaceExtensions;
 
@@ -13,38 +14,27 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
     private readonly string host;
     private readonly string searchTarget;
     private readonly string userAgent;
+    private readonly int sendBufferSize;
 
-    public SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRepeatPolicy discoveryPolicy, CreateSocketFactory socketFactory) :
-        base(socketFactory, groupEndpoint, false, discoveryPolicy)
+    public SsdpSearchEnumerator(string searchTarget, [NotNull] IPEndPoint groupEP, IRepeatPolicy repeatPolicy) :
+        base(groupEP, repeatPolicy)
     {
-        if(string.IsNullOrEmpty(searchTarget)) throw new ArgumentException("Parameter couldn't be null or empty.", nameof(searchTarget));
+        if(string.IsNullOrEmpty(searchTarget))
+        {
+            throw new ArgumentException("Parameter couldn't be null or empty.", nameof(searchTarget));
+        }
 
         this.searchTarget = searchTarget;
-        host = GroupEndpoint.ToString();
-        userAgent = $"USER-AGENT: {nameof(SsdpSearchEnumerator)}/{typeof(SsdpSearchEnumerator).Assembly.GetName().Version} ({OSDescription.TrimEnd()})";
-        SendBufferSize = 68 + host.Length + searchTarget.Length + userAgent.Length;
+        host = groupEP.ToString();
+        userAgent = $"USER-AGENT: {nameof(SsdpSearchEnumerator)}/{typeof(SsdpSearchEnumerator).Assembly.GetName().Version} ({RuntimeInformation.OSDescription.TrimEnd()})";
+        sendBufferSize = 68 + host.Length + searchTarget.Length + userAgent.Length;
     }
 
-    public SsdpSearchEnumerator(string searchTarget, IRepeatPolicy discoveryPolicy, CreateSocketFactory socketFactory) :
-        this(searchTarget, GetIPv4SSDPGroup(), discoveryPolicy, socketFactory)
-    { }
-
-    public SsdpSearchEnumerator(string searchTarget, IPEndPoint groupEndpoint, IRepeatPolicy discoveryPolicy) :
-        this(searchTarget, groupEndpoint, discoveryPolicy,
-            ep => CreateUdp(ep.AddressFamily).ConfigureMulticast(
-                FindBestMulticastInterface().GetIndex(ep.AddressFamily)))
-    { }
-
     public SsdpSearchEnumerator(string searchTarget, IRepeatPolicy discoveryPolicy) :
-        this(searchTarget, GetIPv4SSDPGroup(), discoveryPolicy,
-            ep => CreateUdp(ep.AddressFamily).ConfigureMulticast(
-                FindBestMulticastInterface().GetIndex(ep.AddressFamily)))
+         this(searchTarget, GetIPv4SSDPGroup(), discoveryPolicy)
     { }
 
-    protected override int SendBufferSize { get; }
-    protected override int ReceiveBufferSize { get; } = 0x400;
-
-    protected override ValueTask<SsdpReply> CreateInstanceAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken)
+    protected override ValueTask<SsdpReply> ParseDatagramAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEP, CancellationToken cancellationToken)
     {
         return new(SsdpReply.Parse(buffer.Span));
     }
@@ -63,5 +53,13 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
         span[count++] = 13;
         span[count++] = 10;
         bytesWritten = count;
+    }
+
+    protected override void ConfigureSocket([NotNull] Socket socket, out IPEndPoint receiveEP)
+    {
+        socket.ConfigureMulticast(FindBestMulticastInterface().GetIndex(socket.AddressFamily));
+        socket.ReceiveBufferSize = 0x400;
+        socket.SendBufferSize = 68 + host.Length + searchTarget.Length + userAgent.Length;
+        receiveEP = GroupEP;
     }
 }
