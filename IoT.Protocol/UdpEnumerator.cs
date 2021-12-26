@@ -1,6 +1,6 @@
-﻿using System.Net;
+using System.Buffers;
+using System.Net;
 using System.Net.Sockets;
-using System.Policies;
 
 namespace IoT.Protocol;
 
@@ -10,55 +10,28 @@ namespace IoT.Protocol;
 /// <typeparam name="TThing">Type of the 'thing' discoverable by concrete implementations</typeparam>
 public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 {
-    private readonly CreateSocketFactory createSocket;
-    private readonly IRepeatPolicy discoveryPolicy;
-    private readonly bool distinctAddress;
+    private readonly AddressFamily addressFamily;
 
-    protected UdpEnumerator(CreateSocketFactory createSocketFactory, IPEndPoint groupEndpoint,
-        bool distinctAddress, IRepeatPolicy discoveryPolicy)
+    protected UdpEnumerator(AddressFamily addressFamily)
     {
-        createSocket = createSocketFactory;
-        GroupEndpoint = groupEndpoint;
-        this.distinctAddress = distinctAddress;
-        this.discoveryPolicy = discoveryPolicy;
-    }
+        if(addressFamily is not (AddressFamily.InterNetworkV6 or AddressFamily.InterNetwork))
+        {
+            throw new ArgumentNullException($"Only '{AddressFamily.InterNetwork}' or '{AddressFamily.InterNetworkV6}' are supported as address family");
+        }
 
-    protected abstract int SendBufferSize { get; }
-    protected abstract int ReceiveBufferSize { get; }
-    public IPEndPoint GroupEndpoint { get; }
+        this.addressFamily = addressFamily;
+    }
 
     #region Implementation of IAsyncEnumerable<out TThing>
 
-    public async IAsyncEnumerator<TThing> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerator<TThing> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        var addresses = new HashSet<IPAddress>(EqualityComparer<IPAddress>.Default);
+        using var socket = new Socket(addressFamily, SocketType.Dgram, ProtocolType.Udp);
 
-        using var socket = createSocket(GroupEndpoint);
-        socket.ReceiveBufferSize = ReceiveBufferSize;
+        ConfigureSocket(socket, out IPEndPoint receiveEndPoint);
 
-        Memory<byte> buffer = new byte[ReceiveBufferSize];
-
-        if(SendBufferSize > 0)
-        {
-            socket.SendBufferSize = SendBufferSize;
-            var datagram = new byte[SendBufferSize];
-            WriteDiscoveryDatagram(datagram, out var written);
-
-            if(written > 0)
-            {
-                var message = datagram.AsMemory(0, written);
-                var _ = discoveryPolicy.RepeatAsync(SendDiscoveryDatagramAsync, cancellationToken);
-
-                async ValueTask SendDiscoveryDatagramAsync(CancellationToken token)
-                {
-                    var vt = socket.SendToAsync(message, SocketFlags.None, GroupEndpoint, token);
-                    if(!vt.IsCompletedSuccessfully)
-                    {
-                        await vt.ConfigureAwait(false);
-                    }
-                }
-            }
-        }
+        using var memory = MemoryPool<byte>.Shared.Rent(socket.ReceiveBufferSize);
+        var buffer = memory.Memory;
 
         while(!cancellationToken.IsCancellationRequested)
         {
@@ -66,12 +39,9 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 
             try
             {
-                var rvt = socket.ReceiveFromAsync(buffer, SocketFlags.None, GroupEndpoint, cancellationToken);
+                var rvt = socket.ReceiveFromAsync(buffer, SocketFlags.None, receiveEndPoint, cancellationToken);
                 var result = rvt.IsCompletedSuccessfully ? rvt.Result : await rvt.ConfigureAwait(false);
-
-                if(distinctAddress && !addresses.Add(((IPEndPoint)result.RemoteEndPoint).Address)) continue;
-
-                var cvt = CreateInstanceAsync(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, cancellationToken);
+                var cvt = ParseDatagramAsync(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, cancellationToken);
                 instance = cvt.IsCompletedSuccessfully ? cvt.Result : await cvt.ConfigureAwait(false);
             }
             catch(OperationCanceledException oce) when(oce.CancellationToken == cancellationToken)
@@ -98,6 +68,13 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     #endregion
 
     /// <summary>
+    /// Configures UDP dgram socket instance
+    /// </summary>
+    /// <param name="socket">Datagram receiver socket instance to be configured</param>
+    /// <param name="receiveEndPoint">Remote network endpoint to receive datagrams from</param>
+    protected abstract void ConfigureSocket(Socket socket, out IPEndPoint receiveEndPoint);
+
+    /// <summary>
     /// Factory method to create IoT device instance by parsing discovery response datagram bytes
     /// </summary>
     /// <param name="buffer">Buffer containing message</param>
@@ -107,11 +84,5 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     /// Instance of type
     /// <typeparam name="TThing" />
     /// </returns>
-    protected abstract ValueTask<TThing> CreateInstanceAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Returns datagram bytes to be send over the network for discovery
-    /// </summary>
-    /// <returns>Raw datagram bytes</returns>
-    protected abstract void WriteDiscoveryDatagram(Span<byte> span, out int bytesWritten);
+    protected abstract ValueTask<TThing> ParseDatagramAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEp, CancellationToken cancellationToken);
 }

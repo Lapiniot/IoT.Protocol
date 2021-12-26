@@ -10,7 +10,7 @@ namespace IoT.Protocol.Lumi;
 
 public record struct LumiEndpoint(IPEndPoint EndPoint, string Sid);
 
-public class LumiEnumerator : UdpEnumerator<LumiEndpoint>
+public class LumiEnumerator : UdpSearchEnumerator<LumiEndpoint>
 {
     public LumiEnumerator(IRepeatPolicy discoveryPolicy) :
         base(_ => SocketBuilderExtensions.CreateUdp().ConfigureMulticast(FindBestMulticastInterface().GetIndex(InterNetwork)),

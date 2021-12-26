@@ -8,7 +8,7 @@ using static System.Net.NetworkInterfaceExtensions;
 
 namespace IoT.Protocol.Upnp;
 
-public class SsdpSearchEnumerator : UdpEnumerator<SsdpReply>
+public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
 {
     private readonly string host;
     private readonly string searchTarget;
