@@ -1,84 +1,84 @@
-﻿using System.Buffers;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Memory;
-using System.Net;
-using System.Net.Pipelines;
-using System.Net.Sockets;
-using System.Text.Json;
+﻿using System.Collections.Concurrent;
 using IoT.Protocol.Interfaces;
-using static System.Buffers.ArrayPool<byte>;
-using static System.Net.Sockets.SocketFlags;
-using static System.TimeSpan;
+using static System.Text.Json.JsonTokenType;
+using static System.Threading.Tasks.TaskCreationOptions;
 
 namespace IoT.Protocol.Yeelight;
 
 [CLSCompliant(false)]
-public class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonElement>, IConnectedEndpoint<RequestMessage, JsonElement>
+public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonElement>, IConnectedEndpoint<RequestMessage, JsonElement>
 {
+    private static readonly byte[] IdPropName = { (byte)'i', (byte)'d' };
+    private static readonly byte[] MethodPropName = { (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d' };
+    private static readonly byte[] ParamsPropName = { (byte)'p', (byte)'a', (byte)'r', (byte)'a', (byte)'m', (byte)'s' };
+    private static readonly byte[] PropsName = { (byte)'p', (byte)'r', (byte)'o', (byte)'p', (byte)'s' };
+
     private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> completions = new();
     private readonly ObserversContainer<JsonElement> observers;
     private long counter;
-    private Socket socket;
+    private readonly Socket socket;
 
     public YeelightControlEndpoint(uint deviceId, IPEndPoint endpoint)
     {
         Endpoint = endpoint;
         DeviceId = deviceId;
         observers = new ObserversContainer<JsonElement>();
+        socket = new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
     }
 
     public uint DeviceId { get; }
 
-    protected TimeSpan CommandTimeout { get; } = FromSeconds(10);
+    public TimeSpan CommandTimeout { get; set; } = TimeSpan.FromSeconds(10);
 
     public IPEndPoint Endpoint { get; }
 
-    #region Implementation of IControlEndpoint<in IDictionary<string,object>,IDictionary<string,object>>
+    #region Implementation of IConnectedEndpoint<RequestMessage, JsonElement>>
 
     public async Task<JsonElement> InvokeAsync(RequestMessage message, CancellationToken cancellationToken)
     {
-        var completionSource = new TaskCompletionSource<JsonElement>(cancellationToken);
+        var completionSource = new TaskCompletionSource<JsonElement>(RunContinuationsAsynchronously);
 
         var id = Interlocked.Increment(ref counter);
 
         try
         {
-            _ = completions.TryAdd(id, completionSource);
+            completions.TryAdd(id, completionSource);
 
-            var buffer = Shared.Rent(2048);
+            var buffer = ArrayPool<byte>.Shared.Rent(2048);
 
             try
             {
                 var emitted = (int)message.SerializeTo(buffer, id);
-                buffer[emitted] = SequenceExtensions.CR;
-                buffer[emitted + 1] = SequenceExtensions.LF;
-                var vt = socket.SendAsync(buffer.AsMemory(0, emitted + 2), None, cancellationToken);
-                if(!vt.IsCompletedSuccessfully) _ = await vt.ConfigureAwait(false);
+                buffer[emitted++] = SequenceExtensions.CR;
+                buffer[emitted++] = SequenceExtensions.LF;
+
+                var vt = socket.SendAsync(buffer.AsMemory(0, emitted), SocketFlags.None, cancellationToken);
+                if(!vt.IsCompletedSuccessfully)
+                {
+                    await vt.ConfigureAwait(false);
+                }
             }
             finally
             {
-                Shared.Return(buffer);
+                ArrayPool<byte>.Shared.Return(buffer);
             }
 
-            using var timeoutSource = new CancellationTokenSource(CommandTimeout);
-
-            return await completionSource.Task.WaitAsync(timeoutSource.Token).ConfigureAwait(false);
+            return await completionSource.Task.WaitAsync(CommandTimeout, cancellationToken).ConfigureAwait(false);
         }
         catch(OperationCanceledException)
         {
-            _ = completionSource.TrySetCanceled(cancellationToken);
+            completionSource.TrySetCanceled(cancellationToken);
             throw;
         }
         finally
         {
-            _ = completions.TryRemove(id, out _);
+            completions.TryRemove(id, out _);
         }
     }
 
     #endregion
 
-    #region Implementation of IObservable<out IDictionary<string,object>>
+    #region Implementation of IObservable<JsonElement>
 
     public IDisposable Subscribe(IObserver<JsonElement> observer)
     {
@@ -87,85 +87,103 @@ public class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonEle
 
     #endregion
 
-    private static void OnDisconnectAsyncCompleted(object sender, SocketAsyncEventArgs e)
-    {
-        var completionSource = (TaskCompletionSource<bool>)e.UserToken;
-
-        if(e.SocketError != SocketError.Success)
-        {
-            completionSource.SetException(new SocketException((int)e.SocketError));
-        }
-        else
-        {
-            completionSource.SetResult(true);
-        }
-    }
-
     #region Overrides of PipeProducerConsumer
 
     protected override ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken)
     {
-        return socket.ReceiveAsync(buffer, None, cancellationToken);
+        return socket.ReceiveAsync(buffer, SocketFlags.None, cancellationToken);
     }
 
-    protected override long Consume(in ReadOnlySequence<byte> buffer)
+    protected override void Consume(in ReadOnlySequence<byte> sequence, out long consumed)
     {
-        if(!buffer.TryReadLine(out var line)) return 0;
-
-        var consumed = line.Length + 2;
-
-        try
+        if(!sequence.TryReadLine(out var line))
         {
-            var message = JsonSerializer.Deserialize<JsonElement>(line.Span);
+            consumed = 0;
+            return;
+        }
 
-            if(message.TryGetProperty("id", out var id))
+        consumed = line.Length + 2;
+        var reader = new Utf8JsonReader(line.Span);
+        while(reader.Read())
+        {
+            if(reader is { TokenType: PropertyName, CurrentDepth: 1 })
             {
-                if(completions.TryRemove(id.GetInt64(), out var completion))
+                if(reader.ValueSpan.SequenceEqual(IdPropName) && reader.Read() && reader.TryGetInt32(out var id))
                 {
-                    _ = completion.TrySetResult(message);
+                    if(JsonReader.TryReadResult(ref reader, out var result, out var errorCode, out var errorMessage)
+                        && completions.TryRemove(id, out var completion))
+                    {
+                        if(result.ValueKind is JsonValueKind.Array or JsonValueKind.Object)
+                        {
+                            completion.TrySetResult(result);
+                        }
+                        else if(errorMessage is not null)
+                        {
+                            completion.TrySetException(new YeelightException(errorCode, errorMessage));
+                        }
+                        else
+                        {
+                            completion.TrySetException(new YeelightException("Invalid operation result response"));
+                        }
+                    }
+
+                    return;
+                }
+                else if(reader.ValueSpan.SequenceEqual(MethodPropName)
+                    && reader.Read() && reader.TokenType is JsonTokenType.String
+                    && reader.ValueSpan.SequenceEqual(PropsName))
+                {
+                    while(reader.CurrentDepth >= 1 && reader.Read())
+                    {
+                        if(reader is not { TokenType: PropertyName, CurrentDepth: 1 })
+                        {
+                            continue;
+                        }
+
+                        if(reader.ValueSpan.SequenceEqual(ParamsPropName))
+                        {
+                            if(reader.Read())
+                            {
+                                observers.Notify(JsonElement.ParseValue(ref reader));
+                                return;
+                            }
+                        }
+                    }
+                    return;
                 }
             }
-            else if(message.TryGetProperty("method", out var m) && m.GetString() == "props" &&
-                    message.TryGetProperty("params", out var p))
-            {
-                observers.Notify(p);
-            }
         }
-        catch(Exception e)
-        {
-            Trace.TraceError($"Error processing response message: {e.Message}");
-            throw;
-        }
-
-        return consumed;
     }
 
     protected override async Task StartingAsync(CancellationToken cancellationToken)
     {
-        socket = new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
         await socket.ConnectAsync(Endpoint, cancellationToken).ConfigureAwait(false);
         await base.StartingAsync(cancellationToken).ConfigureAwait(false);
     }
 
     protected override async Task StoppingAsync()
     {
-        await base.StoppingAsync().ConfigureAwait(false);
-
-        var tcs = new TaskCompletionSource<bool>();
-
-        var args = new SocketAsyncEventArgs { UserToken = tcs };
-
-        args.Completed += OnDisconnectAsyncCompleted;
-
         try
         {
-            _ = socket.DisconnectAsync(args);
-            _ = await tcs.Task.ConfigureAwait(false);
+            await base.StoppingAsync().ConfigureAwait(false);
         }
         finally
         {
-            args.Completed -= OnDisconnectAsyncCompleted;
-            args.Dispose();
+            await socket.DisconnectAsync(true).ConfigureAwait(false);
+        }
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        using(socket)
+        using(observers)
+        {
+            if(socket.Connected)
+            {
+                socket.Shutdown(SocketShutdown.Both);
+            }
+
+            await base.DisposeAsync().ConfigureAwait(false);
         }
     }
 
