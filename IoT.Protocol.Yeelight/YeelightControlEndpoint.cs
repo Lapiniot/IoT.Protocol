@@ -110,8 +110,8 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
             {
                 if(reader.ValueSpan.SequenceEqual(IdPropName) && reader.Read() && reader.TryGetInt32(out var id))
                 {
-                    if(JsonReader.TryReadResult(ref reader, out var result, out var errorCode, out var errorMessage)
-                        && completions.TryRemove(id, out var completion))
+                    if(completions.TryRemove(id, out var completion)
+                        && JsonReader.TryReadResult(ref reader, out var result, out var errorCode, out var errorMessage))
                     {
                         if(result.ValueKind is JsonValueKind.Array or JsonValueKind.Object)
                         {
