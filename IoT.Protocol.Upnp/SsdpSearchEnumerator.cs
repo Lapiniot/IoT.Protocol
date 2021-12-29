@@ -13,10 +13,11 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
 {
     private readonly string host;
     private readonly string searchTarget;
+    private readonly Action<Socket, IPEndPoint> configureSocket;
     private readonly string userAgent;
     private readonly int sendBufferSize;
 
-    public SsdpSearchEnumerator(string searchTarget, [NotNull] IPEndPoint groupEP, IRepeatPolicy repeatPolicy) :
+    public SsdpSearchEnumerator(string searchTarget, [NotNull] IPEndPoint groupEP, Action<Socket, IPEndPoint> configureSocket, IRepeatPolicy repeatPolicy) :
         base(groupEP, repeatPolicy)
     {
         if(string.IsNullOrEmpty(searchTarget))
@@ -25,13 +26,18 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
         }
 
         this.searchTarget = searchTarget;
+        this.configureSocket = configureSocket;
         host = groupEP.ToString();
         userAgent = $"USER-AGENT: {nameof(SsdpSearchEnumerator)}/{typeof(SsdpSearchEnumerator).Assembly.GetName().Version} ({RuntimeInformation.OSDescription.TrimEnd()})";
         sendBufferSize = 68 + host.Length + searchTarget.Length + userAgent.Length;
     }
 
+    public SsdpSearchEnumerator(string searchTarget, Action<Socket, IPEndPoint> configureSocket, IRepeatPolicy discoveryPolicy) :
+         this(searchTarget, GetIPv4SSDPGroup(), configureSocket, discoveryPolicy)
+    { }
+
     public SsdpSearchEnumerator(string searchTarget, IRepeatPolicy discoveryPolicy) :
-         this(searchTarget, GetIPv4SSDPGroup(), discoveryPolicy)
+         this(searchTarget, GetIPv4SSDPGroup(), null, discoveryPolicy)
     { }
 
     protected override ValueTask<SsdpReply> ParseDatagramAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEP, CancellationToken cancellationToken)
@@ -57,9 +63,18 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
 
     protected override void ConfigureSocket([NotNull] Socket socket, out IPEndPoint receiveEP)
     {
-        socket.ConfigureMulticast(FindBestMulticastInterface().GetIndex(socket.AddressFamily));
         socket.ReceiveBufferSize = 0x400;
         socket.SendBufferSize = 68 + host.Length + searchTarget.Length + userAgent.Length;
+
+        if(configureSocket is not null)
+        {
+            configureSocket(socket, GroupEP);
+        }
+        else
+        {
+            socket.ConfigureMulticast(FindBestMulticastInterface().GetIndex(socket.AddressFamily));
+        }
+
         receiveEP = GroupEP;
     }
 }
