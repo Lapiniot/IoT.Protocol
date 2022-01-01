@@ -6,19 +6,29 @@ public readonly record struct Command(string Method, object Params, string Sid)
 
     public Command(string method) : this(method, null, null) { }
 
-    public long SerializeTo(byte[] buffer, long id)
+    public long WriteTo(byte[] buffer, long id)
     {
-        using var memoryStream = new MemoryStream(buffer);
-        using var writer = new Utf8JsonWriter(memoryStream);
+        using var ms = new MemoryStream(buffer);
+        using var writer = new Utf8JsonWriter(ms);
 
         writer.WriteStartObject();
         writer.WriteNumber("id", id);
         writer.WriteString("method", Method);
-        if(!string.IsNullOrEmpty(Sid)) writer.WriteString("sid", Sid);
-        if(Params == null)
+
+        if(!string.IsNullOrEmpty(Sid))
+        {
+            writer.WriteString("sid", Sid);
+        }
+
+        if(Params is null)
         {
             writer.WriteStartArray("params");
             writer.WriteEndArray();
+        }
+        else if(Params is Action<Utf8JsonWriter> writeAction)
+        {
+            writer.WritePropertyName("params");
+            writeAction(writer);
         }
         else
         {

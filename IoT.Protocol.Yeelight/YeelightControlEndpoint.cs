@@ -48,7 +48,7 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
 
             try
             {
-                var emitted = (int)message.SerializeTo(buffer, id);
+                var emitted = (int)message.WriteTo(buffer, id);
                 buffer[emitted++] = SequenceExtensions.CR;
                 buffer[emitted++] = SequenceExtensions.LF;
 
