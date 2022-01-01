@@ -6,7 +6,7 @@ using static System.Threading.Tasks.TaskCreationOptions;
 namespace IoT.Protocol.Yeelight;
 
 [CLSCompliant(false)]
-public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonElement>, IConnectedEndpoint<RequestMessage, JsonElement>
+public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<JsonElement>, IConnectedEndpoint<Command, JsonElement>
 {
     private static readonly byte[] IdPropName = { (byte)'i', (byte)'d' };
     private static readonly byte[] MethodPropName = { (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d' };
@@ -34,7 +34,7 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
 
     #region Implementation of IConnectedEndpoint<RequestMessage, JsonElement>>
 
-    public async Task<JsonElement> InvokeAsync(RequestMessage message, CancellationToken cancellationToken)
+    public async Task<JsonElement> InvokeAsync(Command message, CancellationToken cancellationToken)
     {
         var completionSource = new TaskCompletionSource<JsonElement>(RunContinuationsAsynchronously);
 
