@@ -2,6 +2,8 @@
 
 public readonly record struct Command(string Method, object Params, string Sid)
 {
+    public static Dictionary<string, object> EmptyArgs { get; } = new Dictionary<string, object>();
+
     public Command(string method, object @params) : this(method, @params, null) { }
 
     public Command(string method) : this(method, null, null) { }
