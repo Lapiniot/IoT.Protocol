@@ -29,13 +29,13 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
     #region Implementation of IControlEndpoint<in IDictionary<string,object>, JsonElement>
 
-    public async Task<JsonElement> InvokeAsync(IDictionary<string, object> message, CancellationToken cancellationToken)
+    public async Task<JsonElement> InvokeAsync(IDictionary<string, object> command, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(command);
 
         var completionSource = new TaskCompletionSource<JsonElement>(cancellationToken);
 
-        var (id, datagram) = (GetCommandKey((string)message["cmd"], (string)message["sid"]), JsonSerializer.SerializeToUtf8Bytes(message));
+        var (id, datagram) = (GetCommandKey((string)command["cmd"], (string)command["sid"]), JsonSerializer.SerializeToUtf8Bytes(command));
 
         try
         {

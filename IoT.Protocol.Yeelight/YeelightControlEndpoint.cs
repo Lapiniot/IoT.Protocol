@@ -34,7 +34,7 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
 
     #region Implementation of IConnectedEndpoint<RequestMessage, JsonElement>>
 
-    public async Task<JsonElement> InvokeAsync(Command message, CancellationToken cancellationToken)
+    public async Task<JsonElement> InvokeAsync(Command command, CancellationToken cancellationToken)
     {
         var completionSource = new TaskCompletionSource<JsonElement>(RunContinuationsAsynchronously);
 
@@ -48,7 +48,7 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
 
             try
             {
-                var emitted = (int)message.WriteTo(buffer, id);
+                var emitted = (int)command.WriteTo(buffer, id);
                 buffer[emitted++] = SequenceExtensions.CR;
                 buffer[emitted++] = SequenceExtensions.LF;
 

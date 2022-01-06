@@ -1,6 +1,11 @@
 ﻿namespace IoT.Protocol.Interfaces;
 
-public interface IControlEndpoint<in TRequest, TResponse>
+public interface IControlEndpoint<in TCommand, TResult>
 {
-    Task<TResponse> InvokeAsync(TRequest message, CancellationToken cancellationToken);
+    Task<TResult> InvokeAsync(TCommand command, CancellationToken cancellationToken);
+}
+
+public interface IControlEndpoint<in TCommand>
+{
+    Task InvokeAsync(TCommand command, CancellationToken cancellationToken);
 }
