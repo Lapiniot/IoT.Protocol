@@ -12,9 +12,9 @@ public class SoapControlEndpoint : IControlEndpoint<SoapEnvelope, SoapEnvelope>
         client = soapHttpClient;
     }
 
-    public Task<SoapEnvelope> InvokeAsync(SoapEnvelope message, CancellationToken cancellationToken = default)
+    public Task<SoapEnvelope> InvokeAsync(SoapEnvelope command, CancellationToken cancellationToken = default)
     {
-        return InvokeAsync(null, message, cancellationToken);
+        return InvokeAsync(null, command, cancellationToken);
     }
 
     protected internal Task<SoapEnvelope> InvokeAsync(Uri actionUri, SoapEnvelope message, CancellationToken cancellationToken = default)
