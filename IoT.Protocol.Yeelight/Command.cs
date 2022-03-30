@@ -17,17 +17,17 @@ public readonly record struct Command(string Method, object Params, string Sid)
         writer.WriteNumber("id", id);
         writer.WriteString("method", Method);
 
-        if(!string.IsNullOrEmpty(Sid))
+        if (!string.IsNullOrEmpty(Sid))
         {
             writer.WriteString("sid", Sid);
         }
 
-        if(Params is null)
+        if (Params is null)
         {
             writer.WriteStartArray("params");
             writer.WriteEndArray();
         }
-        else if(Params is Action<Utf8JsonWriter> writeAction)
+        else if (Params is Action<Utf8JsonWriter> writeAction)
         {
             writer.WritePropertyName("params");
             writeAction(writer);
@@ -51,7 +51,7 @@ public readonly record struct Command(string Method, object Params, string Sid)
 
     private static void WriteValue(Utf8JsonWriter writer, object value)
     {
-        switch(value)
+        switch (value)
         {
             case string strValue:
                 writer.WriteStringValue(strValue);
@@ -85,7 +85,7 @@ public readonly record struct Command(string Method, object Params, string Sid)
                 break;
             case Array array:
                 writer.WriteStartArray();
-                foreach(var o in array)
+                foreach (var o in array)
                 {
                     WriteValue(writer, o);
                 }
@@ -94,7 +94,7 @@ public readonly record struct Command(string Method, object Params, string Sid)
                 break;
             case IDictionary<string, object> dictionary:
                 writer.WriteStartObject();
-                foreach(var (k, v) in dictionary)
+                foreach (var (k, v) in dictionary)
                 {
                     WriteObject(writer, k, v);
                 }

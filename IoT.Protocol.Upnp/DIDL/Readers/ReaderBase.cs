@@ -20,9 +20,9 @@ public abstract class ReaderBase<TElementType> where TElementType : class
 
         _ = reader.Read();
 
-        while(!(reader.NodeType == EndElement && reader.Name == nodeName) && reader.Depth > depth)
+        while (!(reader.NodeType == EndElement && reader.Name == nodeName) && reader.Depth > depth)
         {
-            if((reader.NodeType == Element || reader.NodeType == Text || reader.NodeType == CDATA) &&
+            if ((reader.NodeType == Element || reader.NodeType == Text || reader.NodeType == CDATA) &&
                TryReadChildNode(reader, element))
             {
                 continue;
@@ -38,13 +38,7 @@ public abstract class ReaderBase<TElementType> where TElementType : class
 
     protected abstract TElementType CreateElement(XmlReader reader);
 
-    protected static int? ParseInt(string str)
-    {
-        return int.TryParse(str, out var value) ? value : null;
-    }
+    protected static int? ParseInt(string str) => int.TryParse(str, out var value) ? value : null;
 
-    protected static bool ParseBoolean(string str)
-    {
-        return str == "1" || bool.TryParse(str, out var value) && value;
-    }
+    protected static bool ParseBoolean(string str) => str == "1" || bool.TryParse(str, out var value) && value;
 }

@@ -21,10 +21,7 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
 
     #region Implementation of IObservable<out JsonElement>
 
-    public IDisposable Subscribe(IObserver<JsonElement> observer)
-    {
-        return observers.Subscribe(observer);
-    }
+    public IDisposable Subscribe(IObserver<JsonElement> observer) => observers.Subscribe(observer);
 
     #endregion
 
@@ -32,9 +29,9 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
 
     public override async ValueTask DisposeAsync()
     {
-        using(observers)
-        using(socket)
-        using(tokenSource)
+        using (observers)
+        using (socket)
+        using (tokenSource)
         {
             await base.DisposeAsync().ConfigureAwait(false);
         }
@@ -46,7 +43,7 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
     {
         var buffer = new byte[MaxReceiveBufferSize];
 
-        while(!cancellationToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
@@ -56,11 +53,11 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
 
                 observers.Notify(message);
             }
-            catch(OperationCanceledException)
+            catch (OperationCanceledException)
             {
                 Trace.TraceInformation("Cancelling message dispatching loop...");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Trace.TraceError($"Error in message dispatch: {e.Message}");
                 throw;
@@ -68,15 +65,9 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
         }
     }
 
-    public Task ConnectAsync(in CancellationToken cancellationToken)
-    {
-        return StartActivityAsync(cancellationToken);
-    }
+    public Task ConnectAsync(in CancellationToken cancellationToken) => StartActivityAsync(cancellationToken);
 
-    public Task DisconnectAsync()
-    {
-        return StopActivityAsync();
-    }
+    public Task DisconnectAsync() => StopActivityAsync();
 
     #region Overrides of ActivityObject
 
@@ -99,7 +90,7 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
     {
         var source = tokenSource;
 
-        if(source != null)
+        if (source != null)
         {
             source.Cancel();
             source.Dispose();

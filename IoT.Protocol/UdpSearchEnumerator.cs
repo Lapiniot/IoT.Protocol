@@ -34,10 +34,8 @@ public abstract class UdpSearchEnumerator<TThing> : UdpEnumerator<TThing>
 
         return repeatPolicy.RepeatAsync(SendDiscoveryDatagramAsync, stoppingToken);
 
-        async Task SendDiscoveryDatagramAsync(CancellationToken token)
-        {
+        async Task SendDiscoveryDatagramAsync(CancellationToken token) =>
             await socket.SendToAsync(message, SocketFlags.None, groupEP, token).ConfigureAwait(false);
-        }
     }
 
     /// <summary>

@@ -20,10 +20,7 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
     private Socket socket;
     private CancellationTokenSource tokenSource;
 
-    public LumiControlEndpoint(IPEndPoint endpoint)
-    {
-        this.endpoint = endpoint;
-    }
+    public LumiControlEndpoint(IPEndPoint endpoint) => this.endpoint = endpoint;
 
     private TimeSpan CommandTimeout { get; } = TimeSpan.FromSeconds(10);
 
@@ -42,7 +39,7 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
             _ = completions.TryAdd(id, completionSource);
 
             var vt = socket.SendAsync(datagram, None, cancellationToken);
-            if(!vt.IsCompletedSuccessfully)
+            if (!vt.IsCompletedSuccessfully)
             {
                 _ = await vt.ConfigureAwait(false);
             }
@@ -51,7 +48,7 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
             return await completionSource.Task.WaitAsync(timeoutSource.Token).ConfigureAwait(false);
         }
-        catch(OperationCanceledException)
+        catch (OperationCanceledException)
         {
             _ = completionSource.TrySetCanceled(cancellationToken);
             throw;
@@ -68,7 +65,7 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
     {
         var json = JsonSerializer.Deserialize<JsonElement>(span);
 
-        if(json.TryGetProperty("cmd", out var cmd) && json.TryGetProperty("sid", out var sid))
+        if (json.TryGetProperty("cmd", out var cmd) && json.TryGetProperty("sid", out var sid))
         {
             id = GetCommandKey(GetCmdName(cmd.GetString()), sid.GetString());
             response = json;
@@ -80,26 +77,17 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
         return false;
     }
 
-    private static string GetCommandKey(string command, string sid)
-    {
-        return $"{command}.{sid}";
-    }
+    private static string GetCommandKey(string command, string sid) => $"{command}.{sid}";
 
-    private static string GetCmdName(string command)
-    {
-        return command.EndsWith("_ack", InvariantCulture) ? command[..^4] : command;
-    }
+    private static string GetCmdName(string command) => command.EndsWith("_ack", InvariantCulture) ? command[..^4] : command;
 
-    public Task<JsonElement> InvokeAsync(string command, string sid, CancellationToken cancellationToken = default)
-    {
-        return InvokeAsync(new Dictionary<string, object> { { "cmd", command }, { "sid", sid } }, cancellationToken);
-    }
+    public Task<JsonElement> InvokeAsync(string command, string sid, CancellationToken cancellationToken = default) => InvokeAsync(new Dictionary<string, object> { { "cmd", command }, { "sid", sid } }, cancellationToken);
 
     private void OnDataAvailable(Span<byte> span)
     {
-        if(!TryParseResponse(span, out var id, out var response)) return;
+        if (!TryParseResponse(span, out var id, out var response)) return;
 
-        if(!completions.TryRemove(id, out var completionSource)) return;
+        if (!completions.TryRemove(id, out var completionSource)) return;
 
         _ = completionSource.TrySetResult(response);
     }
@@ -108,7 +96,7 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
     {
         var buffer = new byte[MaxReceiveBufferSize];
 
-        while(!cancellationToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
@@ -118,11 +106,11 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
                 OnDataAvailable(buffer.AsSpan(0, size));
             }
-            catch(OperationCanceledException)
+            catch (OperationCanceledException)
             {
                 Trace.TraceInformation("Cancelling message dispatching loop...");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Trace.TraceError($"Error in message dispatch: {e.Message}");
                 throw;
@@ -166,15 +154,9 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
     public bool IsConnected => IsRunning;
 
-    public Task ConnectAsync(CancellationToken cancellationToken = default)
-    {
-        return StartActivityAsync(cancellationToken);
-    }
+    public Task ConnectAsync(CancellationToken cancellationToken = default) => StartActivityAsync(cancellationToken);
 
-    public Task DisconnectAsync()
-    {
-        return StopActivityAsync();
-    }
+    public Task DisconnectAsync() => StopActivityAsync();
 
     #endregion
 }

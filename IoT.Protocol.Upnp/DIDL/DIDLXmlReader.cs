@@ -24,15 +24,15 @@ public static class DIDLXmlReader
 
         using var reader = XmlReader.Create(new StringReader(content), Settings);
 
-        if(!reader.ReadToFollowing("DIDL-Lite", Ns)) yield break;
+        if (!reader.ReadToFollowing("DIDL-Lite", Ns)) yield break;
 
         var depth = reader.Depth;
 
-        while(reader.Read() && reader.Depth > depth)
+        while (reader.Read() && reader.Depth > depth)
         {
-            if(reader.NodeType != Element || reader.NamespaceURI != Ns) continue;
+            if (reader.NodeType != Element || reader.NamespaceURI != Ns) continue;
 
-            switch(reader.Name)
+            switch (reader.Name)
             {
                 case "container":
                     yield return containerReader.Read(reader);

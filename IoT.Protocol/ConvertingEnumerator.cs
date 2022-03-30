@@ -22,9 +22,9 @@ public abstract class ConvertingEnumerator<TIn, TOut> : IAsyncEnumerable<TOut>
     {
         var set = new HashSet<TIn>(comparer);
 
-        await foreach(var thing in enumerator.WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (var thing in enumerator.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            if(set.Add(thing)) yield return Convert(thing);
+            if (set.Add(thing)) yield return Convert(thing);
         }
     }
 

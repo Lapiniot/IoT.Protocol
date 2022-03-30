@@ -16,23 +16,23 @@ public static class ServiceDescriptionReader
 
         using var reader = XmlReader.Create(stream, new() { Async = true, IgnoreComments = true, IgnoreWhitespace = true, IgnoreProcessingInstructions = true });
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth == 0)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth == 0)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element || reader.LocalName != "scpd" || reader.NamespaceURI != NS) continue;
+            if (reader.NodeType != Element || reader.LocalName != "scpd" || reader.NamespaceURI != NS) continue;
 
-            while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth == 1)
+            while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth == 1)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if(reader.NodeType != Element) continue;
+                if (reader.NodeType != Element) continue;
 
-                while(reader.Depth == 1)
+                while (reader.Depth == 1)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    switch(reader.LocalName)
+                    switch (reader.LocalName)
                     {
                         case "specVersion":
                             version = await ReadVersionNodeAsync(reader, cancellationToken).ConfigureAwait(false);
@@ -56,21 +56,21 @@ public static class ServiceDescriptionReader
 
     private static async Task<Version> ReadVersionNodeAsync(XmlReader reader, CancellationToken cancellationToken)
     {
-        int major = 0;
-        int minor = 0;
+        var major = 0;
+        var minor = 0;
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "major":
                         major = reader.ReadElementContentAsInt();
@@ -94,17 +94,17 @@ public static class ServiceDescriptionReader
 
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "action":
                         actions.Add(await ReadActionNodeAsync(reader, cancellationToken).ConfigureAwait(false));
@@ -126,17 +126,17 @@ public static class ServiceDescriptionReader
 
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "name":
                         name = await reader.ReadElementContentAsStringAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -160,17 +160,17 @@ public static class ServiceDescriptionReader
 
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "argument":
                         arguments.Add(await ReadArgumentNodeAsync(reader, cancellationToken).ConfigureAwait(false));
@@ -189,21 +189,21 @@ public static class ServiceDescriptionReader
     {
         string name = null, relatedStateVar = null;
         ArgumentDirection direction = default;
-        bool isRetVal = false;
+        var isRetVal = false;
 
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "name":
                         name = await reader.ReadElementContentAsStringAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -234,17 +234,17 @@ public static class ServiceDescriptionReader
 
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "stateVariable":
                         var stateVar = await ReadStateVariableNodeAsync(reader, cancellationToken).ConfigureAwait(false);
@@ -263,28 +263,28 @@ public static class ServiceDescriptionReader
     private static async Task<StateVariable> ReadStateVariableNodeAsync(XmlReader reader, CancellationToken cancellationToken)
     {
         string name = null, dataType = null, defaultValue = null;
-        bool sendEvents = false;
+        var sendEvents = false;
         IEnumerable<string> allowedValues = null;
         ArgumentValueRange valueRange = null;
 
         var depth = reader.Depth + 1;
 
-        if(reader.HasAttributes && reader.MoveToAttribute("sendEvents"))
+        if (reader.HasAttributes && reader.MoveToAttribute("sendEvents"))
         {
             sendEvents = await reader.ReadContentAsStringAsync().WaitAsync(cancellationToken).ConfigureAwait(false) == "yes";
         }
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "name":
                         name = await reader.ReadElementContentAsStringAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -319,17 +319,17 @@ public static class ServiceDescriptionReader
 
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "allowedValue":
                         values.Add(await reader.ReadElementContentAsStringAsync().WaitAsync(cancellationToken).ConfigureAwait(false));
@@ -350,17 +350,17 @@ public static class ServiceDescriptionReader
 
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "minimum":
                         minimum = await reader.ReadElementContentAsStringAsync().WaitAsync(cancellationToken).ConfigureAwait(false);

@@ -20,7 +20,7 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
     public SsdpSearchEnumerator(string searchTarget, [NotNull] IPEndPoint groupEP, Action<Socket, IPEndPoint> configureSocket, IRepeatPolicy repeatPolicy) :
         base(groupEP, repeatPolicy)
     {
-        if(string.IsNullOrEmpty(searchTarget))
+        if (string.IsNullOrEmpty(searchTarget))
         {
             throw new ArgumentException("Parameter couldn't be null or empty.", nameof(searchTarget));
         }
@@ -40,10 +40,8 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
          this(searchTarget, GetIPv4SSDPGroup(), null, discoveryPolicy)
     { }
 
-    protected override ValueTask<SsdpReply> ParseDatagramAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEP, CancellationToken cancellationToken)
-    {
-        return new(SsdpReply.Parse(buffer.Span));
-    }
+    protected override ValueTask<SsdpReply> ParseDatagramAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEP, CancellationToken cancellationToken) =>
+        new(SsdpReply.Parse(buffer.Span));
 
     protected override void WriteDiscoveryDatagram(Span<byte> span, out int bytesWritten)
     {
@@ -66,7 +64,7 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
         socket.ReceiveBufferSize = 0x400;
         socket.SendBufferSize = 68 + host.Length + searchTarget.Length + userAgent.Length;
 
-        if(configureSocket is not null)
+        if (configureSocket is not null)
         {
             configureSocket(socket, GroupEP);
         }

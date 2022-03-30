@@ -14,7 +14,7 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 
     protected UdpEnumerator(AddressFamily addressFamily)
     {
-        if(addressFamily is not (AddressFamily.InterNetworkV6 or AddressFamily.InterNetwork))
+        if (addressFamily is not (AddressFamily.InterNetworkV6 or AddressFamily.InterNetwork))
         {
             throw new ArgumentNullException($"Only '{AddressFamily.InterNetwork}' or '{AddressFamily.InterNetworkV6}' are supported as address family");
         }
@@ -35,7 +35,7 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
         using var memory = MemoryPool<byte>.Shared.Rent(socket.ReceiveBufferSize);
         var buffer = memory.Memory;
 
-        while(!cancellationToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
             TThing instance = default;
 
@@ -46,18 +46,18 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
                 var cvt = ParseDatagramAsync(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, cancellationToken);
                 instance = cvt.IsCompletedSuccessfully ? cvt.Result : await cvt.ConfigureAwait(false);
             }
-            catch(OperationCanceledException oce) when(oce.CancellationToken == cancellationToken)
+            catch (OperationCanceledException oce) when (oce.CancellationToken == cancellationToken)
             {
                 // expected external cancellation signal
                 yield break;
             }
-            catch(OperationCanceledException)
+            catch (OperationCanceledException)
             {
                 // ignored by design: this can be cancellation comming 
                 // from CreateInstanceAsync internals (some timeout e.g.)
                 continue;
             }
-            catch(InvalidDataException)
+            catch (InvalidDataException)
             {
                 // ignored as expected if received datagram has wrong format
                 continue;
@@ -70,7 +70,7 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
         {
             await auxWorker.ConfigureAwait(false);
         }
-        catch(OperationCanceledException)
+        catch (OperationCanceledException)
         {
             // Expected
         }
@@ -88,10 +88,7 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     /// Implementors may provide any custom logic performed on socket instance. 
     /// This can be periodic discovery datagram emition e.g., in case discovery protocol supposes active searching. 
     /// </remarks>
-    protected virtual Task StartAuxiliaryWorkerAsync(Socket socket, CancellationToken stoppingToken)
-    {
-        return Task.CompletedTask;
-    }
+    protected virtual Task StartAuxiliaryWorkerAsync(Socket socket, CancellationToken stoppingToken) => Task.CompletedTask;
 
     /// <summary>
     /// Configures UDP dgram socket instance

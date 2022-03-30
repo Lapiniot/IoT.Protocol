@@ -29,12 +29,12 @@ public static class DIDLUtils
 
         writer.WriteStartElement("item");
         writer.WriteElementString("title", DCNamespace, title);
-        if(!string.IsNullOrEmpty(description)) writer.WriteElementString("description", DCNamespace, description);
-        if(!string.IsNullOrEmpty(genre)) writer.WriteElementString("genre", UPNPNamespace, genre);
+        if (!string.IsNullOrEmpty(description)) writer.WriteElementString("description", DCNamespace, description);
+        if (!string.IsNullOrEmpty(genre)) writer.WriteElementString("genre", UPNPNamespace, genre);
         writer.WriteElementString("class", UPNPNamespace, "object.item.audioItem.musicTrack");
         writer.WriteStartElement("res");
-        if(length is not null) writer.WriteAttributeString("size", length.Value.ToString(CultureInfo.InvariantCulture));
-        if(br is not null) writer.WriteAttributeString("bitrate", br.Value.ToString(CultureInfo.InvariantCulture));
+        if (length is not null) writer.WriteAttributeString("size", length.Value.ToString(CultureInfo.InvariantCulture));
+        if (br is not null) writer.WriteAttributeString("bitrate", br.Value.ToString(CultureInfo.InvariantCulture));
         writer.WriteAttributeString("protocolInfo", $"http-get:*:{contentType ?? "audio/mpegurl"}:*");
         writer.WriteValue(url.AbsoluteUri);
         writer.WriteEndElement();
@@ -45,28 +45,28 @@ public static class DIDLUtils
     {
         ArgumentNullException.ThrowIfNull(writer);
 
-        if(string.IsNullOrEmpty(metadata)) return;
+        if (string.IsNullOrEmpty(metadata)) return;
 
         using var input = new StringReader(metadata);
         using var reader = XmlReader.Create(input);
-        if(!reader.ReadToDescendant("DIDL-Lite") || reader.NamespaceURI != DIDLLiteNamespace || !reader.Read())
+        if (!reader.ReadToDescendant("DIDL-Lite") || reader.NamespaceURI != DIDLLiteNamespace || !reader.Read())
         {
             return;
         }
 
-        while(!reader.EOF)
+        while (!reader.EOF)
         {
-            while((reader.NamespaceURI != DIDLLiteNamespace || reader.NodeType != XmlNodeType.Element) && reader.Read()) ;
+            while ((reader.NamespaceURI != DIDLLiteNamespace || reader.NodeType != XmlNodeType.Element) && reader.Read()) ;
 
-            if(reader.EOF) break;
+            if (reader.EOF) break;
 
-            switch(reader.Name)
+            switch (reader.Name)
             {
                 case "item":
                     writer.WriteNode(reader, true);
                     break;
                 case "container":
-                    if(containers is not null && nextDepth is { } value) containers.Push((reader.GetAttribute("id"), value));
+                    if (containers is not null && nextDepth is { } value) containers.Push((reader.GetAttribute("id"), value));
                     reader.Skip();
                     break;
                 default:

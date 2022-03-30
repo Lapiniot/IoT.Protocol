@@ -7,7 +7,7 @@ public static class DebugExtensions
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(textWriter);
 
-        foreach(var action in metadata.Actions)
+        foreach (var action in metadata.Actions)
         {
             action.DebugDump(textWriter);
         }
@@ -20,7 +20,7 @@ public static class DebugExtensions
 
         var outArgs = action.Arguments.Where(a => a.Direction == ArgumentDirection.Out).ToArray();
         var inArgs = action.Arguments.Where(a => a.Direction == ArgumentDirection.In).ToArray();
-        if(outArgs.Length > 0)
+        if (outArgs.Length > 0)
         {
             DumpPrototype(textWriter, outArgs, n => n);
         }
@@ -38,9 +38,9 @@ public static class DebugExtensions
     private static void DumpPrototype(TextWriter tw, IReadOnlyList<Argument> args, Func<string, string> nameHandler)
     {
         tw.Write("(");
-        for(var i = 0; i < args.Count; i++)
+        for (var i = 0; i < args.Count; i++)
         {
-            if(i != 0) tw.Write(", ");
+            if (i != 0) tw.Write(", ");
             var arg = args[i];
             tw.Write(arg.RelatedStateVar);
             tw.Write(" ");

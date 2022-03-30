@@ -30,9 +30,9 @@ public class LumiEnumerator : UdpSearchEnumerator<LumiEndpoint>
     {
         var json = JsonSerializer.Deserialize<JsonElement>(buffer.Span);
 
-        if(!json.TryGetProperty("cmd", out var cmd) || cmd.GetString() != "iam") throw new InvalidDataException("Invalid discovery response message");
+        if (!json.TryGetProperty("cmd", out var cmd) || cmd.GetString() != "iam") throw new InvalidDataException("Invalid discovery response message");
         var address = IPAddress.Parse(json.GetProperty("ip").GetString() ?? throw new InvalidDataException("Missing value for property 'ip'"));
-        int port = int.Parse(json.GetProperty("port").GetString() ?? throw new InvalidDataException("Missing value for property 'port'"), InvariantCulture);
+        var port = int.Parse(json.GetProperty("port").GetString() ?? throw new InvalidDataException("Missing value for property 'port'"), InvariantCulture);
         var sid = json.GetProperty("sid").GetString();
         return new ValueTask<LumiEndpoint>(new LumiEndpoint(new IPEndPoint(address, port), sid));
     }

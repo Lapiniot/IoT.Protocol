@@ -15,40 +15,40 @@ public static class JsonReader
         errorMessage = null;
         result = default;
 
-        while(reader.CurrentDepth >= 1 && reader.Read())
+        while (reader.CurrentDepth >= 1 && reader.Read())
         {
-            if(reader is not { TokenType: PropertyName, CurrentDepth: 1 })
+            if (reader is not { TokenType: PropertyName, CurrentDepth: 1 })
             {
                 continue;
             }
 
-            if(reader.ValueSpan.SequenceEqual(ResultPropName))
+            if (reader.ValueSpan.SequenceEqual(ResultPropName))
             {
-                if(reader.Read())
+                if (reader.Read())
                 {
                     result = JsonElement.ParseValue(ref reader);
                     return true;
                 }
             }
-            else if(reader.ValueSpan.SequenceEqual(ErrorPropName) && reader.Read())
+            else if (reader.ValueSpan.SequenceEqual(ErrorPropName) && reader.Read())
             {
-                int leftToRead = 2;
-                while(reader.CurrentDepth >= 1 && leftToRead > 0 && reader.Read())
+                var leftToRead = 2;
+                while (reader.CurrentDepth >= 1 && leftToRead > 0 && reader.Read())
                 {
-                    if(reader is not { TokenType: PropertyName, CurrentDepth: 2 })
+                    if (reader is not { TokenType: PropertyName, CurrentDepth: 2 })
                     {
                         continue;
                     }
 
-                    if(reader.ValueSpan.SequenceEqual(CodePropName))
+                    if (reader.ValueSpan.SequenceEqual(CodePropName))
                     {
-                        if(reader.Read() && reader.TokenType is Number)
+                        if (reader.Read() && reader.TokenType is Number)
                         {
                             errorCode = reader.GetInt32();
                             leftToRead--;
                         }
                     }
-                    else if(reader.ValueSpan.SequenceEqual(MessagePropName)
+                    else if (reader.ValueSpan.SequenceEqual(MessagePropName)
                         && reader.Read() && reader.TokenType is JsonTokenType.String)
                     {
                         errorMessage = reader.GetString();

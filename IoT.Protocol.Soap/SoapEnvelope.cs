@@ -14,8 +14,8 @@ public record SoapEnvelope
 
     public SoapEnvelope(string action, string schema, IReadOnlyDictionary<string, string> args = null)
     {
-        if(IsNullOrWhiteSpace(action)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(action));
-        if(IsNullOrWhiteSpace(schema)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(schema));
+        if (IsNullOrWhiteSpace(action)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(action));
+        if (IsNullOrWhiteSpace(schema)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(schema));
 
         Schema = schema;
         Arguments = args ?? new Dictionary<string, string>();
@@ -27,16 +27,17 @@ public record SoapEnvelope
     public IReadOnlyDictionary<string, string> Arguments { get; }
     public string this[string name] => Arguments[name];
 
-    public override string ToString()
-    {
-        return $"{Schema}#{Action}: {{{Join(", ", Arguments.Select(a => $"{a.Key} = {a.Value}"))}}}";
-    }
+    public override string ToString() =>
+        $"{Schema}#{Action}: {{{Join(", ", Arguments.Select(a => $"{a.Key} = {a.Value}"))}}}";
 
     public async Task WriteAsync(Stream stream, Encoding encoding)
     {
         using var writer = XmlWriter.Create(stream, new XmlWriterSettings
         {
-            Encoding = encoding ?? Encoding.UTF8, CloseOutput = false, OmitXmlDeclaration = true, Async = true
+            Encoding = encoding ?? Encoding.UTF8,
+            CloseOutput = false,
+            OmitXmlDeclaration = true,
+            Async = true
         });
 
         await WriteAsync(writer).ConfigureAwait(false);
@@ -46,7 +47,9 @@ public record SoapEnvelope
     {
         using var writer = XmlWriter.Create(textWriter, new XmlWriterSettings
         {
-            CloseOutput = false, OmitXmlDeclaration = true, Async = true
+            CloseOutput = false,
+            OmitXmlDeclaration = true,
+            Async = true
         });
 
         await WriteAsync(writer).ConfigureAwait(false);
@@ -57,34 +60,37 @@ public record SoapEnvelope
         ArgumentNullException.ThrowIfNull(writer);
 
         var task = writer.WriteStartElementAsync(Prefix, "Envelope", SoapEnvelopeNs);
-        if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+        if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
         task = writer.WriteAttributeStringAsync(Prefix, "encodingStyle", SoapEnvelopeNs, SoapEncodingNs);
-        if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+        if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
         task = writer.WriteStartElementAsync(Prefix, "Body", SoapEnvelopeNs);
-        if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+        if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
         task = writer.WriteStartElementAsync("u", Action, Schema);
-        if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+        if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
 
-        if(Arguments != null)
+        if (Arguments != null)
         {
-            foreach(var (key, value) in Arguments)
+            foreach (var (key, value) in Arguments)
             {
                 task = writer.WriteElementStringAsync(Empty, key, Empty, value ?? Empty);
-                if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+                if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
             }
         }
 
         task = writer.WriteEndDocumentAsync();
-        if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+        if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
         task = writer.FlushAsync();
-        if(!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+        if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
     }
 
     public void Write(Stream stream, Encoding encoding)
     {
         using var writer = XmlWriter.Create(stream, new XmlWriterSettings
         {
-            Encoding = encoding ?? Encoding.UTF8, CloseOutput = false, OmitXmlDeclaration = true, Async = true
+            Encoding = encoding ?? Encoding.UTF8,
+            CloseOutput = false,
+            OmitXmlDeclaration = true,
+            Async = true
         });
 
         Write(writer);
@@ -94,7 +100,9 @@ public record SoapEnvelope
     {
         using var writer = XmlWriter.Create(textWriter, new XmlWriterSettings
         {
-            CloseOutput = false, OmitXmlDeclaration = true, Async = true
+            CloseOutput = false,
+            OmitXmlDeclaration = true,
+            Async = true
         });
 
         Write(writer);
@@ -109,9 +117,9 @@ public record SoapEnvelope
         writer.WriteStartElement(Prefix, "Body", SoapEnvelopeNs);
         writer.WriteStartElement("u", Action, Schema);
 
-        if(Arguments != null)
+        if (Arguments != null)
         {
-            foreach(var (key, value) in Arguments)
+            foreach (var (key, value) in Arguments)
             {
                 writer.WriteElementString(Empty, key, Empty, value ?? Empty);
             }
@@ -125,7 +133,7 @@ public record SoapEnvelope
     {
         using var reader = XmlReader.Create(textReader);
 
-        if(!(reader.ReadToDescendant("Envelope", SoapEnvelopeNs) && reader.ReadToDescendant("Body", SoapEnvelopeNs) && reader.Read()))
+        if (!(reader.ReadToDescendant("Envelope", SoapEnvelopeNs) && reader.ReadToDescendant("Body", SoapEnvelopeNs) && reader.Read()))
         {
             throw new InvalidDataException("Invalid XML data");
         }
@@ -137,20 +145,20 @@ public record SoapEnvelope
         var depth = reader.Depth;
         var args = new Dictionary<string, string>();
 
-        if(reader.IsEmptyElement) return new SoapEnvelope(name, schema, args);
+        if (reader.IsEmptyElement) return new SoapEnvelope(name, schema, args);
 
         _ = reader.Read();
 
-        while(!reader.EOF && reader.Depth > depth)
+        while (!reader.EOF && reader.Depth > depth)
         {
-            if(reader.NodeType == Element)
+            if (reader.NodeType == Element)
             {
                 var key = reader.LocalName;
 
-                if(reader.Read())
+                if (reader.Read())
                 {
                     var nt = reader.MoveToContent();
-                    if(nt is Text or CDATA)
+                    if (nt is Text or CDATA)
                     {
                         args[key] = reader.ReadContentAsString();
                     }

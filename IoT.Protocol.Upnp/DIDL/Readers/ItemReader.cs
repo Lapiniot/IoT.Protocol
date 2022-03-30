@@ -15,19 +15,17 @@ public abstract class ItemReader<TElementType> : ReaderBase<TElementType> where 
         this.parseVendorProps = parseVendorProps;
     }
 
-    protected override TElementType CreateElement([NotNull] XmlReader reader)
-    {
-        return CreateElement(reader.GetAttribute("id"), reader.GetAttribute("parentID"), ParseBoolean(reader.GetAttribute("restricted")));
-    }
+    protected override TElementType CreateElement([NotNull] XmlReader reader) =>
+        CreateElement(reader.GetAttribute("id"), reader.GetAttribute("parentID"), ParseBoolean(reader.GetAttribute("restricted")));
 
     protected override bool TryReadChildNode([NotNull] XmlReader reader, [NotNull] TElementType element)
     {
-        if(reader.NodeType != Element) return false;
+        if (reader.NodeType != Element) return false;
 
-        switch(reader.NamespaceURI)
+        switch (reader.NamespaceURI)
         {
             case DC:
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "title":
                         element.Title = reader.ReadElementContentAsString();
@@ -36,7 +34,7 @@ public abstract class ItemReader<TElementType> : ReaderBase<TElementType> where 
 
                 break;
             case UPNP:
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "class":
                         element.Class = reader.ReadElementContentAsString();
@@ -60,9 +58,9 @@ public abstract class ItemReader<TElementType> : ReaderBase<TElementType> where 
 
                 break;
             default:
-                if(reader.Name == "res")
+                if (reader.Name == "res")
                 {
-                    if(parseResourceProps)
+                    if (parseResourceProps)
                     {
                         element.Resource = ResourceReader.Instance.Read(reader);
                     }
@@ -73,7 +71,7 @@ public abstract class ItemReader<TElementType> : ReaderBase<TElementType> where 
                 }
                 else
                 {
-                    if(parseVendorProps)
+                    if (parseVendorProps)
                     {
                         (element.Vendor ??= new Dictionary<string, string>())[reader.Name] = reader.ReadElementContentAsString();
                     }

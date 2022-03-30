@@ -10,10 +10,7 @@ public class SsdpReply : Dictionary<string, string>
     private const byte CR = 0x0d;
     private const byte LF = 0x0a;
 
-    public SsdpReply(string startLine) : base(10, StringComparer.OrdinalIgnoreCase)
-    {
-        StartLine = startLine;
-    }
+    public SsdpReply(string startLine) : base(10, StringComparer.OrdinalIgnoreCase) => StartLine = startLine;
 
     public string Location => this["LOCATION"];
 
@@ -35,22 +32,22 @@ public class SsdpReply : Dictionary<string, string>
     {
         int i;
 
-        if((i = IndexOfEOL(span)) < 0)
+        if ((i = IndexOfEOL(span)) < 0)
         {
             throw new InvalidDataException("Not a SSDP success response");
         }
 
         var reply = new SsdpReply(ASCII.GetString(span[..i++]));
 
-        for(var r = span[++i..]; (i = IndexOfEOL(r)) >= 0; r = r[++i..])
+        for (var r = span[++i..]; (i = IndexOfEOL(r)) >= 0; r = r[++i..])
         {
             var line = r[..i++];
             var index = line.IndexOf(Colon);
 
-            if(index <= 0) continue;
+            if (index <= 0) continue;
 
             var key = ASCII.GetString(line[..index]);
-            if(++index < line.Length && line[index] == Space) index++;
+            if (++index < line.Length && line[index] == Space) index++;
             var value = ASCII.GetString(line[index..]);
             reply.Add(key, value);
         }

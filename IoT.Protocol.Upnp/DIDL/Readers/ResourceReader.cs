@@ -15,7 +15,7 @@ public class ResourceReader : ReaderBase<Resource>
 
     protected override bool TryReadChildNode([NotNull] XmlReader reader, [NotNull] Resource element)
     {
-        if(reader.NodeType is not CDATA and not Text) return false;
+        if (reader.NodeType is not CDATA and not Text) return false;
         element.Url = reader.ReadContentAsString();
         return true;
     }
@@ -24,13 +24,13 @@ public class ResourceReader : ReaderBase<Resource>
     {
         var resource = new Resource();
 
-        if(reader.AttributeCount > 0)
+        if (reader.AttributeCount > 0)
         {
-            for(var i = 0; i < reader.AttributeCount; i++)
+            for (var i = 0; i < reader.AttributeCount; i++)
             {
                 reader.MoveToAttribute(i);
 
-                switch(reader.Name)
+                switch (reader.Name)
                 {
                     case "protocolInfo":
                         resource.Protocol = reader.Value;
@@ -39,7 +39,7 @@ public class ResourceReader : ReaderBase<Resource>
                         resource.Size = reader.ReadContentAsLong();
                         break;
                     case "duration":
-                        if(TimeSpan.TryParse(reader.ReadContentAsString(), CultureInfo.InvariantCulture, out var value))
+                        if (TimeSpan.TryParse(reader.ReadContentAsString(), CultureInfo.InvariantCulture, out var value))
                         {
                             resource.Duration = value;
                         }

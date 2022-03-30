@@ -7,10 +7,7 @@ public class ContainerItemReader : ItemReader<Container>
 {
     public ContainerItemReader(bool parseResourceProps, bool parseVendorProps) : base(parseResourceProps, parseVendorProps) { }
 
-    protected override Container CreateElement(string id, string parentId, bool restricted)
-    {
-        return new(id, parentId, restricted);
-    }
+    protected override Container CreateElement(string id, string parentId, bool restricted) => new(id, parentId, restricted);
 
     protected override Container CreateElement([NotNull] XmlReader reader)
     {

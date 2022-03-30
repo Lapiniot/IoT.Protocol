@@ -53,7 +53,7 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
                 buffer[emitted++] = SequenceExtensions.LF;
 
                 var vt = socket.SendAsync(buffer.AsMemory(0, emitted), SocketFlags.None, cancellationToken);
-                if(!vt.IsCompletedSuccessfully)
+                if (!vt.IsCompletedSuccessfully)
                 {
                     await vt.ConfigureAwait(false);
                 }
@@ -65,7 +65,7 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
 
             return await completionSource.Task.WaitAsync(CommandTimeout, cancellationToken).ConfigureAwait(false);
         }
-        catch(OperationCanceledException)
+        catch (OperationCanceledException)
         {
             completionSource.TrySetCanceled(cancellationToken);
             throw;
@@ -80,23 +80,18 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
 
     #region Implementation of IObservable<JsonElement>
 
-    public IDisposable Subscribe(IObserver<JsonElement> observer)
-    {
-        return observers.Subscribe(observer);
-    }
+    public IDisposable Subscribe(IObserver<JsonElement> observer) => observers.Subscribe(observer);
 
     #endregion
 
     #region Overrides of PipeProducerConsumer
 
-    protected override ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken)
-    {
-        return socket.ReceiveAsync(buffer, SocketFlags.None, cancellationToken);
-    }
+    protected override ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken) =>
+        socket.ReceiveAsync(buffer, SocketFlags.None, cancellationToken);
 
     protected override void Consume(in ReadOnlySequence<byte> sequence, out long consumed)
     {
-        if(!sequence.TryReadLine(out var line))
+        if (!sequence.TryReadLine(out var line))
         {
             consumed = 0;
             return;
@@ -104,20 +99,20 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
 
         consumed = line.Length + 2;
         var reader = new Utf8JsonReader(line.Span);
-        while(reader.Read())
+        while (reader.Read())
         {
-            if(reader is { TokenType: PropertyName, CurrentDepth: 1 })
+            if (reader is { TokenType: PropertyName, CurrentDepth: 1 })
             {
-                if(reader.ValueSpan.SequenceEqual(IdPropName) && reader.Read() && reader.TryGetInt32(out var id))
+                if (reader.ValueSpan.SequenceEqual(IdPropName) && reader.Read() && reader.TryGetInt32(out var id))
                 {
-                    if(completions.TryRemove(id, out var completion)
+                    if (completions.TryRemove(id, out var completion)
                         && JsonReader.TryReadResult(ref reader, out var result, out var errorCode, out var errorMessage))
                     {
-                        if(result.ValueKind is JsonValueKind.Array or JsonValueKind.Object)
+                        if (result.ValueKind is JsonValueKind.Array or JsonValueKind.Object)
                         {
                             completion.TrySetResult(result);
                         }
-                        else if(errorMessage is not null)
+                        else if (errorMessage is not null)
                         {
                             completion.TrySetException(new YeelightException(errorCode, errorMessage));
                         }
@@ -129,26 +124,27 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
 
                     return;
                 }
-                else if(reader.ValueSpan.SequenceEqual(MethodPropName)
+                else if (reader.ValueSpan.SequenceEqual(MethodPropName)
                     && reader.Read() && reader.TokenType is JsonTokenType.String
                     && reader.ValueSpan.SequenceEqual(PropsName))
                 {
-                    while(reader.CurrentDepth >= 1 && reader.Read())
+                    while (reader.CurrentDepth >= 1 && reader.Read())
                     {
-                        if(reader is not { TokenType: PropertyName, CurrentDepth: 1 })
+                        if (reader is not { TokenType: PropertyName, CurrentDepth: 1 })
                         {
                             continue;
                         }
 
-                        if(reader.ValueSpan.SequenceEqual(ParamsPropName))
+                        if (reader.ValueSpan.SequenceEqual(ParamsPropName))
                         {
-                            if(reader.Read())
+                            if (reader.Read())
                             {
                                 observers.Notify(JsonElement.ParseValue(ref reader));
                                 return;
                             }
                         }
                     }
+
                     return;
                 }
             }
@@ -175,10 +171,10 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
 
     public override async ValueTask DisposeAsync()
     {
-        using(socket)
-        using(observers)
+        using (socket)
+        using (observers)
         {
-            if(socket.Connected)
+            if (socket.Connected)
             {
                 socket.Shutdown(SocketShutdown.Both);
             }
@@ -193,15 +189,9 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
 
     public bool IsConnected => IsRunning;
 
-    public Task ConnectAsync(CancellationToken cancellationToken = default)
-    {
-        return StartActivityAsync(cancellationToken);
-    }
+    public Task ConnectAsync(CancellationToken cancellationToken = default) => StartActivityAsync(cancellationToken);
 
-    public Task DisconnectAsync()
-    {
-        return StopActivityAsync();
-    }
+    public Task DisconnectAsync() => StopActivityAsync();
 
     #endregion
 }

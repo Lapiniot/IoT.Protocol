@@ -10,7 +10,7 @@ public class SoapActionInvoker
         Target = endpoint;
         Schema = schema;
 
-        if(controlUri?.IsAbsoluteUri == true) throw new ArgumentException("Must be valid uri relative to the base endpoint uri", nameof(controlUri));
+        if (controlUri?.IsAbsoluteUri == true) throw new ArgumentException("Must be valid uri relative to the base endpoint uri", nameof(controlUri));
 
         ControlUri = controlUri;
     }
@@ -24,8 +24,6 @@ public class SoapActionInvoker
     public string Schema { get; }
 
     public async Task<IReadOnlyDictionary<string, string>> InvokeAsync(string action,
-        IReadOnlyDictionary<string, string> args, CancellationToken cancellationToken = default)
-    {
-        return (await Target.InvokeAsync(ControlUri, new SoapEnvelope(action, Schema, args), cancellationToken).ConfigureAwait(false)).Arguments;
-    }
+        IReadOnlyDictionary<string, string> args, CancellationToken cancellationToken = default) =>
+        (await Target.InvokeAsync(ControlUri, new SoapEnvelope(action, Schema, args), cancellationToken).ConfigureAwait(false)).Arguments;
 }

@@ -15,23 +15,23 @@ public static class DeviceDescriptionReader
 
         using var reader = XmlReader.Create(input, new() { Async = true, IgnoreComments = true, IgnoreWhitespace = true, IgnoreProcessingInstructions = true });
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth == 0)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth == 0)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element || reader.LocalName != "root" || reader.NamespaceURI != NS) continue;
+            if (reader.NodeType != Element || reader.LocalName != "root" || reader.NamespaceURI != NS) continue;
 
-            while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth == 1)
+            while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth == 1)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if(reader.NodeType != Element) continue;
+                if (reader.NodeType != Element) continue;
 
-                while(reader.Depth == 1)
+                while (reader.Depth == 1)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    switch(reader.LocalName)
+                    switch (reader.LocalName)
                     {
                         case "specVersion":
                             version = await ReadVersionNodeAsync(reader, cancellationToken).ConfigureAwait(false);
@@ -47,7 +47,7 @@ public static class DeviceDescriptionReader
             }
         }
 
-        if(description is null)
+        if (description is null)
         {
             throw new InvalidDataException("Mandatory <device> node cannot be read");
         }
@@ -59,21 +59,21 @@ public static class DeviceDescriptionReader
 
     private static async Task<Version> ReadVersionNodeAsync(XmlReader reader, CancellationToken cancellationToken)
     {
-        int major = 0;
-        int minor = 0;
+        var major = 0;
+        var minor = 0;
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "major":
                         major = reader.ReadElementContentAsInt();
@@ -101,17 +101,17 @@ public static class DeviceDescriptionReader
 
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "deviceType":
                         deviceType = await reader.ReadElementContentAsStringAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -169,17 +169,17 @@ public static class DeviceDescriptionReader
 
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "service":
                         list.Add(await ReadServiceNodeAsync(reader, cancellationToken).ConfigureAwait(false));
@@ -201,17 +201,17 @@ public static class DeviceDescriptionReader
 
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "serviceType":
                         serviceType = await reader.ReadElementContentAsStringAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -244,17 +244,17 @@ public static class DeviceDescriptionReader
 
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "icon":
                         list.Add(await ReadIconNodeAsync(reader, cancellationToken).ConfigureAwait(false));
@@ -277,17 +277,17 @@ public static class DeviceDescriptionReader
 
         var depth = reader.Depth + 1;
 
-        while(await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
+        while (await reader.ReadAsync().WaitAsync(cancellationToken).ConfigureAwait(false) && reader.Depth >= depth)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(reader.NodeType != Element) continue;
+            if (reader.NodeType != Element) continue;
 
-            while(reader.Depth == depth)
+            while (reader.Depth == depth)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "mimetype":
                         mimeType = await reader.ReadElementContentAsStringAsync().WaitAsync(cancellationToken).ConfigureAwait(false);

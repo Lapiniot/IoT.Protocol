@@ -10,19 +10,16 @@ public class MediaItemReader : ItemReader<MediaItem>
 
     #region Overrides of ItemReader<MediaItem>
 
-    protected override MediaItem CreateElement(string id, string parentId, bool restricted)
-    {
-        return new(id, parentId, restricted);
-    }
+    protected override MediaItem CreateElement(string id, string parentId, bool restricted) => new(id, parentId, restricted);
 
     protected override bool TryReadChildNode([NotNull] XmlReader reader, [NotNull] MediaItem element)
     {
-        if(reader.NodeType != Element) return base.TryReadChildNode(reader, element);
+        if (reader.NodeType != Element) return base.TryReadChildNode(reader, element);
 
-        switch(reader.NamespaceURI)
+        switch (reader.NamespaceURI)
         {
             case DC:
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "creator":
                         element.Creator = reader.ReadElementContentAsString();
@@ -40,7 +37,7 @@ public class MediaItemReader : ItemReader<MediaItem>
 
                 break;
             case UPNP:
-                switch(reader.LocalName)
+                switch (reader.LocalName)
                 {
                     case "artist":
                         (element.Artists ??= new List<string>()).Add(reader.ReadElementContentAsString());

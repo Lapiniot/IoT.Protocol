@@ -39,10 +39,7 @@ public record StateVariable(string Name, string DataTypeName, string DefaultValu
         {"uuid", typeof(string)}
     };
 
-    public Type GetRuntimeType()
-    {
-        return Map.TryGetValue(Name, out var type) ? type : typeof(object);
-    }
+    public Type GetRuntimeType() => Map.TryGetValue(Name, out var type) ? type : typeof(object);
 }
 
 public record ArgumentValueRange(string Minimum, string Maximum, string Step);
