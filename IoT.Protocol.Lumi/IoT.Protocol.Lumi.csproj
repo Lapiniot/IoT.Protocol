@@ -3,7 +3,7 @@
     <Import Project="../common.props" />
 
     <ItemGroup>
-        <PackageReference Include="System.Text.Json" Version="6.0.2" />
+        <PackageReference Include="System.Text.Json" Version="6.0.3" />
     </ItemGroup>
 
     <ItemGroup>

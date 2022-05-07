@@ -5,7 +5,8 @@
         ".vs": true,
         "*.DotSettings": true,
         "**/bin": true,
-        "**/obj": true
+        "**/obj": true,
+        "*.sln": true
     },
     "omnisharp.enableRoslynAnalyzers": true
 }
