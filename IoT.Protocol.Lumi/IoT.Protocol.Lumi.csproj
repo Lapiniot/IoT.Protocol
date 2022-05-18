@@ -1,13 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="../common.props" />
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="6.0.4" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="System.Text.Json" Version="6.0.4" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="../IoT.Protocol/IoT.Protocol.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../IoT.Protocol/IoT.Protocol.csproj" />
+  </ItemGroup>
 
 </Project>
