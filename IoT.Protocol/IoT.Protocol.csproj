@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="../System.Common/System.Common.Net/System.Common.Net.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="../System.Common/System.Common.Net/System.Common.Net.csproj" />
+    </ItemGroup>
 
 </Project>

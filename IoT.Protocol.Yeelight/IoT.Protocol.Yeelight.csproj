@@ -4,13 +4,13 @@
     <ProjectReference Include="..\IoT.Protocol.Upnp\IoT.Protocol.Upnp.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="System.Memory" />
-    <Using Include="System.Buffers" />
-    <Using Include="System.IO.Pipelines" />
-    <Using Include="System.Text.Json" />
-    <Using Include="System.Net" />
-    <Using Include="System.Net.Sockets" />
-  </ItemGroup>
+    <ItemGroup>
+        <Using Include="System.Memory" />
+        <Using Include="System.Buffers" />
+        <Using Include="System.IO.Pipelines" />
+        <Using Include="System.Text.Json" />
+        <Using Include="System.Net" />
+        <Using Include="System.Net.Sockets" />
+    </ItemGroup>
 
 </Project>

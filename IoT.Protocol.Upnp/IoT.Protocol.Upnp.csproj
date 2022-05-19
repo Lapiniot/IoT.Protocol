@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="../IoT.Protocol.Soap/IoT.Protocol.Soap.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="../IoT.Protocol.Soap/IoT.Protocol.Soap.csproj" />
+    </ItemGroup>
 
 </Project>

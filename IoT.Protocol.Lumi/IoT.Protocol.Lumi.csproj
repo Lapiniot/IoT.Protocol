@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="7.0.0-preview.4.22229.4" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="../IoT.Protocol/IoT.Protocol.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="../IoT.Protocol/IoT.Protocol.csproj" />
+    </ItemGroup>
 
 </Project>
