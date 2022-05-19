@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Xml;
 using static System.Xml.XmlNodeType;
@@ -9,7 +9,7 @@ public class ResourceReader : ReaderBase<Resource>
 {
     private static ResourceReader instance;
 
-    public static ResourceReader Instance => instance ??= new ResourceReader();
+    public static ResourceReader Instance => instance ??= new();
 
     #region Overrides of ReaderBase<Resource>
 
@@ -46,7 +46,7 @@ public class ResourceReader : ReaderBase<Resource>
 
                         break;
                     case "bitrate":
-                        resource.Bitrate = reader.ReadContentAsInt();
+                        resource.BitRate = reader.ReadContentAsInt();
                         break;
                     case "sampleFrequency":
                         resource.SampleFrequency = reader.ReadContentAsInt();
@@ -70,7 +70,7 @@ public class ResourceReader : ReaderBase<Resource>
                         resource.Protection = reader.ReadContentAsString();
                         break;
                     default:
-                        resource.Attributes ??= new Dictionary<string, string>();
+                        resource.Attributes ??= new();
                         resource.Attributes[reader.Name] = reader.Value;
                         break;
                 }

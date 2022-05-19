@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Xml;
 using static System.String;
 using static System.Xml.XmlNodeType;
@@ -32,7 +32,7 @@ public record SoapEnvelope
 
     public async Task WriteAsync(Stream stream, Encoding encoding)
     {
-        using var writer = XmlWriter.Create(stream, new XmlWriterSettings
+        await using var writer = XmlWriter.Create(stream, new()
         {
             Encoding = encoding ?? Encoding.UTF8,
             CloseOutput = false,
@@ -45,7 +45,7 @@ public record SoapEnvelope
 
     public async Task WriteAsync(TextWriter textWriter)
     {
-        using var writer = XmlWriter.Create(textWriter, new XmlWriterSettings
+        await using var writer = XmlWriter.Create(textWriter, new()
         {
             CloseOutput = false,
             OmitXmlDeclaration = true,
@@ -85,7 +85,7 @@ public record SoapEnvelope
 
     public void Write(Stream stream, Encoding encoding)
     {
-        using var writer = XmlWriter.Create(stream, new XmlWriterSettings
+        using var writer = XmlWriter.Create(stream, new()
         {
             Encoding = encoding ?? Encoding.UTF8,
             CloseOutput = false,
@@ -98,7 +98,7 @@ public record SoapEnvelope
 
     public void Write(TextWriter textWriter)
     {
-        using var writer = XmlWriter.Create(textWriter, new XmlWriterSettings
+        using var writer = XmlWriter.Create(textWriter, new()
         {
             CloseOutput = false,
             OmitXmlDeclaration = true,
@@ -145,7 +145,7 @@ public record SoapEnvelope
         var depth = reader.Depth;
         var args = new Dictionary<string, string>();
 
-        if (reader.IsEmptyElement) return new SoapEnvelope(name, schema, args);
+        if (reader.IsEmptyElement) return new(name, schema, args);
 
         _ = reader.Read();
 
@@ -155,13 +155,11 @@ public record SoapEnvelope
             {
                 var key = reader.LocalName;
 
-                if (reader.Read())
+                if (!reader.Read()) continue;
+                var nt = reader.MoveToContent();
+                if (nt is Text or CDATA)
                 {
-                    var nt = reader.MoveToContent();
-                    if (nt is Text or CDATA)
-                    {
-                        args[key] = reader.ReadContentAsString();
-                    }
+                    args[key] = reader.ReadContentAsString();
                 }
             }
             else
@@ -170,6 +168,6 @@ public record SoapEnvelope
             }
         }
 
-        return new SoapEnvelope(name, schema, args);
+        return new(name, schema, args);
     }
 }

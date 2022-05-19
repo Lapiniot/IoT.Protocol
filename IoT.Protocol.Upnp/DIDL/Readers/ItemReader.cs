@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 using static System.Xml.XmlNodeType;
 
@@ -73,7 +73,7 @@ public abstract class ItemReader<TElementType> : ReaderBase<TElementType> where 
                 {
                     if (parseVendorProps)
                     {
-                        (element.Vendor ??= new Dictionary<string, string>())[reader.Name] = reader.ReadElementContentAsString();
+                        (element.Vendor ??= new())[reader.Name] = reader.ReadElementContentAsString();
                     }
                     else
                     {

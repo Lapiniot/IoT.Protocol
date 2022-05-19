@@ -1,4 +1,4 @@
-﻿namespace IoT.Protocol.Upnp.DIDL;
+namespace IoT.Protocol.Upnp.DIDL;
 
 public class Resource
 {
@@ -6,7 +6,7 @@ public class Resource
     public string Url { get; set; }
     public long? Size { get; set; }
     public TimeSpan? Duration { get; set; }
-    public int? Bitrate { get; internal set; }
+    public int? BitRate { get; internal set; }
     public int? SampleFrequency { get; internal set; }
     public int? BitsPerSample { get; internal set; }
     public int? NrAudioChannels { get; internal set; }

@@ -1,4 +1,4 @@
-﻿namespace IoT.Protocol.Soap;
+namespace IoT.Protocol.Soap;
 
 public class SoapActionInvoker
 {
@@ -25,5 +25,5 @@ public class SoapActionInvoker
 
     public async Task<IReadOnlyDictionary<string, string>> InvokeAsync(string action,
         IReadOnlyDictionary<string, string> args, CancellationToken cancellationToken = default) =>
-        (await Target.InvokeAsync(ControlUri, new SoapEnvelope(action, Schema, args), cancellationToken).ConfigureAwait(false)).Arguments;
+        (await Target.InvokeAsync(ControlUri, new(action, Schema, args), cancellationToken).ConfigureAwait(false)).Arguments;
 }

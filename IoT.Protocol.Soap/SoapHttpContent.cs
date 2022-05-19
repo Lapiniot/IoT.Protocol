@@ -9,14 +9,14 @@ internal sealed class SoapHttpContent : HttpContent
     private readonly Encoding encoding;
     private readonly MemoryStream memoryStream;
 
-    public SoapHttpContent(SoapEnvelope soapEnvelope, bool useChankedEncoding, Encoding encoding = null)
+    public SoapHttpContent(SoapEnvelope soapEnvelope, bool useChunkedEncoding, Encoding encoding = null)
     {
         this.soapEnvelope = soapEnvelope;
         this.encoding = encoding ?? new UTF8Encoding(false);
 
-        if (!useChankedEncoding)
+        if (!useChunkedEncoding)
         {
-            memoryStream = new MemoryStream();
+            memoryStream = new();
             soapEnvelope.Write(memoryStream, this.encoding);
         }
 
@@ -28,16 +28,11 @@ internal sealed class SoapHttpContent : HttpContent
 
     protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
     {
-        if (memoryStream is not null)
-        {
-            _ = memoryStream.Seek(0, SeekOrigin.Begin);
-            var vt = stream.WriteAsync(memoryStream.GetBuffer());
-            return vt.IsCompletedSuccessfully ? Task.CompletedTask : vt.AsTask();
-        }
-        else
-        {
-            return soapEnvelope.WriteAsync(stream, encoding);
-        }
+        if (memoryStream is null) return soapEnvelope.WriteAsync(stream, encoding);
+        _ = memoryStream.Seek(0, SeekOrigin.Begin);
+        var vt = stream.WriteAsync(memoryStream.GetBuffer());
+        return vt.IsCompletedSuccessfully ? Task.CompletedTask : vt.AsTask();
+
     }
 
     protected override bool TryComputeLength(out long length)
@@ -47,11 +42,9 @@ internal sealed class SoapHttpContent : HttpContent
             length = memoryStream.Length;
             return true;
         }
-        else
-        {
-            length = -1;
-            return false;
-        }
+
+        length = -1;
+        return false;
     }
 
     protected override void Dispose(bool disposing)

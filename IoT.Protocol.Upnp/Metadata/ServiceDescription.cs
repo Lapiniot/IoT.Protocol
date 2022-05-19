@@ -1,6 +1,6 @@
-﻿namespace IoT.Protocol.Upnp.Metadata;
+namespace IoT.Protocol.Upnp.Metadata;
 
-public record ServiceDescription(IEnumerable<ServiceAction> Actions, IReadOnlyDictionary<string, StateVariable> StateTable);
+public record ServiceDescription(IEnumerable<ServiceAction> Actions, IReadOnlyDictionary<string, StateVariable> StateTable, Version Version);
 
 public record ServiceAction(string Name, IEnumerable<Argument> Arguments);
 

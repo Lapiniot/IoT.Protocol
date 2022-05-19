@@ -12,7 +12,7 @@ public sealed class SoapHttpClient : ISoapHttpClient
         ArgumentNullException.ThrowIfNull(httpClient);
 
         client = httpClient;
-        client.DefaultRequestVersion = new Version(1, 1);
+        client.DefaultRequestVersion = new(1, 1);
         client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip,deflate");
     }
 

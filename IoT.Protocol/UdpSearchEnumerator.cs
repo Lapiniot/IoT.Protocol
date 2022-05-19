@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
@@ -8,23 +8,23 @@ namespace IoT.Protocol;
 
 /// <summary>
 /// Base abstract class for IoT devices enumerator which uses network discovery via UDP and performs 
-/// active search by periodic emition of discovery datagrams 
+/// active search by periodic emission of discovery datagrams 
 /// </summary>
 /// <typeparam name="TThing">Type of the 'thing' discoverable by concrete implementations</typeparam>
 public abstract class UdpSearchEnumerator<TThing> : UdpEnumerator<TThing>
 {
-    private readonly IPEndPoint groupEP;
+    private readonly IPEndPoint groupEndPoint;
     private readonly IRepeatPolicy repeatPolicy;
 
-    protected UdpSearchEnumerator(IPEndPoint groupEP, IRepeatPolicy repeatPolicy) :
-        base((groupEP ?? throw new ArgumentNullException(nameof(groupEP))).AddressFamily)
+    protected UdpSearchEnumerator(IPEndPoint groupEndPoint, IRepeatPolicy repeatPolicy) :
+        base((groupEndPoint ?? throw new ArgumentNullException(nameof(groupEndPoint))).AddressFamily)
     {
         ArgumentNullException.ThrowIfNull(repeatPolicy);
-        this.groupEP = groupEP;
+        this.groupEndPoint = groupEndPoint;
         this.repeatPolicy = repeatPolicy;
     }
 
-    protected IPEndPoint GroupEP => groupEP;
+    protected IPEndPoint GroupEndPoint => groupEndPoint;
 
     protected sealed override Task StartAuxiliaryWorkerAsync([NotNull] Socket socket, CancellationToken stoppingToken)
     {
@@ -35,7 +35,7 @@ public abstract class UdpSearchEnumerator<TThing> : UdpEnumerator<TThing>
         return repeatPolicy.RepeatAsync(SendDiscoveryDatagramAsync, stoppingToken);
 
         async Task SendDiscoveryDatagramAsync(CancellationToken token) =>
-            await socket.SendToAsync(message, SocketFlags.None, groupEP, token).ConfigureAwait(false);
+            await socket.SendToAsync(message, SocketFlags.None, groupEndPoint, token).ConfigureAwait(false);
     }
 
     /// <summary>

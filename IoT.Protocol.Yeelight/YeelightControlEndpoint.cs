@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using IoT.Protocol.Interfaces;
 using static System.Text.Json.JsonTokenType;
 using static System.Threading.Tasks.TaskCreationOptions;
@@ -15,15 +15,15 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
 
     private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> completions = new();
     private readonly ObserversContainer<JsonElement> observers;
-    private long counter;
     private readonly Socket socket;
+    private long counter;
 
     public YeelightControlEndpoint(uint deviceId, IPEndPoint endpoint)
     {
         Endpoint = endpoint;
         DeviceId = deviceId;
-        observers = new ObserversContainer<JsonElement>();
-        socket = new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+        observers = new();
+        socket = new(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
     }
 
     public uint DeviceId { get; }
@@ -101,53 +101,53 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
         var reader = new Utf8JsonReader(line.Span);
         while (reader.Read())
         {
-            if (reader is { TokenType: PropertyName, CurrentDepth: 1 })
+            if (reader is not { TokenType: PropertyName, CurrentDepth: 1 }) continue;
+            if (reader.ValueSpan.SequenceEqual(IdPropName) && reader.Read() && reader.TryGetInt32(out var id))
             {
-                if (reader.ValueSpan.SequenceEqual(IdPropName) && reader.Read() && reader.TryGetInt32(out var id))
+                if (!completions.TryRemove(id, out var completion) ||
+                    !JsonReader.TryReadResult(ref reader, out var result, out var errorCode, out var errorMessage))
                 {
-                    if (completions.TryRemove(id, out var completion)
-                        && JsonReader.TryReadResult(ref reader, out var result, out var errorCode, out var errorMessage))
-                    {
-                        if (result.ValueKind is JsonValueKind.Array or JsonValueKind.Object)
-                        {
-                            completion.TrySetResult(result);
-                        }
-                        else if (errorMessage is not null)
-                        {
-                            completion.TrySetException(new YeelightException(errorCode, errorMessage));
-                        }
-                        else
-                        {
-                            completion.TrySetException(new YeelightException("Invalid operation result response"));
-                        }
-                    }
-
                     return;
                 }
-                else if (reader.ValueSpan.SequenceEqual(MethodPropName)
-                    && reader.Read() && reader.TokenType is JsonTokenType.String
-                    && reader.ValueSpan.SequenceEqual(PropsName))
+
+                if (result.ValueKind is JsonValueKind.Array or JsonValueKind.Object)
                 {
-                    while (reader.CurrentDepth >= 1 && reader.Read())
-                    {
-                        if (reader is not { TokenType: PropertyName, CurrentDepth: 1 })
-                        {
-                            continue;
-                        }
-
-                        if (reader.ValueSpan.SequenceEqual(ParamsPropName))
-                        {
-                            if (reader.Read())
-                            {
-                                observers.Notify(JsonElement.ParseValue(ref reader));
-                                return;
-                            }
-                        }
-                    }
-
-                    return;
+                    completion.TrySetResult(result);
                 }
+                else if (errorMessage is not null)
+                {
+                    completion.TrySetException(new YeelightException(errorCode, errorMessage));
+                }
+                else
+                {
+                    completion.TrySetException(new YeelightException("Invalid operation result response"));
+                }
+
+                return;
             }
+
+            if (!reader.ValueSpan.SequenceEqual(MethodPropName) ||
+                !reader.Read() || reader.TokenType is not JsonTokenType.String ||
+                !reader.ValueSpan.SequenceEqual(PropsName))
+            {
+                continue;
+            }
+
+            while (reader.CurrentDepth >= 1 && reader.Read())
+            {
+                if (reader is not { TokenType: PropertyName, CurrentDepth: 1 })
+                {
+                    continue;
+                }
+
+                if (!reader.ValueSpan.SequenceEqual(ParamsPropName)) continue;
+                if (!reader.Read()) continue;
+
+                observers.Notify(JsonElement.ParseValue(ref reader));
+                return;
+            }
+
+            return;
         }
     }
 

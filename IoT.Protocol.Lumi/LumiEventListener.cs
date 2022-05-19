@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -16,7 +16,7 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
     public LumiEventListener(IPEndPoint groupEndpoint)
     {
         endpoint = groupEndpoint;
-        observers = new ObserversContainer<JsonElement>();
+        observers = new();
     }
 
     #region Implementation of IObservable<out JsonElement>
@@ -77,7 +77,7 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
 
         socket.JoinMulticastGroup(endpoint);
 
-        tokenSource = new CancellationTokenSource();
+        tokenSource = new();
 
         var token = tokenSource.Token;
 

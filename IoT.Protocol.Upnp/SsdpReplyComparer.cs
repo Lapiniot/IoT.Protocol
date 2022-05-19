@@ -1,4 +1,4 @@
-﻿using static System.StringComparison;
+using static System.StringComparison;
 
 namespace IoT.Protocol.Upnp;
 
@@ -14,20 +14,13 @@ public class SsdpReplyComparer : IEqualityComparer<SsdpReply>
 
     #region Implementation of IEqualityComparer<in SsdpReply>
 
-    public bool Equals(SsdpReply x, SsdpReply y)
-    {
-        return ReferenceEquals(x, y) || x != null && y != null &&
-            x.TryGetValue(key, out var v1) &&
-            y.TryGetValue(key, out var v2) &&
-            string.Equals(v1, v2, OrdinalIgnoreCase);
-    }
+    public bool Equals(SsdpReply x, SsdpReply y) =>
+        ReferenceEquals(x, y) || x != null && y != null &&
+        x.TryGetValue(key, out var v1) &&
+        y.TryGetValue(key, out var v2) &&
+        string.Equals(v1, v2, OrdinalIgnoreCase);
 
-    public int GetHashCode(SsdpReply obj)
-    {
-        return obj is not null && obj.TryGetValue(key, out var value) && !string.IsNullOrEmpty(value)
-            ? value.GetHashCode(InvariantCulture)
-            : 0;
-    }
+    public int GetHashCode(SsdpReply obj) => obj.TryGetValue(key, out var value) && !string.IsNullOrEmpty(value) ? value.GetHashCode(InvariantCulture) : 0;
 
     #endregion
 }

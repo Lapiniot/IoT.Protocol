@@ -28,7 +28,7 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     {
         using var socket = new Socket(addressFamily, SocketType.Dgram, ProtocolType.Udp);
 
-        ConfigureSocket(socket, out var receiveEP);
+        ConfigureSocket(socket, out var receiveEndPoint);
 
         var auxWorker = StartAuxiliaryWorkerAsync(socket, cancellationToken);
 
@@ -41,7 +41,7 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 
             try
             {
-                var rvt = socket.ReceiveFromAsync(buffer, SocketFlags.None, receiveEP, cancellationToken);
+                var rvt = socket.ReceiveFromAsync(buffer, SocketFlags.None, receiveEndPoint, cancellationToken);
                 var result = rvt.IsCompletedSuccessfully ? rvt.Result : await rvt.ConfigureAwait(false);
                 var cvt = ParseDatagramAsync(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, cancellationToken);
                 instance = cvt.IsCompletedSuccessfully ? cvt.Result : await cvt.ConfigureAwait(false);
@@ -53,7 +53,7 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
             }
             catch (OperationCanceledException)
             {
-                // ignored by design: this can be cancellation comming 
+                // ignored by design: this can be cancellation coming 
                 // from CreateInstanceAsync internals (some timeout e.g.)
                 continue;
             }
@@ -86,7 +86,7 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     /// <returns><see cref="Task" /> which represents current asynchronous worker task</returns>
     /// <remarks>
     /// Implementors may provide any custom logic performed on socket instance. 
-    /// This can be periodic discovery datagram emition e.g., in case discovery protocol supposes active searching. 
+    /// This can be periodic discovery datagram emission e.g., in case discovery protocol supposes active searching. 
     /// </remarks>
     protected virtual Task StartAuxiliaryWorkerAsync(Socket socket, CancellationToken stoppingToken) => Task.CompletedTask;
 
@@ -94,18 +94,18 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     /// Configures UDP dgram socket instance
     /// </summary>
     /// <param name="socket">Datagram receiver socket instance to be configured</param>
-    /// <param name="receiveEP">Remote network endpoint to receive datagrams from</param>
-    protected abstract void ConfigureSocket(Socket socket, out IPEndPoint receiveEP);
+    /// <param name="receiveEndPoint">Remote network endpoint to receive datagrams from</param>
+    protected abstract void ConfigureSocket(Socket socket, out IPEndPoint receiveEndPoint);
 
     /// <summary>
     /// Factory method to create IoT device instance by parsing discovery response datagram bytes
     /// </summary>
     /// <param name="buffer">Buffer containing message</param>
-    /// <param name="remoteEP">Responder endpoint information</param>
+    /// <param name="remoteEndPoint">Responder endpoint information</param>
     /// <param name="cancellationToken"></param>
     /// <returns>
     /// Instance of type
     /// <typeparam name="TThing" />
     /// </returns>
-    protected abstract ValueTask<TThing> ParseDatagramAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEP, CancellationToken cancellationToken);
+    protected abstract ValueTask<TThing> ParseDatagramAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEndPoint, CancellationToken cancellationToken);
 }

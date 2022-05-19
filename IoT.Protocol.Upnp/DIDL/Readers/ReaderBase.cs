@@ -1,4 +1,4 @@
-﻿using System.Xml;
+using System.Xml;
 using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Upnp.DIDL.Readers;
@@ -22,7 +22,7 @@ public abstract class ReaderBase<TElementType> where TElementType : class
 
         while (!(reader.NodeType == EndElement && reader.Name == nodeName) && reader.Depth > depth)
         {
-            if ((reader.NodeType == Element || reader.NodeType == Text || reader.NodeType == CDATA) &&
+            if (reader.NodeType is Element or Text or CDATA &&
                TryReadChildNode(reader, element))
             {
                 continue;

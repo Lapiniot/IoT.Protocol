@@ -1,5 +1,4 @@
 using System.Xml;
-
 using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Upnp.Metadata;
@@ -10,7 +9,7 @@ public static class ServiceDescriptionReader
 
     public static async Task<ServiceDescription> ReadAsync(Stream stream, CancellationToken cancellationToken)
     {
-        Version version;
+        Version version = default;
         IEnumerable<ServiceAction> actions = null;
         IReadOnlyDictionary<string, StateVariable> stateTable = null;
 
@@ -51,7 +50,7 @@ public static class ServiceDescriptionReader
             }
         }
 
-        return new ServiceDescription(actions, stateTable);
+        return new(actions, stateTable, version);
     }
 
     private static async Task<Version> ReadVersionNodeAsync(XmlReader reader, CancellationToken cancellationToken)
@@ -85,7 +84,7 @@ public static class ServiceDescriptionReader
             }
         }
 
-        return new Version(major, minor);
+        return new(major, minor);
     }
 
     private static async Task<IEnumerable<ServiceAction>> ReadActionListNodeAsync(XmlReader reader, CancellationToken cancellationToken)
@@ -151,7 +150,7 @@ public static class ServiceDescriptionReader
             }
         }
 
-        return new ServiceAction(name, arguments);
+        return new(name, arguments);
     }
 
     private static async Task<IEnumerable<Argument>> ReadArgumentListNodeAsync(XmlReader reader, CancellationToken cancellationToken)
@@ -225,7 +224,7 @@ public static class ServiceDescriptionReader
             }
         }
 
-        return new Argument(name, direction, isRetVal, relatedStateVar);
+        return new(name, direction, isRetVal, relatedStateVar);
     }
 
     private static async Task<IReadOnlyDictionary<string, StateVariable>> ReadServiceStateTableNodeAsync(XmlReader reader, CancellationToken cancellationToken)
@@ -310,7 +309,7 @@ public static class ServiceDescriptionReader
             }
         }
 
-        return new StateVariable(name, dataType, defaultValue, sendEvents, allowedValues, valueRange);
+        return new(name, dataType, defaultValue, sendEvents, allowedValues, valueRange);
     }
 
     private static async Task<IEnumerable<string>> ReadAllowedValueListNodeAsync(XmlReader reader, CancellationToken cancellationToken)
@@ -378,6 +377,6 @@ public static class ServiceDescriptionReader
             }
         }
 
-        return new ArgumentValueRange(minimum, maximum, step);
+        return new(minimum, maximum, step);
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using System.Policies;
 using System.Text.Json;
@@ -13,20 +13,20 @@ public record struct LumiEndpoint(IPEndPoint EndPoint, string Sid);
 
 public class LumiEnumerator : UdpSearchEnumerator<LumiEndpoint>
 {
-    public LumiEnumerator(IRepeatPolicy repeatPolicy) : base(new IPEndPoint(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), repeatPolicy)
+    public LumiEnumerator(IRepeatPolicy repeatPolicy) : base(new(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), repeatPolicy)
     {
     }
 
-    protected override void ConfigureSocket([NotNull] Socket socket, out IPEndPoint receiveEP)
+    protected override void ConfigureSocket([NotNull] Socket socket, out IPEndPoint receiveEndPoint)
     {
         socket.ConfigureMulticast(FindBestMulticastInterface().GetIndex(InterNetwork));
         socket.SendBufferSize = 0x0F;
         socket.ReceiveBufferSize = 0x100;
-        receiveEP = GroupEP;
+        receiveEndPoint = GroupEndPoint;
     }
 
     protected override ValueTask<LumiEndpoint> ParseDatagramAsync(ReadOnlyMemory<byte> buffer,
-        IPEndPoint remoteEP, CancellationToken cancellationToken)
+        IPEndPoint remoteEndPoint, CancellationToken cancellationToken)
     {
         var json = JsonSerializer.Deserialize<JsonElement>(buffer.Span);
 
@@ -34,7 +34,7 @@ public class LumiEnumerator : UdpSearchEnumerator<LumiEndpoint>
         var address = IPAddress.Parse(json.GetProperty("ip").GetString() ?? throw new InvalidDataException("Missing value for property 'ip'"));
         var port = int.Parse(json.GetProperty("port").GetString() ?? throw new InvalidDataException("Missing value for property 'port'"), InvariantCulture);
         var sid = json.GetProperty("sid").GetString();
-        return new ValueTask<LumiEndpoint>(new LumiEndpoint(new IPEndPoint(address, port), sid));
+        return new(new LumiEndpoint(new(address, port), sid));
     }
 
     protected override void WriteDiscoveryDatagram(Span<byte> span, out int bytesWritten)

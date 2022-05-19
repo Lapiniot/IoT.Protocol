@@ -1,4 +1,4 @@
-﻿using System.Xml;
+using System.Xml;
 using IoT.Protocol.Upnp.DIDL.Readers;
 using static System.Xml.XmlNodeType;
 

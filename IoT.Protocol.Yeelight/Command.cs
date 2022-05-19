@@ -2,11 +2,10 @@
 
 public readonly record struct Command(string Method, object Params, string Sid)
 {
-    public static Dictionary<string, object> EmptyArgs { get; } = new Dictionary<string, object>();
-
     public Command(string method, object @params) : this(method, @params, null) { }
 
     public Command(string method) : this(method, null, null) { }
+    public static Dictionary<string, object> EmptyArgs { get; } = new();
 
     public long WriteTo(byte[] buffer, long id)
     {
@@ -22,19 +21,19 @@ public readonly record struct Command(string Method, object Params, string Sid)
             writer.WriteString("sid", Sid);
         }
 
-        if (Params is null)
+        switch (Params)
         {
-            writer.WriteStartArray("params");
-            writer.WriteEndArray();
-        }
-        else if (Params is Action<Utf8JsonWriter> writeAction)
-        {
-            writer.WritePropertyName("params");
-            writeAction(writer);
-        }
-        else
-        {
-            WriteObject(writer, "params", Params);
+            case null:
+                writer.WriteStartArray("params");
+                writer.WriteEndArray();
+                break;
+            case Action<Utf8JsonWriter> writeAction:
+                writer.WritePropertyName("params");
+                writeAction(writer);
+                break;
+            default:
+                WriteObject(writer, "params", Params);
+                break;
         }
 
         writer.WriteEndObject();

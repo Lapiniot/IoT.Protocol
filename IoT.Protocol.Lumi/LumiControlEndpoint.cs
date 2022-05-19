@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -122,11 +122,11 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
     protected override async Task StartingAsync(CancellationToken cancellationToken)
     {
-        socket = new Socket(endpoint.AddressFamily, Dgram, Udp);
+        socket = new(endpoint.AddressFamily, Dgram, Udp);
 
         await socket.ConnectAsync(endpoint, cancellationToken).ConfigureAwait(false);
 
-        tokenSource = new CancellationTokenSource();
+        tokenSource = new();
 
         var token = tokenSource.Token;
 

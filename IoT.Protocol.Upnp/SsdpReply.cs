@@ -22,7 +22,7 @@ public class SsdpReply : Dictionary<string, string>
 
     public string StartLine { get; }
 
-    public double MaxAge => TryGetValue("CACHE-CONTROL", out var value) && value != null && value.Length > 8 && int.TryParse(value[8..], out var age) ? age : 0;
+    public double MaxAge => TryGetValue("CACHE-CONTROL", out var value) && value is { Length: > 8 } && int.TryParse(value[8..], out var age) ? age : 0;
 
     public string BootId => TryGetValue("BOOTID.UPNP.ORG", out var value) ? value : null;
 

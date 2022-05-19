@@ -14,7 +14,7 @@ public static class DIDLUtils
 
     public static XmlWriter CreateDidlXmlWriter(StringBuilder sb)
     {
-        var writer = XmlWriter.Create(sb, new XmlWriterSettings() { OmitXmlDeclaration = true, WriteEndDocumentOnClose = true });
+        var writer = XmlWriter.Create(sb, new() { OmitXmlDeclaration = true, WriteEndDocumentOnClose = true });
         writer.WriteStartElement("DIDL-Lite", DIDLLiteNamespace);
         writer.WriteAttributeString("dc", XmlnsNamespace, DCNamespace);
         writer.WriteAttributeString("upnp", XmlnsNamespace, UPNPNamespace);
@@ -56,7 +56,8 @@ public static class DIDLUtils
 
         while (!reader.EOF)
         {
-            while ((reader.NamespaceURI != DIDLLiteNamespace || reader.NodeType != XmlNodeType.Element) && reader.Read()) ;
+            while ((reader.NamespaceURI != DIDLLiteNamespace || reader.NodeType != XmlNodeType.Element) && reader.Read())
+            { }
 
             if (reader.EOF) break;
 

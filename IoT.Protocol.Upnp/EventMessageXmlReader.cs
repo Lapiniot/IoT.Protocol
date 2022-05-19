@@ -46,7 +46,7 @@ public static class EventMessageXmlReader
         var vendor = new Dictionary<string, string>();
 
         using var xr = XmlReader.Create(new StringReader(content),
-            new XmlReaderSettings
+            new()
             {
                 CloseInput = true,
                 ConformanceLevel = ConformanceLevel.Fragment,

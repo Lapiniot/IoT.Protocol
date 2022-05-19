@@ -9,5 +9,5 @@ public record DeviceDescription(string Udn, string DeviceType, string FriendlyNa
     string Manufacturer, Uri ManufacturerUrl, string ModelName, string ModelDescription, string ModelNumber, Uri ModelUrl,
     IEnumerable<Icon> Icons, IEnumerable<Service> Services)
 {
-    public Version Version { get; internal set; } = new Version(1, 0);
+    public Version Version { get; internal set; } = new(1, 0);
 }

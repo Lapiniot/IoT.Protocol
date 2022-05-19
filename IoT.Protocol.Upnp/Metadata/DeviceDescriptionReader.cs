@@ -88,7 +88,7 @@ public static class DeviceDescriptionReader
             }
         }
 
-        return new Version(major, minor);
+        return new(major, minor);
     }
 
     private static async Task<DeviceDescription> ReadDeviceNodeAsync(XmlReader reader, CancellationToken cancellationToken)
@@ -159,7 +159,7 @@ public static class DeviceDescriptionReader
             }
         }
 
-        return new DeviceDescription(udn, deviceType, friendlyName, serialNumber, presentationUrl,
+        return new(udn, deviceType, friendlyName, serialNumber, presentationUrl,
             manufacturer, manufacturerUrl, modelName, modelDescription, modelNumber, modelUrl, icons, services);
     }
 
