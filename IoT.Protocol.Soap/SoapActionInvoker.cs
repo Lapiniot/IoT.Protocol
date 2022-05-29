@@ -15,8 +15,6 @@ public class SoapActionInvoker
         ControlUri = controlUri;
     }
 
-    public SoapActionInvoker(SoapControlEndpoint endpoint, string schema) : this(endpoint, null, schema) { }
-
     public Uri ControlUri { get; }
 
     public SoapControlEndpoint Target { get; }
