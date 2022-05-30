@@ -52,11 +52,7 @@ public sealed class YeelightControlEndpoint : PipeProducerConsumer, IObservable<
                 buffer[emitted++] = SequenceExtensions.CR;
                 buffer[emitted++] = SequenceExtensions.LF;
 
-                var vt = socket.SendAsync(buffer.AsMemory(0, emitted), SocketFlags.None, cancellationToken);
-                if (!vt.IsCompletedSuccessfully)
-                {
-                    await vt.ConfigureAwait(false);
-                }
+                await socket.SendAsync(buffer.AsMemory(0, emitted), SocketFlags.None, cancellationToken).ConfigureAwait(false);
             }
             finally
             {

@@ -24,43 +24,6 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
     private TimeSpan CommandTimeout { get; } = TimeSpan.FromSeconds(10);
 
-    #region Implementation of IControlEndpoint<in IDictionary<string,object>, JsonElement>
-
-    public async Task<JsonElement> InvokeAsync(IDictionary<string, object> command, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(command);
-
-        var completionSource = new TaskCompletionSource<JsonElement>(cancellationToken);
-
-        var (id, datagram) = (GetCommandKey((string)command["cmd"], (string)command["sid"]), JsonSerializer.SerializeToUtf8Bytes(command));
-
-        try
-        {
-            _ = completions.TryAdd(id, completionSource);
-
-            var vt = socket.SendAsync(datagram, None, cancellationToken);
-            if (!vt.IsCompletedSuccessfully)
-            {
-                _ = await vt.ConfigureAwait(false);
-            }
-
-            using var timeoutSource = new CancellationTokenSource(CommandTimeout);
-
-            return await completionSource.Task.WaitAsync(timeoutSource.Token).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            _ = completionSource.TrySetCanceled(cancellationToken);
-            throw;
-        }
-        finally
-        {
-            _ = completions.TryRemove(id, out _);
-        }
-    }
-
-    #endregion
-
     private static bool TryParseResponse(Span<byte> span, out string id, out JsonElement response)
     {
         var json = JsonSerializer.Deserialize<JsonElement>(span);
@@ -81,7 +44,8 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
     private static string GetCmdName(string command) => command.EndsWith("_ack", InvariantCulture) ? command[..^4] : command;
 
-    public Task<JsonElement> InvokeAsync(string command, string sid, CancellationToken cancellationToken = default) => InvokeAsync(new Dictionary<string, object> { { "cmd", command }, { "sid", sid } }, cancellationToken);
+    public Task<JsonElement> InvokeAsync(string command, string sid, CancellationToken cancellationToken = default) =>
+        InvokeAsync(new Dictionary<string, object> { { "cmd", command }, { "sid", sid } }, cancellationToken);
 
     private void OnDataAvailable(Span<byte> span)
     {
@@ -89,7 +53,7 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
         if (!completions.TryRemove(id, out var completionSource)) return;
 
-        _ = completionSource.TrySetResult(response);
+        completionSource.TrySetResult(response);
     }
 
     private async Task DispatchAsync(CancellationToken cancellationToken)
@@ -100,9 +64,7 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
         {
             try
             {
-                var vt = socket.ReceiveAsync(buffer, None, cancellationToken);
-
-                var size = vt.IsCompletedSuccessfully ? vt.Result : await vt.ConfigureAwait(false);
+                var size = await socket.ReceiveAsync(buffer, None, cancellationToken).ConfigureAwait(false);
 
                 OnDataAvailable(buffer.AsSpan(0, size));
             }
@@ -117,6 +79,39 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
             }
         }
     }
+
+    #region Implementation of IControlEndpoint<in IDictionary<string,object>, JsonElement>
+
+    public async Task<JsonElement> InvokeAsync(IDictionary<string, object> command, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        var completionSource = new TaskCompletionSource<JsonElement>(cancellationToken);
+
+        var (id, datagram) = (GetCommandKey((string)command["cmd"], (string)command["sid"]), JsonSerializer.SerializeToUtf8Bytes(command));
+
+        try
+        {
+            completions.TryAdd(id, completionSource);
+
+            await socket.SendAsync(datagram, None, cancellationToken).ConfigureAwait(false);
+
+            using var timeoutSource = new CancellationTokenSource(CommandTimeout);
+
+            return await completionSource.Task.WaitAsync(timeoutSource.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            completionSource.TrySetCanceled(cancellationToken);
+            throw;
+        }
+        finally
+        {
+            completions.TryRemove(id, out _);
+        }
+    }
+
+    #endregion
 
     #region Overrides of ActivityObject
 

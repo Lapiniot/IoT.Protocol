@@ -41,10 +41,8 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 
             try
             {
-                var rvt = socket.ReceiveFromAsync(buffer, SocketFlags.None, receiveEndPoint, cancellationToken);
-                var result = rvt.IsCompletedSuccessfully ? rvt.Result : await rvt.ConfigureAwait(false);
-                var cvt = ParseDatagramAsync(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, cancellationToken);
-                instance = cvt.IsCompletedSuccessfully ? cvt.Result : await cvt.ConfigureAwait(false);
+                var result = await socket.ReceiveFromAsync(buffer, SocketFlags.None, receiveEndPoint, cancellationToken).ConfigureAwait(false);
+                instance = await ParseDatagramAsync(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException oce) when (oce.CancellationToken == cancellationToken)
             {

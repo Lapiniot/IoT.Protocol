@@ -7,15 +7,14 @@ namespace IoT.Protocol.Soap;
 
 public record SoapEnvelope
 {
-    private const string CannotBeEmptyErrorMessage = "Cannot be null or empty or whitespace";
     private const string SoapEnvelopeNs = "http://schemas.xmlsoap.org/soap/envelope/";
     private const string SoapEncodingNs = "http://schemas.xmlsoap.org/soap/encoding/";
     private const string Prefix = "s";
 
     public SoapEnvelope(string action, string schema, IReadOnlyDictionary<string, string> args = null)
     {
-        if (IsNullOrWhiteSpace(action)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(action));
-        if (IsNullOrWhiteSpace(schema)) throw new ArgumentException(CannotBeEmptyErrorMessage, nameof(schema));
+        Verify.ThrowIfNullOrEmpty(action);
+        Verify.ThrowIfNullOrEmpty(schema);
 
         Schema = schema;
         Arguments = args ?? new Dictionary<string, string>();
@@ -27,8 +26,7 @@ public record SoapEnvelope
     public IReadOnlyDictionary<string, string> Arguments { get; }
     public string this[string name] => Arguments[name];
 
-    public override string ToString() =>
-        $"{Schema}#{Action}: {{{Join(", ", Arguments.Select(a => $"{a.Key} = {a.Value}"))}}}";
+    public override string ToString() => $"{Schema}#{Action}: {{{Join(", ", Arguments.Select(a => $"{a.Key} = {a.Value}"))}}}";
 
     public async Task WriteAsync(Stream stream, Encoding encoding)
     {
@@ -43,44 +41,25 @@ public record SoapEnvelope
         await WriteAsync(writer).ConfigureAwait(false);
     }
 
-    public async Task WriteAsync(TextWriter textWriter)
-    {
-        await using var writer = XmlWriter.Create(textWriter, new()
-        {
-            CloseOutput = false,
-            OmitXmlDeclaration = true,
-            Async = true
-        });
-
-        await WriteAsync(writer).ConfigureAwait(false);
-    }
-
     public async Task WriteAsync(XmlWriter writer)
     {
         ArgumentNullException.ThrowIfNull(writer);
 
-        var task = writer.WriteStartElementAsync(Prefix, "Envelope", SoapEnvelopeNs);
-        if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
-        task = writer.WriteAttributeStringAsync(Prefix, "encodingStyle", SoapEnvelopeNs, SoapEncodingNs);
-        if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
-        task = writer.WriteStartElementAsync(Prefix, "Body", SoapEnvelopeNs);
-        if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
-        task = writer.WriteStartElementAsync("u", Action, Schema);
-        if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+        await writer.WriteStartElementAsync(Prefix, "Envelope", SoapEnvelopeNs).ConfigureAwait(false);
+        await writer.WriteAttributeStringAsync(Prefix, "encodingStyle", SoapEnvelopeNs, SoapEncodingNs).ConfigureAwait(false);
+        await writer.WriteStartElementAsync(Prefix, "Body", SoapEnvelopeNs).ConfigureAwait(false);
+        await writer.WriteStartElementAsync("u", Action, Schema).ConfigureAwait(false);
 
         if (Arguments != null)
         {
             foreach (var (key, value) in Arguments)
             {
-                task = writer.WriteElementStringAsync(Empty, key, Empty, value ?? Empty);
-                if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+                await writer.WriteElementStringAsync(Empty, key, Empty, value ?? Empty).ConfigureAwait(false);
             }
         }
 
-        task = writer.WriteEndDocumentAsync();
-        if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
-        task = writer.FlushAsync();
-        if (!task.IsCompletedSuccessfully) await task.ConfigureAwait(false);
+        await writer.WriteEndDocumentAsync().ConfigureAwait(false);
+        await writer.FlushAsync().ConfigureAwait(false);
     }
 
     public void Write(Stream stream, Encoding encoding)
@@ -88,18 +67,6 @@ public record SoapEnvelope
         using var writer = XmlWriter.Create(stream, new()
         {
             Encoding = encoding ?? Encoding.UTF8,
-            CloseOutput = false,
-            OmitXmlDeclaration = true,
-            Async = true
-        });
-
-        Write(writer);
-    }
-
-    public void Write(TextWriter textWriter)
-    {
-        using var writer = XmlWriter.Create(textWriter, new()
-        {
             CloseOutput = false,
             OmitXmlDeclaration = true,
             Async = true
@@ -138,7 +105,7 @@ public record SoapEnvelope
             throw new InvalidDataException("Invalid XML data");
         }
 
-        _ = reader.MoveToContent();
+        reader.MoveToContent();
 
         var name = reader.LocalName;
         var schema = reader.NamespaceURI;
@@ -147,7 +114,7 @@ public record SoapEnvelope
 
         if (reader.IsEmptyElement) return new(name, schema, args);
 
-        _ = reader.Read();
+        reader.Read();
 
         while (!reader.EOF && reader.Depth > depth)
         {
@@ -164,7 +131,7 @@ public record SoapEnvelope
             }
             else
             {
-                _ = reader.Read();
+                reader.Read();
             }
         }
 
