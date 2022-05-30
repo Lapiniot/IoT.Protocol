@@ -5,9 +5,9 @@ namespace IoT.Protocol.Soap;
 
 internal sealed class SoapHttpContent : HttpContent
 {
-    private readonly SoapEnvelope soapEnvelope;
     private readonly Encoding encoding;
     private readonly MemoryStream memoryStream;
+    private readonly SoapEnvelope soapEnvelope;
 
     public SoapHttpContent(SoapEnvelope soapEnvelope, bool useChunkedEncoding, Encoding encoding = null)
     {
@@ -20,19 +20,19 @@ internal sealed class SoapHttpContent : HttpContent
             soapEnvelope.Write(memoryStream, this.encoding);
         }
 
-        Headers.Add("Content-Type", $"text/xml; charset=\"{this.encoding.WebName}\"");
-        Headers.Add("SOAPACTION", $"\"{soapEnvelope.Schema}#{soapEnvelope.Action}\"");
+        Headers.Add("Content-Type", $@"text/xml; charset=""{this.encoding.WebName}""");
+        Headers.Add("SOAPACTION", $@"""{soapEnvelope.Schema}#{soapEnvelope.Action}""");
     }
 
     #region Overrides of HttpContent
 
     protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
     {
-        if (memoryStream is null) return soapEnvelope.WriteAsync(stream, encoding);
-        _ = memoryStream.Seek(0, SeekOrigin.Begin);
-        var vt = stream.WriteAsync(memoryStream.GetBuffer());
-        return vt.IsCompletedSuccessfully ? Task.CompletedTask : vt.AsTask();
+        if (memoryStream is null)
+            return soapEnvelope.WriteAsync(stream, encoding);
 
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        return memoryStream.CopyToAsync(stream);
     }
 
     protected override bool TryComputeLength(out long length)
