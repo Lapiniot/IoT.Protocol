@@ -30,15 +30,18 @@ public record SoapEnvelope
 
     public async Task WriteAsync(Stream stream, Encoding encoding)
     {
-        await using var writer = XmlWriter.Create(stream, new()
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        var writer = XmlWriter.Create(stream, new()
         {
             Encoding = encoding ?? Encoding.UTF8,
             CloseOutput = false,
             OmitXmlDeclaration = true,
             Async = true
         });
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
-        await WriteAsync(writer).ConfigureAwait(false);
+        await using (writer.ConfigureAwait(false))
+            await WriteAsync(writer).ConfigureAwait(false);
     }
 
     public async Task WriteAsync(XmlWriter writer)

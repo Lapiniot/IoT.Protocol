@@ -1,5 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+    <PropertyGroup>
+        <Nullable>enable</Nullable>
+        <WarningsAsErrors>Nullable</WarningsAsErrors>
+    </PropertyGroup>
+
     <ItemGroup>
         <ProjectReference Include="../System.Common/System.Common.Net/System.Common.Net.csproj" />
     </ItemGroup>

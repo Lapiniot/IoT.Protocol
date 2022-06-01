@@ -37,7 +37,7 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            TThing instance = default;
+            TThing instance;
 
             try
             {

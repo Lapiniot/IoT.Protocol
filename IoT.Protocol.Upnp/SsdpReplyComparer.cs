@@ -2,6 +2,8 @@ using static System.StringComparison;
 
 namespace IoT.Protocol.Upnp;
 
+#nullable enable
+
 public class SsdpReplyComparer : IEqualityComparer<SsdpReply>
 {
     private readonly string key;
@@ -14,13 +16,16 @@ public class SsdpReplyComparer : IEqualityComparer<SsdpReply>
 
     #region Implementation of IEqualityComparer<in SsdpReply>
 
-    public bool Equals(SsdpReply x, SsdpReply y) =>
-        ReferenceEquals(x, y) || x != null && y != null &&
-        x.TryGetValue(key, out var v1) &&
-        y.TryGetValue(key, out var v2) &&
-        string.Equals(v1, v2, OrdinalIgnoreCase);
+    /// <inheritdoc />
+    public bool Equals(SsdpReply? x, SsdpReply? y) =>
+        ReferenceEquals(x, y) || x is not null && y is not null &&
+        x.TryGetValue(key, out var value1) &&
+        y.TryGetValue(key, out var value2) &&
+        string.Equals(value1, value2, OrdinalIgnoreCase);
 
-    public int GetHashCode(SsdpReply obj) => obj.TryGetValue(key, out var value) && !string.IsNullOrEmpty(value) ? value.GetHashCode(InvariantCulture) : 0;
+    /// <inheritdoc />
+    public int GetHashCode(SsdpReply obj) =>
+        obj.TryGetValue(key, out var value) && value is { Length: > 0 } ? value.GetHashCode(OrdinalIgnoreCase) : 0;
 
     #endregion
 }

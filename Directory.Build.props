@@ -8,7 +8,7 @@
     <Version>1.2.0</Version>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-    <AnalysisLevel>preview</AnalysisLevel>
+    <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <ImplicitUsings>true</ImplicitUsings>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
