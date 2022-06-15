@@ -6,7 +6,12 @@
         "*.DotSettings": true,
         "**/bin": true,
         "**/obj": true,
-        "*.sln": true
+        "**/*.sln": true,
+        "System.Common/System.Common.CommandLine": true,
+        "System.Common/System.Common.Configuration": true,
+        "System.Common/System.Common.Net.Http": true,
+        "System.Common/System.Common.Tests": true,
+        "System.Common/.vscode": true
     },
     "omnisharp.enableRoslynAnalyzers": true
 }
