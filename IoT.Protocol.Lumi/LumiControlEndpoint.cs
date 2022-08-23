@@ -26,7 +26,7 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
     private static bool TryParseResponse(Span<byte> span, out string id, out JsonElement response)
     {
-        var json = JsonSerializer.Deserialize<JsonElement>(span);
+        var json = JsonSerializer.Deserialize(span, JsonContext.Default.JsonElement);
 
         if (json.TryGetProperty("cmd", out var cmd) && json.TryGetProperty("sid", out var sid))
         {
@@ -88,7 +88,8 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
 
         var completionSource = new TaskCompletionSource<JsonElement>(cancellationToken);
 
-        var (id, datagram) = (GetCommandKey((string)command["cmd"], (string)command["sid"]), JsonSerializer.SerializeToUtf8Bytes(command));
+        var (id, datagram) = (GetCommandKey((string)command["cmd"], (string)command["sid"]),
+            JsonSerializer.SerializeToUtf8Bytes(command, JsonContext.Default.IDictionaryStringObject));
 
         try
         {

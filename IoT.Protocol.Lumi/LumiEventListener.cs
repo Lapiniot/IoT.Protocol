@@ -49,7 +49,7 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
             {
                 var result = await socket.ReceiveFromAsync(buffer, default, endpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
 
-                var message = JsonSerializer.Deserialize<JsonElement>(buffer.AsSpan(0, result.ReceivedBytes));
+                var message = JsonSerializer.Deserialize(buffer.AsSpan(0, result.ReceivedBytes), JsonContext.Default.JsonElement);
 
                 observers.Notify(message);
             }

@@ -28,7 +28,7 @@ public class LumiEnumerator : UdpSearchEnumerator<LumiEndpoint>
     protected override ValueTask<LumiEndpoint> ParseDatagramAsync(ReadOnlyMemory<byte> buffer,
         IPEndPoint remoteEndPoint, CancellationToken cancellationToken)
     {
-        var json = JsonSerializer.Deserialize<JsonElement>(buffer.Span);
+        var json = JsonSerializer.Deserialize(buffer.Span, JsonContext.Default.JsonElement);
 
         if (!json.TryGetProperty("cmd", out var cmd) || cmd.GetString() != "iam") throw new InvalidDataException("Invalid discovery response message");
         var address = IPAddress.Parse(json.GetProperty("ip").GetString() ?? throw new InvalidDataException("Missing value for property 'ip'"));
