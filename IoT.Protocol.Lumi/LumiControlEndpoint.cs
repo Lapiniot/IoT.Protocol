@@ -144,6 +144,15 @@ public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDi
         socket.Close();
     }
 
+    public sealed override async ValueTask DisposeAsync()
+    {
+        using (tokenSource)
+        using (socket)
+        {
+            await base.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
     #endregion
 
     #region Implementation of IConnectedObject
