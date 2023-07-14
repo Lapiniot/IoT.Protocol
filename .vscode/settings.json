@@ -13,5 +13,6 @@
         "System.Common/System.Common.Tests": true,
         "System.Common/.vscode": true
     },
-    "omnisharp.enableRoslynAnalyzers": true
+    "omnisharp.enableRoslynAnalyzers": true,
+    "dotnet.defaultSolution": "IoT.Protocol.sln"
 }
