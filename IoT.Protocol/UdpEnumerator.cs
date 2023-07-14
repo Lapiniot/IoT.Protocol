@@ -101,9 +101,6 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     /// <param name="buffer">Buffer containing message</param>
     /// <param name="remoteEndPoint">Responder endpoint information</param>
     /// <param name="cancellationToken"></param>
-    /// <returns>
-    /// Instance of type
-    /// <typeparam name="TThing" />
-    /// </returns>
+    /// <returns>Instance of type <typeparamref name="TThing"/></returns>
     protected abstract ValueTask<TThing> ParseDatagramAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEndPoint, CancellationToken cancellationToken);
 }

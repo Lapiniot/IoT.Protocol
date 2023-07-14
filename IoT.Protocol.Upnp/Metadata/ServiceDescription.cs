@@ -9,7 +9,7 @@ public record Argument(string Name, ArgumentDirection Direction, bool IsRetVal, 
 public record StateVariable(string Name, string DataTypeName, string DefaultValue, bool SendEvents,
     IEnumerable<string> AllowedValues, ArgumentValueRange ValueRange)
 {
-    private static readonly IDictionary<string, Type> Map = new Dictionary<string, Type>
+    private static readonly Dictionary<string, Type> Map = new()
     {
         {"ui1", typeof(byte)},
         {"ui2", typeof(ushort)},
