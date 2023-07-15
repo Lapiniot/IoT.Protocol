@@ -11,7 +11,8 @@
         "System.Common/System.Common.Configuration": true,
         "System.Common/System.Common.Net.Http": true,
         "System.Common/System.Common.Tests": true,
-        "System.Common/.vscode": true
+        "System.Common/.vscode": true,
+        "artifacts": true
     },
     "omnisharp.enableRoslynAnalyzers": true,
     "dotnet.defaultSolution": "IoT.Protocol.sln"
