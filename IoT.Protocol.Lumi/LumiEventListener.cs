@@ -79,21 +79,19 @@ public sealed class LumiEventListener(IPEndPoint groupEndpoint) : ActivityObject
         return Task.CompletedTask;
     }
 
-    protected override Task StoppingAsync()
+    protected override async Task StoppingAsync()
     {
         var source = tokenSource;
 
         if (source != null)
         {
-            source.Cancel();
+            await source.CancelAsync().ConfigureAwait(false);
             source.Dispose();
         }
 
         tokenSource = null;
 
         socket.Close();
-
-        return Task.CompletedTask;
     }
 
     #endregion

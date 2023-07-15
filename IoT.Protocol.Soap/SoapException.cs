@@ -1,9 +1,6 @@
-using System.Runtime.Serialization;
-
 namespace IoT.Protocol.Soap;
 
-[Serializable]
-public class SoapException : Exception
+public sealed class SoapException : Exception
 {
     public SoapException() { }
     public SoapException(string message) : base(message) { }
@@ -15,8 +12,6 @@ public class SoapException : Exception
         Code = code;
         Description = description;
     }
-
-    protected SoapException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
     public int Code { get; }
     public string Description { get; }

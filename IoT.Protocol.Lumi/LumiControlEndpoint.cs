@@ -132,7 +132,7 @@ public sealed class LumiControlEndpoint(IPEndPoint endpoint) : ActivityObject, I
 
         tokenSource = null;
 
-        source.Cancel();
+        await source.CancelAsync().ConfigureAwait(false);
 
         await dispatchTask.ConfigureAwait(false);
 
