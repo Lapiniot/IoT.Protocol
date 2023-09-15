@@ -8,10 +8,10 @@ namespace IoT.Protocol.Yeelight;
 [CLSCompliant(false)]
 public sealed class YeelightControlEndpoint : PipeProcessor, IObservable<JsonElement>, IConnectedEndpoint<Command, JsonElement>
 {
-    private static readonly byte[] IdPropName = { (byte)'i', (byte)'d' };
-    private static readonly byte[] MethodPropName = { (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d' };
-    private static readonly byte[] ParamsPropName = { (byte)'p', (byte)'a', (byte)'r', (byte)'a', (byte)'m', (byte)'s' };
-    private static readonly byte[] PropsName = { (byte)'p', (byte)'r', (byte)'o', (byte)'p', (byte)'s' };
+    private static readonly byte[] IdPropName = [(byte)'i', (byte)'d'];
+    private static readonly byte[] MethodPropName = [(byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d'];
+    private static readonly byte[] ParamsPropName = [(byte)'p', (byte)'a', (byte)'r', (byte)'a', (byte)'m', (byte)'s'];
+    private static readonly byte[] PropsName = [(byte)'p', (byte)'r', (byte)'o', (byte)'p', (byte)'s'];
 
     private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> completions = new();
     private readonly ObserversContainer<JsonElement> observers;

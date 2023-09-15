@@ -11,12 +11,8 @@ namespace IoT.Protocol.Lumi;
 
 public record struct LumiEndpoint(IPEndPoint EndPoint, string Sid);
 
-public class LumiEnumerator : UdpSearchEnumerator<LumiEndpoint>
+public class LumiEnumerator(IRepeatPolicy repeatPolicy) : UdpSearchEnumerator<LumiEndpoint>(new(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), repeatPolicy)
 {
-    public LumiEnumerator(IRepeatPolicy repeatPolicy) : base(new(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), repeatPolicy)
-    {
-    }
-
     protected override void ConfigureSocket([NotNull] Socket socket, out IPEndPoint receiveEndPoint)
     {
         socket.ConfigureMulticast(FindBestMulticastInterface().GetIndex(InterNetwork));

@@ -1,9 +1,7 @@
 ﻿namespace IoT.Protocol.Upnp.DIDL;
 
-public class MediaItem : Item
+public class MediaItem(string id, string parentId, bool restricted) : Item(id, parentId, restricted)
 {
-    public MediaItem(string id, string parentId, bool restricted) : base(id, parentId, restricted) { }
-
     public string Album { get; set; }
     public string Creator { get; set; }
     public string Description { get; set; }

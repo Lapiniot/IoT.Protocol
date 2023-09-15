@@ -4,10 +4,8 @@ using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Upnp.DIDL.Readers;
 
-public class MediaItemReader : ItemReader<MediaItem>
+public class MediaItemReader(bool parseResourceProps, bool parseVendorProps) : ItemReader<MediaItem>(parseResourceProps, parseVendorProps)
 {
-    public MediaItemReader(bool parseResourceProps, bool parseVendorProps) : base(parseResourceProps, parseVendorProps) { }
-
     #region Overrides of ItemReader<MediaItem>
 
     protected override MediaItem CreateElement(string id, string parentId, bool restricted) => new(id, parentId, restricted);

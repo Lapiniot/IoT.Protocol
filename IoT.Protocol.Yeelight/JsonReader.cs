@@ -4,10 +4,10 @@ namespace IoT.Protocol.Yeelight;
 
 public static class JsonReader
 {
-    private static readonly byte[] ResultPropName = { (byte)'r', (byte)'e', (byte)'s', (byte)'u', (byte)'l', (byte)'t' };
-    private static readonly byte[] ErrorPropName = { (byte)'e', (byte)'r', (byte)'r', (byte)'o', (byte)'r' };
-    private static readonly byte[] CodePropName = { (byte)'c', (byte)'o', (byte)'d', (byte)'e' };
-    private static readonly byte[] MessagePropName = { (byte)'m', (byte)'e', (byte)'s', (byte)'s', (byte)'a', (byte)'g', (byte)'e' };
+    private static ReadOnlySpan<byte> ResultPropName => "result"u8;
+    private static ReadOnlySpan<byte> ErrorPropName => "error"u8;
+    private static ReadOnlySpan<byte> CodePropName => "code"u8;
+    private static ReadOnlySpan<byte> MessagePropName => "message"u8;
 
     public static bool TryReadResult(ref Utf8JsonReader reader, out JsonElement result, out int errorCode, out string errorMessage)
     {

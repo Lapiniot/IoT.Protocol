@@ -11,16 +11,13 @@ using static System.StringComparison;
 
 namespace IoT.Protocol.Lumi;
 
-public sealed class LumiControlEndpoint : ActivityObject, IConnectedEndpoint<IDictionary<string, object>, JsonElement>
+public sealed class LumiControlEndpoint(IPEndPoint endpoint) : ActivityObject, IConnectedEndpoint<IDictionary<string, object>, JsonElement>
 {
     private const int MaxReceiveBufferSize = 2048;
     private readonly ConcurrentDictionary<string, TaskCompletionSource<JsonElement>> completions = new();
-    private readonly IPEndPoint endpoint;
     private Task dispatchTask;
     private Socket socket;
     private CancellationTokenSource tokenSource;
-
-    public LumiControlEndpoint(IPEndPoint endpoint) => this.endpoint = endpoint;
 
     private TimeSpan CommandTimeout { get; } = TimeSpan.FromSeconds(10);
 

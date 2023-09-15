@@ -3,14 +3,12 @@ using static System.Text.Encoding;
 
 namespace IoT.Protocol.Upnp;
 
-public class SsdpReply : Dictionary<string, string>
+public class SsdpReply(string startLine) : Dictionary<string, string>(10, StringComparer.OrdinalIgnoreCase)
 {
     private const byte Colon = 0x3a;
     private const byte Space = 0x20;
     private const byte CR = 0x0d;
     private const byte LF = 0x0a;
-
-    public SsdpReply(string startLine) : base(10, StringComparer.OrdinalIgnoreCase) => StartLine = startLine;
 
     public string Location => this["LOCATION"];
 
@@ -20,7 +18,7 @@ public class SsdpReply : Dictionary<string, string>
 
     public string SearchTarget => this["ST"];
 
-    public string StartLine { get; }
+    public string StartLine { get; } = startLine;
 
     public double MaxAge => TryGetValue("CACHE-CONTROL", out var value) && value is { Length: > 8 } && int.TryParse(value[8..], out var age) ? age : 0;
 

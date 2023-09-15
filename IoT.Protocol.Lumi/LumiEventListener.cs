@@ -5,19 +5,12 @@ using System.Text.Json;
 
 namespace IoT.Protocol.Lumi;
 
-public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
+public sealed class LumiEventListener(IPEndPoint groupEndpoint) : ActivityObject, IObservable<JsonElement>
 {
     private const int MaxReceiveBufferSize = 2048;
-    private readonly IPEndPoint endpoint;
-    private readonly ObserversContainer<JsonElement> observers;
+    private readonly ObserversContainer<JsonElement> observers = new();
     private Socket socket;
     private CancellationTokenSource tokenSource;
-
-    public LumiEventListener(IPEndPoint groupEndpoint)
-    {
-        endpoint = groupEndpoint;
-        observers = new();
-    }
 
     #region Implementation of IObservable<out JsonElement>
 
@@ -47,7 +40,7 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
         {
             try
             {
-                var result = await socket.ReceiveFromAsync(buffer, default, endpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
+                var result = await socket.ReceiveFromAsync(buffer, default, groupEndpoint).WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 var message = JsonSerializer.Deserialize(buffer.AsSpan(0, result.ReceivedBytes), JsonContext.Default.JsonElement);
 
@@ -75,7 +68,7 @@ public sealed class LumiEventListener : ActivityObject, IObservable<JsonElement>
     {
         socket = SocketBuilderExtensions.CreateUdp();
 
-        socket.JoinMulticastGroup(endpoint);
+        socket.JoinMulticastGroup(groupEndpoint);
 
         tokenSource = new();
 

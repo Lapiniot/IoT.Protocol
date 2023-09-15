@@ -8,8 +8,7 @@
         <Copyright>© aossss@gmail.com, 2018</Copyright>
         <Version>1.2.0</Version>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-        <AnalysisLevel>latest</AnalysisLevel>
+        <AnalysisLevel>latest-All</AnalysisLevel>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
         <WarningsAsErrors>Nullable</WarningsAsErrors>
         <ImplicitUsings>true</ImplicitUsings>
