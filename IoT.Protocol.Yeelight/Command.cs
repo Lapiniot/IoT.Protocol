@@ -5,7 +5,7 @@ public readonly record struct Command(string Method, object Params, string Sid)
     public Command(string method, object @params) : this(method, @params, null) { }
 
     public Command(string method) : this(method, null, null) { }
-    public static Dictionary<string, object> EmptyArgs { get; } = new();
+    public static Dictionary<string, object> EmptyArgs { get; } = [];
 
     public long WriteTo(byte[] buffer, long id)
     {

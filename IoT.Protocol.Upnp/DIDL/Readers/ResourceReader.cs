@@ -70,7 +70,7 @@ public class ResourceReader : ReaderBase<Resource>
                         resource.Protection = reader.ReadContentAsString();
                         break;
                     default:
-                        resource.Attributes ??= new();
+                        resource.Attributes ??= [];
                         resource.Attributes[reader.Name] = reader.Value;
                         break;
                 }

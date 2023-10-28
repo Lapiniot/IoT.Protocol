@@ -73,7 +73,7 @@ public abstract class ItemReader<TElementType> : ReaderBase<TElementType> where 
                 {
                     if (parseVendorProps)
                     {
-                        (element.Vendor ??= new())[reader.Name] = reader.ReadElementContentAsString();
+                        (element.Vendor ??= [])[reader.Name] = reader.ReadElementContentAsString();
                     }
                     else
                     {
