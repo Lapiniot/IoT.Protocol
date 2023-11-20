@@ -13,8 +13,8 @@ public record SoapEnvelope
 
     public SoapEnvelope(string action, string schema, IReadOnlyDictionary<string, string> args = null)
     {
-        Verify.ThrowIfNullOrEmpty(action);
-        Verify.ThrowIfNullOrEmpty(schema);
+        ArgumentException.ThrowIfNullOrEmpty(action);
+        ArgumentException.ThrowIfNullOrEmpty(schema);
 
         Schema = schema;
         Arguments = args ?? new Dictionary<string, string>();
