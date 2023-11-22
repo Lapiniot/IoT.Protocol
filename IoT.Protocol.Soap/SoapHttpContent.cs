@@ -6,9 +6,7 @@ namespace IoT.Protocol.Soap;
 internal sealed class SoapHttpContent : HttpContent
 {
     private readonly Encoding encoding;
-#pragma warning disable CA2213 // Disposable fields should be disposed
     private readonly MemoryStream memoryStream;
-#pragma warning restore CA2213 // Disposable fields should be disposed
     private readonly SoapEnvelope soapEnvelope;
 
     public SoapHttpContent(SoapEnvelope soapEnvelope, bool useChunkedEncoding, Encoding encoding = null)

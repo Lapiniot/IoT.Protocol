@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 
 using static System.Xml.XmlNodeType;
@@ -34,7 +33,6 @@ public static class EventMessageXmlReader
         return null;
     }
 
-    [SuppressMessage("Performance", "CA1849: Call async methods when in an async method")]
     public static async Task<EventMessage> ReadAsync(XmlReader reader)
     {
         var content = await ReadLastChangeContentAsync(reader).ConfigureAwait(false);
@@ -68,6 +66,7 @@ public static class EventMessageXmlReader
                 while (xr.Read() && xr.Depth == 2)
                 {
                     if (xr.NodeType != Element) continue;
+#pragma warning disable CA1849 // Call async methods when in an async method
                     if (xr.NamespaceURI == eventNamespace)
                     {
                         metadata[xr.LocalName] = xr.MoveToAttribute("val") ? xr.ReadContentAsString() : xr.ReadElementContentAsString();
@@ -76,6 +75,7 @@ public static class EventMessageXmlReader
                     {
                         vendor[xr.Name] = xr.MoveToAttribute("val") ? xr.ReadContentAsString() : xr.ReadElementContentAsString();
                     }
+#pragma warning restore CA1849 // Call async methods when in an async method
                 }
             }
 
