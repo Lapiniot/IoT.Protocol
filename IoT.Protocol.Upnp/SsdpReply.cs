@@ -1,15 +1,9 @@
-using System.Runtime.CompilerServices;
 using static System.Text.Encoding;
 
 namespace IoT.Protocol.Upnp;
 
 public class SsdpReply(string startLine) : Dictionary<string, string>(10, StringComparer.OrdinalIgnoreCase)
 {
-    private const byte Colon = 0x3a;
-    private const byte Space = 0x20;
-    private const byte CR = 0x0d;
-    private const byte LF = 0x0a;
-
     public string Location => this["LOCATION"];
 
     public string UniqueServiceName => this["USN"];
@@ -26,37 +20,35 @@ public class SsdpReply(string startLine) : Dictionary<string, string>(10, String
 
     public string ConfigId => TryGetValue("CONFIGID.UPNP.ORG", out var value) ? value : null;
 
-    public static SsdpReply Parse(ReadOnlySpan<byte> span)
+#pragma warning disable IDE0057 // Use range operator
+    public static bool TryParse(ReadOnlySpan<byte> span, out SsdpReply reply)
     {
-        int i;
+        int index;
 
-        if ((i = IndexOfEOL(span)) < 0)
+        ReadOnlySpan<byte> EOL = [(byte)'\r', (byte)'\n'];
+        if ((index = span.IndexOf(EOL)) < 0)
         {
-            throw new InvalidDataException("Not a SSDP success response");
+            reply = null;
+            return false;
         }
 
-        var reply = new SsdpReply(ASCII.GetString(span[..i++]));
+        reply = new SsdpReply(ASCII.GetString(span.Slice(0, index)));
+        span = span.Slice(index + 2);
 
-        for (var r = span[++i..]; (i = IndexOfEOL(r)) >= 0; r = r[++i..])
+        while ((index = span.IndexOf(EOL)) > 0)
         {
-            var line = r[..i++];
-            var index = line.IndexOf(Colon);
+            var line = span.Slice(0, index);
+            span = span.Slice(index + 2);
 
-            if (index <= 0) continue;
-
-            var key = ASCII.GetString(line[..index]);
-            if (++index < line.Length && line[index] == Space) index++;
-            var value = ASCII.GetString(line[index..]);
+            var i = line.IndexOf((byte)':');
+            if (i <= 0) continue;
+            var key = ASCII.GetString(line.Slice(0, i++));
+            while (i < line.Length && line[i] == ' ') i++;
+            var value = ASCII.GetString(line.Slice(i));
             reply.Add(key, value);
         }
 
-        return reply;
+        return true;
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOfEOL(ReadOnlySpan<byte> span)
-    {
-        int index;
-        return (index = span.IndexOf(CR)) > 0 && index < span.Length - 1 && span[index + 1] == LF ? index : -1;
-    }
+#pragma warning restore IDE0057 // Use range operator
 }

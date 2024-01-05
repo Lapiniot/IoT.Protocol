@@ -37,31 +37,24 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 
         while (!cancellationToken.IsCancellationRequested)
         {
+            bool success;
             TThing instance;
 
             try
             {
                 var result = await socket.ReceiveFromAsync(buffer, SocketFlags.None, receiveEndPoint, cancellationToken).ConfigureAwait(false);
-                instance = await ParseDatagramAsync(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                success = TryParseDatagram(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, out instance);
             }
-            catch (OperationCanceledException oce) when (oce.CancellationToken == cancellationToken)
+            catch (OperationCanceledException)
             {
                 // expected external cancellation signal
                 yield break;
             }
-            catch (OperationCanceledException)
-            {
-                // ignored by design: this can be cancellation coming 
-                // from CreateInstanceAsync internals (some timeout e.g.)
-                continue;
-            }
-            catch (InvalidDataException)
-            {
-                // ignored as expected if received datagram has wrong format
-                continue;
-            }
 
-            yield return instance;
+            if (success)
+            {
+                yield return instance;
+            }
         }
 
         try
@@ -96,11 +89,11 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
     protected abstract void ConfigureSocket(Socket socket, out IPEndPoint receiveEndPoint);
 
     /// <summary>
-    /// Factory method to create IoT device instance by parsing discovery response datagram bytes
+    /// Factory method to create IoT device instance by parsing discovery response datagram bytes.
     /// </summary>
-    /// <param name="buffer">Buffer containing message</param>
-    /// <param name="remoteEndPoint">Responder endpoint information</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>Instance of type <typeparamref name="TThing"/></returns>
-    protected abstract ValueTask<TThing> ParseDatagramAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEndPoint, CancellationToken cancellationToken);
+    /// <param name="buffer">Buffer containing message.</param>
+    /// <param name="remoteEndPoint">Responder endpoint information.</param>
+    /// <param name="thing">Instance of type <typeparamref name="TThing"/>.</param>
+    /// <returns><see langword="true" /> if data in the buffer was succesfully parsed.</returns>
+    protected abstract bool TryParseDatagram(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEndPoint, out TThing thing);
 }

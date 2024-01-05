@@ -3,7 +3,6 @@ using System.Net.Sockets;
 using System.Policies;
 using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
-using static System.Globalization.CultureInfo;
 using static System.Net.Sockets.AddressFamily;
 using static System.Net.NetworkInterfaceExtensions;
 
@@ -11,7 +10,7 @@ namespace IoT.Protocol.Lumi;
 
 public record struct LumiEndpoint(IPEndPoint EndPoint, string Sid);
 
-public class LumiEnumerator(IRepeatPolicy repeatPolicy) : UdpSearchEnumerator<LumiEndpoint>(new(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), repeatPolicy)
+public sealed class LumiEnumerator(IRepeatPolicy repeatPolicy) : UdpSearchEnumerator<LumiEndpoint>(new(new IPAddress(0x320000e0 /*224.0.0.50*/), 4321), repeatPolicy)
 {
     protected override void ConfigureSocket([NotNull] Socket socket, out IPEndPoint receiveEndPoint)
     {
@@ -21,16 +20,21 @@ public class LumiEnumerator(IRepeatPolicy repeatPolicy) : UdpSearchEnumerator<Lu
         receiveEndPoint = GroupEndPoint;
     }
 
-    protected override ValueTask<LumiEndpoint> ParseDatagramAsync(ReadOnlyMemory<byte> buffer,
-        IPEndPoint remoteEndPoint, CancellationToken cancellationToken)
+    protected override bool TryParseDatagram(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEndPoint, out LumiEndpoint thing)
     {
         var json = JsonSerializer.Deserialize(buffer.Span, JsonContext.Default.JsonElement);
 
-        if (!json.TryGetProperty("cmd", out var cmd) || cmd.GetString() != "iam") throw new InvalidDataException("Invalid discovery response message");
-        var address = IPAddress.Parse(json.GetProperty("ip").GetString() ?? throw new InvalidDataException("Missing value for property 'ip'"));
-        var port = int.Parse(json.GetProperty("port").GetString() ?? throw new InvalidDataException("Missing value for property 'port'"), InvariantCulture);
-        var sid = json.GetProperty("sid").GetString();
-        return new(new LumiEndpoint(new(address, port), sid));
+        if (json.TryGetProperty("cmd", out var cmdProp) && cmdProp.GetString() == "iam" &&
+            json.TryGetProperty("ip", out var ipProp) && IPAddress.TryParse(ipProp.GetString(), out var address) &&
+            json.TryGetProperty("port", out var portProp) && int.TryParse(portProp.GetString(), out var port) &&
+            json.TryGetProperty("sid", out var sid))
+        {
+            thing = new LumiEndpoint(new(address, port), sid.GetString());
+            return true;
+        }
+
+        thing = default;
+        return false;
     }
 
     protected override void WriteDiscoveryDatagram(Span<byte> span, out int bytesWritten)

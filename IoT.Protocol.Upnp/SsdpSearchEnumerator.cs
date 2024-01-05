@@ -40,10 +40,7 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
          this(searchTarget, GetIPv4SSDPGroup(), null, discoveryPolicy)
     { }
 
-    protected override ValueTask<SsdpReply> ParseDatagramAsync(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEndPoint, CancellationToken cancellationToken) =>
-        new(SsdpReply.Parse(buffer.Span));
-
-    protected override void WriteDiscoveryDatagram(Span<byte> span, out int bytesWritten)
+    protected sealed override void WriteDiscoveryDatagram(Span<byte> span, out int bytesWritten)
     {
         var count = ASCII.GetBytes("M-SEARCH * HTTP/1.1\r\nHOST: ", span);
         count += ASCII.GetBytes(host, span[count..]);
@@ -59,7 +56,7 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
         bytesWritten = count;
     }
 
-    protected override void ConfigureSocket([NotNull] Socket socket, out IPEndPoint receiveEndPoint)
+    protected sealed override void ConfigureSocket([NotNull] Socket socket, out IPEndPoint receiveEndPoint)
     {
         socket.ReceiveBufferSize = 0x400;
         socket.SendBufferSize = sendBufferSize;
@@ -75,4 +72,7 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
 
         receiveEndPoint = GroupEndPoint;
     }
+
+    protected sealed override bool TryParseDatagram(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEndPoint, out SsdpReply thing) =>
+        SsdpReply.TryParse(buffer.Span, out thing);
 }
