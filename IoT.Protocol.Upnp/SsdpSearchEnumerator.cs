@@ -57,8 +57,17 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
         receiveEndPoint = GroupEndPoint;
     }
 
-    protected sealed override bool TryParseDatagram(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEndPoint, out SsdpReply thing) =>
-        SsdpReply.TryParse(buffer.Span, out thing);
+    protected sealed override bool TryParseDatagram(ReadOnlyMemory<byte> buffer, IPEndPoint remoteEndPoint, out SsdpReply thing)
+    {
+        var span = buffer.Span;
+        if (!span.StartsWith("M-SEARCH"u8))
+        {
+            return SsdpReply.TryParse(span, out thing);
+        }
+
+        thing = null;
+        return false;
+    }
 
     protected override ReadOnlyMemory<byte> CreateDiscoveryDatagram()
     {
