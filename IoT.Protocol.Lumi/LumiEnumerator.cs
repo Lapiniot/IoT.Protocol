@@ -37,26 +37,5 @@ public sealed class LumiEnumerator(IRepeatPolicy repeatPolicy) : UdpSearchEnumer
         return false;
     }
 
-    protected override void WriteDiscoveryDatagram(Span<byte> span, out int bytesWritten)
-    {
-        // {"cmd":"whois"}
-
-        span[0] = 0x7B;
-        span[1] = 0x22;
-        span[2] = 0x63;
-        span[3] = 0x6D;
-        span[4] = 0x64;
-        span[5] = 0x22;
-        span[6] = 0x3A;
-        span[7] = 0x22;
-        span[8] = 0x77;
-        span[9] = 0x68;
-        span[10] = 0x6F;
-        span[11] = 0x69;
-        span[12] = 0x73;
-        span[13] = 0x22;
-        span[14] = 0x7D;
-
-        bytesWritten = 15;
-    }
+    protected override ReadOnlyMemory<byte> CreateDiscoveryDatagram() => /*lang=json,strict*/ "{\"cmd\":\"whois\"}"u8.ToArray();
 }

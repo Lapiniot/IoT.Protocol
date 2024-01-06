@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
@@ -28,18 +27,12 @@ public abstract class UdpSearchEnumerator<TThing> : UdpEnumerator<TThing>
 
     protected sealed override Task StartAuxiliaryWorkerAsync([NotNull] Socket socket, CancellationToken stoppingToken)
     {
-        using var memory = MemoryPool<byte>.Shared.Rent(socket.SendBufferSize);
-        WriteDiscoveryDatagram(memory.Memory.Span, out var written);
-        var message = memory.Memory[..written];
-
+        var message = CreateDiscoveryDatagram();
         return repeatPolicy.RepeatAsync(SendDiscoveryDatagramAsync, stoppingToken);
 
         async Task SendDiscoveryDatagramAsync(CancellationToken token) =>
             await socket.SendToAsync(message, SocketFlags.None, groupEndPoint, token).ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Writes datagram bytes to be send over the network for discovery
-    /// </summary>
-    protected abstract void WriteDiscoveryDatagram(Span<byte> span, out int bytesWritten);
+    protected abstract ReadOnlyMemory<byte> CreateDiscoveryDatagram();
 }
