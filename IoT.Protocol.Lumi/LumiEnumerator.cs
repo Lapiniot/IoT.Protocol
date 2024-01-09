@@ -1,10 +1,11 @@
 using System.Net;
 using System.Net.Sockets;
-using System.Policies;
+using OOs.Net.Sockets;
+using OOs.Policies;
 using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
 using static System.Net.Sockets.AddressFamily;
-using static System.Net.NetworkInterfaceExtensions;
+using static OOs.Net.NetworkInterfaceExtensions;
 
 namespace IoT.Protocol.Lumi;
 

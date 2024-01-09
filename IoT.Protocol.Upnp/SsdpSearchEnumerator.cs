@@ -1,11 +1,11 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Policies;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using static System.Net.Sockets.SocketBuilderExtensions;
+using OOs.Policies;
 using static System.Text.Encoding;
-using static System.Net.NetworkInterfaceExtensions;
+using static OOs.Net.Sockets.SocketBuilderExtensions;
+using static OOs.Net.NetworkInterfaceExtensions;
 
 namespace IoT.Protocol.Upnp;
 

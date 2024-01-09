@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../System.Common/System.Common.Net/System.Common.Net.csproj" />
+    <ProjectReference Include="../OOs.Common/OOs.Common.Net/OOs.Common.Net.csproj" />
   </ItemGroup>
 
 </Project>

@@ -5,7 +5,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="System.Memory" />
     <Using Include="System.Buffers" />
     <Using Include="System.IO.Pipelines" />
     <Using Include="System.Text.Json" />

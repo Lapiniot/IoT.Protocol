@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
+using OOs;
+using OOs.Net.Sockets;
 
 namespace IoT.Protocol.Lumi;
 
