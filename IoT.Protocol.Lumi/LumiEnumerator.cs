@@ -15,7 +15,7 @@ public sealed class LumiEnumerator(IRepeatPolicy repeatPolicy) : UdpSearchEnumer
 {
     protected override void ConfigureSocket([NotNull] Socket socket, out IPEndPoint receiveEndPoint)
     {
-        socket.ConfigureMulticast(FindBestMulticastInterface().GetIndex(InterNetwork));
+        socket.ConfigureMulticastOptions(FindBestMulticastInterface().GetPrimaryAddress(InterNetwork));
         socket.SendBufferSize = 0x0F;
         socket.ReceiveBufferSize = 0x100;
         receiveEndPoint = GroupEndPoint;

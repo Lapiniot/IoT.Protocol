@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using OOs.Policies;
 using static System.Text.Encoding;
 using static OOs.Net.Sockets.SocketBuilderExtensions;
-using static OOs.Net.NetworkInterfaceExtensions;
 
 namespace IoT.Protocol.Upnp;
 
@@ -44,16 +43,7 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
     {
         socket.ReceiveBufferSize = 0x400;
         socket.SendBufferSize = datagramSize;
-
-        if (configureSocket is not null)
-        {
-            configureSocket(socket, GroupEndPoint);
-        }
-        else
-        {
-            socket.ConfigureMulticast(FindBestMulticastInterface().GetIndex(socket.AddressFamily));
-        }
-
+        configureSocket?.Invoke(socket, GroupEndPoint);
         receiveEndPoint = GroupEndPoint;
     }
 
