@@ -4,17 +4,8 @@ using static System.Xml.XmlNodeType;
 
 namespace IoT.Protocol.Upnp.DIDL.Readers;
 
-public abstract class ItemReader<TElementType> : ReaderBase<TElementType> where TElementType : Item
+public abstract class ItemReader<TElementType>(bool parseResourceProps, bool parseVendorProps) : ReaderBase<TElementType> where TElementType : Item
 {
-    private readonly bool parseResourceProps;
-    private readonly bool parseVendorProps;
-
-    protected ItemReader(bool parseResourceProps, bool parseVendorProps)
-    {
-        this.parseResourceProps = parseResourceProps;
-        this.parseVendorProps = parseVendorProps;
-    }
-
     protected override TElementType CreateElement([NotNull] XmlReader reader) =>
         CreateElement(reader.GetAttribute("id"), reader.GetAttribute("parentID"), ParseBoolean(reader.GetAttribute("restricted")));
 
@@ -40,7 +31,7 @@ public abstract class ItemReader<TElementType> : ReaderBase<TElementType> where 
                         element.Class = reader.ReadElementContentAsString();
                         return true;
                     case "albumArtURI":
-                        (element.AlbumArts ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                        (element.AlbumArts ??= []).Add(reader.ReadElementContentAsString());
                         return true;
                     case "storageUsed":
                         element.StorageUsed = reader.ReadElementContentAsInt();

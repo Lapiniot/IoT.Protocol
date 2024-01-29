@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 using static System.Xml.XmlNodeType;
 
@@ -29,7 +29,7 @@ public class MediaItemReader(bool parseResourceProps, bool parseVendorProps) : I
                         element.Description = reader.ReadElementContentAsString();
                         return true;
                     case "publisher":
-                        (element.Publishers ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                        (element.Publishers ??= []).Add(reader.ReadElementContentAsString());
                         return true;
                 }
 
@@ -38,7 +38,7 @@ public class MediaItemReader(bool parseResourceProps, bool parseVendorProps) : I
                 switch (reader.LocalName)
                 {
                     case "artist":
-                        (element.Artists ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                        (element.Artists ??= []).Add(reader.ReadElementContentAsString());
                         return true;
                     case "album":
                         element.Album = reader.ReadElementContentAsString();
@@ -50,22 +50,22 @@ public class MediaItemReader(bool parseResourceProps, bool parseVendorProps) : I
                         element.LyricsUrl = reader.ReadElementContentAsString();
                         return true;
                     case "genre":
-                        (element.Genres ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                        (element.Genres ??= []).Add(reader.ReadElementContentAsString());
                         return true;
                     case "originalTrackNumber":
                         element.TrackNumber = reader.ReadElementContentAsInt();
                         return true;
                     case "actor":
-                        (element.Actors ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                        (element.Actors ??= []).Add(reader.ReadElementContentAsString());
                         return true;
                     case "author":
-                        (element.Authors ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                        (element.Authors ??= []).Add(reader.ReadElementContentAsString());
                         return true;
                     case "producer":
-                        (element.Producers ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                        (element.Producers ??= []).Add(reader.ReadElementContentAsString());
                         return true;
                     case "director":
-                        (element.Directors ??= new List<string>()).Add(reader.ReadElementContentAsString());
+                        (element.Directors ??= []).Add(reader.ReadElementContentAsString());
                         return true;
                 }
 
