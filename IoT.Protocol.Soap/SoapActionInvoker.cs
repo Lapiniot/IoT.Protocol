@@ -2,6 +2,8 @@ namespace IoT.Protocol.Soap;
 
 public class SoapActionInvoker
 {
+    protected static IReadOnlyDictionary<string, string> EmptyArgs { get; } = new Dictionary<string, string>();
+
     public SoapActionInvoker(SoapControlEndpoint endpoint, Uri controlUri, string schema)
     {
         ArgumentNullException.ThrowIfNull(endpoint);
