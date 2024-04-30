@@ -1,23 +1,21 @@
-using System.Runtime.Serialization;
+using IoT.Protocol.Exceptions;
 
 namespace IoT.Protocol.Yeelight;
 
 [CLSCompliant(true)]
-public class YeelightException : Exception
+public sealed class YeelightException : ProtocolException
 {
-    public YeelightException(int code, string message, Exception innerException) :
-        base(message, innerException)
-    {
-        Code = code;
-    }
-
-    public YeelightException(int code, string message) : this(code, message, null) { }
+    public YeelightException() { }
 
     public YeelightException(string message) : base(message) { }
 
-    public YeelightException(string message, Exception innerException) : base(message, innerException) { }
+    public YeelightException(int code, string message) : base(code, message) { }
 
-    public YeelightException() : this(0, "Unknown error") { }
+    public YeelightException(string message, Exception innerException) :
+        base(message, innerException)
+    { }
 
-    public int Code { get; }
+    public YeelightException(int code, string message, Exception innerException) :
+        base(code, message, innerException)
+    { }
 }
