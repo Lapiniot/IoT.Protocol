@@ -11,25 +11,21 @@ namespace IoT.Protocol.Yeelight;
 [CLSCompliant(false)]
 public sealed class YeelightControlEndpoint : PipeProcessor, IObservable<JsonElement>, IConnectedEndpoint<Command, JsonElement>
 {
-    private static readonly byte[] IdPropName = [(byte)'i', (byte)'d'];
-    private static readonly byte[] MethodPropName = [(byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d'];
-    private static readonly byte[] ParamsPropName = [(byte)'p', (byte)'a', (byte)'r', (byte)'a', (byte)'m', (byte)'s'];
-    private static readonly byte[] PropsName = [(byte)'p', (byte)'r', (byte)'o', (byte)'p', (byte)'s'];
-
     private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> completions = new();
     private readonly ObserversContainer<JsonElement> observers;
     private readonly Socket socket;
     private long counter;
 
-    public YeelightControlEndpoint(uint deviceId, IPEndPoint endpoint)
+    public YeelightControlEndpoint(IPEndPoint endpoint)
     {
         Endpoint = endpoint;
-        DeviceId = deviceId;
         observers = new();
         socket = new(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
     }
 
-    public uint DeviceId { get; }
+    public YeelightControlEndpoint(IPAddress address) : this(new IPEndPoint(address, 55443))
+    {
+    }
 
     public TimeSpan CommandTimeout { get; set; } = TimeSpan.FromSeconds(10);
 
@@ -50,7 +46,7 @@ public sealed class YeelightControlEndpoint : PipeProcessor, IObservable<JsonEle
         while (reader.Read())
         {
             if (reader is not { TokenType: PropertyName, CurrentDepth: 1 }) continue;
-            if (reader.ValueSpan.SequenceEqual(IdPropName) && reader.Read() && reader.TryGetInt32(out var id))
+            if (reader.ValueSpan.SequenceEqual("id"u8) && reader.Read() && reader.TryGetInt32(out var id))
             {
                 if (!completions.TryRemove(id, out var completion) ||
                     !JsonReader.TryReadResult(ref reader, out var result, out var errorCode, out var errorMessage))
@@ -74,9 +70,9 @@ public sealed class YeelightControlEndpoint : PipeProcessor, IObservable<JsonEle
                 return true;
             }
 
-            if (!reader.ValueSpan.SequenceEqual(MethodPropName) ||
+            if (!reader.ValueSpan.SequenceEqual("method"u8) ||
                 !reader.Read() || reader.TokenType is not JsonTokenType.String ||
-                !reader.ValueSpan.SequenceEqual(PropsName))
+                !reader.ValueSpan.SequenceEqual("props"u8))
             {
                 continue;
             }
@@ -88,7 +84,7 @@ public sealed class YeelightControlEndpoint : PipeProcessor, IObservable<JsonEle
                     continue;
                 }
 
-                if (!reader.ValueSpan.SequenceEqual(ParamsPropName)) continue;
+                if (!reader.ValueSpan.SequenceEqual("params"u8)) continue;
                 if (!reader.Read()) continue;
 
                 observers.Notify(JsonElement.ParseValue(ref reader));
@@ -167,6 +163,10 @@ public sealed class YeelightControlEndpoint : PipeProcessor, IObservable<JsonEle
         try
         {
             await base.StoppingAsync().ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // expected
         }
         finally
         {

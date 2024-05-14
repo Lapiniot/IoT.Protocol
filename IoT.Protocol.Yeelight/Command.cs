@@ -1,11 +1,15 @@
-﻿namespace IoT.Protocol.Yeelight;
+﻿using System.Text.Json.Nodes;
 
-public readonly record struct Command(string Method, object Params, string Sid)
+namespace IoT.Protocol.Yeelight;
+
+public readonly record struct Command(string Method, object Params)
 {
-    public Command(string method, object @params) : this(method, @params, null) { }
+    private readonly JsonElement paramsElement;
 
-    public Command(string method) : this(method, null, null) { }
-    public static Dictionary<string, object> EmptyArgs { get; } = [];
+    public Command(string method) : this(method, (object)null) { }
+    public Command(string method, Action<Utf8JsonWriter> paramsWriter) : this(method, (object)paramsWriter) { }
+    public Command(string method, JsonNode @params) : this(method, (object)@params) { }
+    public Command(string method, JsonElement @params) : this(method, (object)null) => paramsElement = @params;
 
     public long WriteTo(byte[] buffer, long id)
     {
@@ -16,24 +20,31 @@ public readonly record struct Command(string Method, object Params, string Sid)
         writer.WriteNumber("id", id);
         writer.WriteString("method", Method);
 
-        if (!string.IsNullOrEmpty(Sid))
+        if (paramsElement.ValueKind != JsonValueKind.Undefined)
         {
-            writer.WriteString("sid", Sid);
+            writer.WritePropertyName("params");
+            paramsElement.WriteTo(writer);
         }
-
-        switch (Params)
+        else
         {
-            case null:
-                writer.WriteStartArray("params");
-                writer.WriteEndArray();
-                break;
-            case Action<Utf8JsonWriter> writeAction:
-                writer.WritePropertyName("params");
-                writeAction(writer);
-                break;
-            default:
-                WriteObject(writer, "params", Params);
-                break;
+            switch (Params)
+            {
+                case null:
+                    writer.WriteStartArray("params");
+                    writer.WriteEndArray();
+                    break;
+                case Action<Utf8JsonWriter> writeAction:
+                    writer.WritePropertyName("params");
+                    writeAction(writer);
+                    break;
+                case JsonNode jsonNode:
+                    writer.WritePropertyName("params");
+                    jsonNode.WriteTo(writer);
+                    break;
+                default:
+                    WriteObject(writer, "params", Params);
+                    break;
+            }
         }
 
         writer.WriteEndObject();
