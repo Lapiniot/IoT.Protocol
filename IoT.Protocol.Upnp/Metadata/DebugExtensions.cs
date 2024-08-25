@@ -35,10 +35,10 @@ public static class DebugExtensions
         textWriter.WriteLine(";");
     }
 
-    private static void DumpPrototype(TextWriter tw, IReadOnlyList<Argument> args, Func<string, string> nameHandler)
+    private static void DumpPrototype(TextWriter tw, Argument[] args, Func<string, string> nameHandler)
     {
         tw.Write("(");
-        for (var i = 0; i < args.Count; i++)
+        for (var i = 0; i < args.Length; i++)
         {
             if (i != 0) tw.Write(", ");
             var arg = args[i];
