@@ -1,19 +1,19 @@
 <Project>
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <UseArtifactsOutput>true</UseArtifactsOutput>
-        <IsTrimmable>true</IsTrimmable>
-        <LangVersion>preview</LangVersion>
-        <Authors>aossss@gmail.com</Authors>
-        <Company>aossss@gmail.com</Company>
-        <Copyright>© aossss@gmail.com, 2018</Copyright>
-        <Version>1.8.0</Version>
-        <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <AnalysisLevel>latest-All</AnalysisLevel>
-        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-        <WarningsAsErrors>Nullable</WarningsAsErrors>
-        <ImplicitUsings>true</ImplicitUsings>
-        <EnablePreviewFeatures>true</EnablePreviewFeatures>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <IsTrimmable>true</IsTrimmable>
+    <LangVersion>preview</LangVersion>
+    <Authors>aossss@gmail.com</Authors>
+    <Company>aossss@gmail.com</Company>
+    <Copyright>© $(Authors), $([System.DateTime]::UtcNow.Year)</Copyright>
+    <Version>1.9.0</Version>
+    <AnalysisLevel>latest-All</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <WarningsAsErrors>Nullable</WarningsAsErrors>
+    <ImplicitUsings>true</ImplicitUsings>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
+  </PropertyGroup>
 </Project>
