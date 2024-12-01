@@ -10,39 +10,35 @@ namespace IoT.Protocol.Upnp;
 
 public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
 {
-    private readonly string host;
-    private readonly string searchTarget;
     private readonly Action<Socket, IPEndPoint> configureSocket;
-    private readonly string userAgent;
-    private readonly int datagramSize;
+    private readonly ReadOnlyMemory<byte> searchDatagram;
 
-    public SsdpSearchEnumerator(string searchTarget, [NotNull] IPEndPoint groupEndPoint, Action<Socket, IPEndPoint> configureSocket, IRepeatPolicy repeatPolicy) :
-        base(groupEndPoint, repeatPolicy)
+    public SsdpSearchEnumerator(string searchTarget, [NotNull] IPEndPoint groupEndPoint, string userAgent, Action<Socket, IPEndPoint> configureSocket, IRepeatPolicy searchRepeatPolicy) :
+        base(groupEndPoint, searchRepeatPolicy)
     {
         if (string.IsNullOrEmpty(searchTarget))
         {
             throw new ArgumentException("Parameter couldn't be null or empty.", nameof(searchTarget));
         }
 
-        this.searchTarget = searchTarget;
         this.configureSocket = configureSocket;
-        host = groupEndPoint.ToString();
-        userAgent = $"USER-AGENT: {nameof(SsdpSearchEnumerator)}/{typeof(SsdpSearchEnumerator).Assembly.GetName().Version} ({RuntimeInformation.OSDescription.TrimEnd()})";
-        datagramSize = 68 + host.Length + searchTarget.Length + userAgent.Length;
+        searchDatagram = CreateDiscoveryDatagram(GroupEndPoint, searchTarget, userAgent ?? GetUserAgentString());
+
+        static string GetUserAgentString() => $"{nameof(SsdpSearchEnumerator)}/{typeof(SsdpSearchEnumerator).Assembly.GetName().Version} ({RuntimeInformation.OSDescription.TrimEnd()})";
     }
 
-    public SsdpSearchEnumerator(string searchTarget, Action<Socket, IPEndPoint> configureSocket, IRepeatPolicy discoveryPolicy) :
-         this(searchTarget, GetIPv4SSDPGroup(), configureSocket, discoveryPolicy)
+    public SsdpSearchEnumerator(string searchTarget, Action<Socket, IPEndPoint> configureSocket, IRepeatPolicy searchRepeatPolicy) :
+         this(searchTarget, GetIPv4SSDPGroup(), null, configureSocket, searchRepeatPolicy)
     { }
 
-    public SsdpSearchEnumerator(string searchTarget, IRepeatPolicy discoveryPolicy) :
-         this(searchTarget, GetIPv4SSDPGroup(), null, discoveryPolicy)
+    public SsdpSearchEnumerator(string searchTarget, IRepeatPolicy searchRepeatPolicy) :
+         this(searchTarget, GetIPv4SSDPGroup(), null, null, searchRepeatPolicy)
     { }
 
     protected sealed override void ConfigureSocket([NotNull] Socket socket, out IPEndPoint receiveEndPoint)
     {
         socket.ReceiveBufferSize = 0x400;
-        socket.SendBufferSize = datagramSize;
+        socket.SendBufferSize = searchDatagram.Length;
         configureSocket?.Invoke(socket, GroupEndPoint);
         receiveEndPoint = GroupEndPoint;
     }
@@ -59,25 +55,42 @@ public class SsdpSearchEnumerator : UdpSearchEnumerator<SsdpReply>
         return false;
     }
 
-    protected override ReadOnlyMemory<byte> CreateDiscoveryDatagram()
+    protected override ReadOnlyMemory<byte> CreateDiscoveryDatagram() => searchDatagram;
+
+    private static ReadOnlyMemory<byte> CreateDiscoveryDatagram(IPEndPoint groupEndPoint, string searchTarget, string userAgent)
     {
-        var bytes = new byte[datagramSize];
+        Span<byte> buffer = stackalloc byte[64];
+        int addressBytesWritten;
+        if (groupEndPoint.Address.AddressFamily == AddressFamily.InterNetwork)
+        {
+            groupEndPoint.Address.TryFormat(buffer, out addressBytesWritten);
+        }
+        else
+        {
+            buffer[0] = (byte)'[';
+            groupEndPoint.Address.TryFormat(buffer.Slice(1), out addressBytesWritten);
+            buffer[addressBytesWritten + 1] = (byte)']';
+            addressBytesWritten += 2;
+        }
+
+        buffer[addressBytesWritten] = (byte)':';
+        groupEndPoint.Port.TryFormat(buffer.Slice(addressBytesWritten + 1), out var portBytesWritten, default, default);
+        var hostBytesWritten = addressBytesWritten + portBytesWritten + 1;
+        var hostBytes = buffer.Slice(0, hostBytesWritten);
+
+        var bytes = new byte[80 + hostBytesWritten + searchTarget.Length + userAgent.Length];
         var span = bytes.AsSpan();
         "M-SEARCH * HTTP/1.1\r\nHOST: "u8.CopyTo(span);
-        span = span[27..];
-        var count = ASCII.GetBytes(host, span);
-        span = span[count..];
-        "\r\nMAN: \"ssdp:discover\"\r\nMX: 1\r\nST: "u8.CopyTo(span);
-        span = span[35..];
-        count = ASCII.GetBytes(searchTarget, span);
-        span[count++] = (byte)'\r';
-        span[count++] = (byte)'\n';
-        span = span[count..];
-        count = ASCII.GetBytes(userAgent, span);
-        span[count++] = (byte)'\r';
-        span[count++] = (byte)'\n';
-        span[count++] = (byte)'\r';
-        span[count++] = (byte)'\n';
+        var pos = 27;
+        hostBytes.CopyTo(span.Slice(pos));
+        pos += hostBytesWritten;
+        "\r\nMAN: \"ssdp:discover\"\r\nMX: 1\r\nST: "u8.CopyTo(span.Slice(pos));
+        pos += 35;
+        pos += ASCII.GetBytes(searchTarget, span.Slice(pos));
+        "\r\nUSER-AGENT: "u8.CopyTo(span.Slice(pos));
+        pos += 14;
+        pos += ASCII.GetBytes(userAgent, span.Slice(pos));
+        "\r\n\r\n"u8.CopyTo(span.Slice(pos));
         return bytes;
     }
 }

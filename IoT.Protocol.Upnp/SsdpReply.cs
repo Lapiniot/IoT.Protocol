@@ -20,13 +20,11 @@ public class SsdpReply(string startLine) : Dictionary<string, string>(10, String
 
     public string ConfigId => TryGetValue("CONFIGID.UPNP.ORG", out var value) ? value : null;
 
-#pragma warning disable IDE0057 // Use range operator
     public static bool TryParse(ReadOnlySpan<byte> span, out SsdpReply reply)
     {
-        int index;
+        var index = span.IndexOf("\r\n"u8);
 
-        ReadOnlySpan<byte> EOL = [(byte)'\r', (byte)'\n'];
-        if ((index = span.IndexOf(EOL)) < 0)
+        if (index <= 0)
         {
             reply = null;
             return false;
@@ -35,20 +33,23 @@ public class SsdpReply(string startLine) : Dictionary<string, string>(10, String
         reply = new SsdpReply(ASCII.GetString(span.Slice(0, index)));
         span = span.Slice(index + 2);
 
-        while ((index = span.IndexOf(EOL)) > 0)
+        while ((index = span.IndexOf("\r\n"u8)) > 0)
         {
             var line = span.Slice(0, index);
             span = span.Slice(index + 2);
 
             var i = line.IndexOf((byte)':');
-            if (i <= 0) continue;
-            var key = ASCII.GetString(line.Slice(0, i++));
-            while (i < line.Length && line[i] == ' ') i++;
-            var value = ASCII.GetString(line.Slice(i));
+            if (i <= 0)
+            {
+                reply = null;
+                return false;
+            }
+
+            var key = ASCII.GetString(line.Slice(0, i));
+            var value = ASCII.GetString(line.Slice(i + 1).TrimStart((byte)' '));
             reply.Add(key, value);
         }
 
         return true;
     }
-#pragma warning restore IDE0057 // Use range operator
 }

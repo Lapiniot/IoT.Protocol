@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOs.Common", "OOs.Common\OO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOs.Common.Net", "OOs.Common\OOs.Common.Net\OOs.Common.Net.csproj", "{E368345F-72CB-46DE-8A24-B8D41986ECFB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Protocol.Upnp.Tests", "IoT.Protocol.Upnp.Tests\IoT.Protocol.Upnp.Tests.csproj", "{3DE8A9A3-8D7F-495E-B425-EC9C48243DBD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{E368345F-72CB-46DE-8A24-B8D41986ECFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E368345F-72CB-46DE-8A24-B8D41986ECFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E368345F-72CB-46DE-8A24-B8D41986ECFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DE8A9A3-8D7F-495E-B425-EC9C48243DBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DE8A9A3-8D7F-495E-B425-EC9C48243DBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DE8A9A3-8D7F-495E-B425-EC9C48243DBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DE8A9A3-8D7F-495E-B425-EC9C48243DBD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

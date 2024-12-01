@@ -13,14 +13,14 @@ namespace IoT.Protocol;
 public abstract class UdpSearchEnumerator<TThing> : UdpEnumerator<TThing>
 {
     private readonly IPEndPoint groupEndPoint;
-    private readonly IRepeatPolicy repeatPolicy;
+    private readonly IRepeatPolicy searchRepeatPolicy;
 
-    protected UdpSearchEnumerator(IPEndPoint groupEndPoint, IRepeatPolicy repeatPolicy) :
+    protected UdpSearchEnumerator(IPEndPoint groupEndPoint, IRepeatPolicy searchRepeatPolicy) :
         base((groupEndPoint ?? throw new ArgumentNullException(nameof(groupEndPoint))).AddressFamily)
     {
-        ArgumentNullException.ThrowIfNull(repeatPolicy);
+        ArgumentNullException.ThrowIfNull(searchRepeatPolicy);
         this.groupEndPoint = groupEndPoint;
-        this.repeatPolicy = repeatPolicy;
+        this.searchRepeatPolicy = searchRepeatPolicy;
     }
 
     protected IPEndPoint GroupEndPoint => groupEndPoint;
@@ -28,7 +28,7 @@ public abstract class UdpSearchEnumerator<TThing> : UdpEnumerator<TThing>
     protected sealed override Task StartAuxiliaryWorkerAsync([NotNull] Socket socket, CancellationToken stoppingToken)
     {
         var message = CreateDiscoveryDatagram();
-        return repeatPolicy.RepeatAsync(SendDiscoveryDatagramAsync, stoppingToken);
+        return searchRepeatPolicy.RepeatAsync(SendDiscoveryDatagramAsync, stoppingToken);
 
         async Task SendDiscoveryDatagramAsync(CancellationToken token) =>
             await socket.SendToAsync(message, SocketFlags.None, groupEndPoint, token).ConfigureAwait(false);
