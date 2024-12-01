@@ -7,13 +7,20 @@
         "**/bin": true,
         "**/obj": true,
         "**/*.sln": true,
-        "System.Common/System.Common.CommandLine": true,
-        "System.Common/System.Common.Configuration": true,
-        "System.Common/System.Common.Net.Http": true,
-        "System.Common/System.Common.Tests": true,
-        "System.Common/.vscode": true,
-        "artifacts": true
+        "OOs.Common/.vscode": true,
+        "OOs.Common/.github": true,
+        "OOs.Common/.gitignore": true,
+        "OOs.Common/OOs.Common.Benchmarks": true,
+        "OOs.Common/OOs.Common.CommandLine.Generators": true,
+        "OOs.Common/OOs.Common.CommandLine": true,
+        "OOs.Common/OOs.Common.Configuration": true,
+        "OOs.Common/OOs.Common.Net.Http": true,
+        "OOs.Common/OOs.Common.Net.Http.Tests": true,
+        "OOs.Common/OOs.Common.Tests": true,
+        "OOs.Common/OOs.Extensions.Configuration": true,
+        "OOs.Common/OOs.Extensions.Diagnostics": true,
+        "OOs.Common/OOs.Extensions.Hosting": true,
+        "**/artifacts": true
     },
-    "omnisharp.enableRoslynAnalyzers": true,
     "dotnet.defaultSolution": "IoT.Protocol.sln"
 }
