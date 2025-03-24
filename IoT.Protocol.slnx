@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/OOs.Common/">
+    <Project Path="OOs.Common/OOs.Common.Net/OOs.Common.Net.csproj" />
+    <Project Path="OOs.Common/OOs.Common/OOs.Common.csproj" />
+  </Folder>
+  <Project Path="IoT.Protocol.Lumi/IoT.Protocol.Lumi.csproj" />
+  <Project Path="IoT.Protocol.Soap/IoT.Protocol.Soap.csproj" />
+  <Project Path="IoT.Protocol.Upnp.Tests/IoT.Protocol.Upnp.Tests.csproj" />
+  <Project Path="IoT.Protocol.Upnp/IoT.Protocol.Upnp.csproj" />
+  <Project Path="IoT.Protocol.Yeelight/IoT.Protocol.Yeelight.csproj" />
+  <Project Path="IoT.Protocol/IoT.Protocol.csproj" />
+</Solution>
