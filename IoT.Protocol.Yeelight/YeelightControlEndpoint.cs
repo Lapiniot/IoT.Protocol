@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using IoT.Protocol.Interfaces;
 using OOs;
 using OOs.IO.Pipelines;
-using OOs.Memory;
 using static System.Text.Json.JsonTokenType;
 using static System.Threading.Tasks.TaskCreationOptions;
 
@@ -34,67 +33,78 @@ public sealed class YeelightControlEndpoint : PipeProcessor, IObservable<JsonEle
     #region Overrides of PipeConsumerCore
 
     /// <inheritdoc />
-    protected override bool Consume(ref ReadOnlySequence<byte> buffer)
+    protected override void Consume(ref ReadOnlySequence<byte> buffer)
     {
-        if (!buffer.TryReadLine(out var line))
+        var sr = new SequenceReader<byte>(buffer);
+        ReadOnlySpan<byte> delimiter = [(byte)'\r', (byte)'\n'];
+
+        while (sr.TryReadTo(out ReadOnlySpan<byte> line, delimiter, advancePastDelimiter: true))
         {
-            return false;
-        }
+            buffer = buffer.Slice(line.Length + 2);
+            var reader = new Utf8JsonReader(line);
 
-        buffer = buffer.Slice(line.Length + 2);
-        var reader = new Utf8JsonReader(line.Span);
-        while (reader.Read())
-        {
-            if (reader is not { TokenType: PropertyName, CurrentDepth: 1 }) continue;
-            if (reader.ValueSpan.SequenceEqual("id"u8) && reader.Read() && reader.TryGetInt32(out var id))
-            {
-                if (!completions.TryRemove(id, out var completion) ||
-                    !JsonReader.TryReadResult(ref reader, out var result, out var errorCode, out var errorMessage))
-                {
-                    return true;
-                }
-
-                if (result.ValueKind is JsonValueKind.Array or JsonValueKind.Object)
-                {
-                    completion.TrySetResult(result);
-                }
-                else if (errorMessage is not null)
-                {
-                    completion.TrySetException(new YeelightException(errorCode, errorMessage));
-                }
-                else
-                {
-                    completion.TrySetException(new YeelightException("Invalid operation result response"));
-                }
-
-                return true;
-            }
-
-            if (!reader.ValueSpan.SequenceEqual("method"u8) ||
-                !reader.Read() || reader.TokenType is not JsonTokenType.String ||
-                !reader.ValueSpan.SequenceEqual("props"u8))
-            {
-                continue;
-            }
-
-            while (reader.CurrentDepth >= 1 && reader.Read())
+            while (reader.Read())
             {
                 if (reader is not { TokenType: PropertyName, CurrentDepth: 1 })
                 {
                     continue;
                 }
 
-                if (!reader.ValueSpan.SequenceEqual("params"u8)) continue;
-                if (!reader.Read()) continue;
+                if (reader.ValueSpan.SequenceEqual("id"u8) && reader.Read() && reader.TryGetInt32(out var id))
+                {
+                    if (!completions.TryRemove(id, out var completion) ||
+                        !JsonReaderHelper.TryReadResult(ref reader, out var result, out var errorCode, out var errorMessage))
+                    {
+                        break;
+                    }
 
-                observers.Notify(JsonElement.ParseValue(ref reader));
-                return true;
+                    if (result.ValueKind is JsonValueKind.Array or JsonValueKind.Object)
+                    {
+                        completion.TrySetResult(result);
+                    }
+                    else if (errorMessage is not null)
+                    {
+                        completion.TrySetException(new YeelightException(errorCode, errorMessage));
+                    }
+                    else
+                    {
+                        completion.TrySetException(new YeelightException("Invalid operation result response"));
+                    }
+
+                    break;
+                }
+
+                if (!reader.ValueSpan.SequenceEqual("method"u8) ||
+                    !reader.Read() || reader.TokenType is not JsonTokenType.String ||
+                    !reader.ValueSpan.SequenceEqual("props"u8))
+                {
+                    continue;
+                }
+
+                while (reader.CurrentDepth >= 1 && reader.Read())
+                {
+                    if (reader is not { TokenType: PropertyName, CurrentDepth: 1 })
+                    {
+                        continue;
+                    }
+
+                    if (!reader.ValueSpan.SequenceEqual("params"u8))
+                    {
+                        continue;
+                    }
+
+                    if (!reader.Read())
+                    {
+                        continue;
+                    }
+
+                    observers.Notify(JsonElement.ParseValue(ref reader));
+                    break;
+                }
+
+                break;
             }
-
-            return true;
         }
-
-        return true;
     }
 
     #endregion
@@ -116,8 +126,8 @@ public sealed class YeelightControlEndpoint : PipeProcessor, IObservable<JsonEle
             try
             {
                 var emitted = (int)command.WriteTo(buffer, id);
-                buffer[emitted++] = SequenceExtensions.CR;
-                buffer[emitted++] = SequenceExtensions.LF;
+                buffer[emitted++] = (byte)'\r';
+                buffer[emitted++] = (byte)'\n';
 
                 await socket.SendAsync(buffer.AsMemory(0, emitted), SocketFlags.None, cancellationToken).ConfigureAwait(false);
             }

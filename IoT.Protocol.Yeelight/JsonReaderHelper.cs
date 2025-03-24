@@ -2,14 +2,10 @@ using static System.Text.Json.JsonTokenType;
 
 namespace IoT.Protocol.Yeelight;
 
-public static class JsonReader
+public static class JsonReaderHelper
 {
-    private static ReadOnlySpan<byte> ResultPropName => "result"u8;
-    private static ReadOnlySpan<byte> ErrorPropName => "error"u8;
-    private static ReadOnlySpan<byte> CodePropName => "code"u8;
-    private static ReadOnlySpan<byte> MessagePropName => "message"u8;
-
-    public static bool TryReadResult(ref Utf8JsonReader reader, out JsonElement result, out int errorCode, out string errorMessage)
+    public static bool TryReadResult(ref Utf8JsonReader reader, out JsonElement result,
+        out int errorCode, out string errorMessage)
     {
         errorCode = 0;
         errorMessage = null;
@@ -22,14 +18,21 @@ public static class JsonReader
                 continue;
             }
 
-            if (reader.ValueSpan.SequenceEqual(ResultPropName))
+            if (reader.ValueSpan.SequenceEqual("result"u8))
             {
-                if (!reader.Read()) continue;
+                if (!reader.Read())
+                {
+                    continue;
+                }
+
                 result = JsonElement.ParseValue(ref reader);
                 return true;
             }
 
-            if (!reader.ValueSpan.SequenceEqual(ErrorPropName) || !reader.Read()) continue;
+            if (!reader.ValueSpan.SequenceEqual("error"u8) || !reader.Read())
+            {
+                continue;
+            }
 
             var leftToRead = 2;
             while (reader.CurrentDepth >= 1 && leftToRead > 0 && reader.Read())
@@ -39,13 +42,17 @@ public static class JsonReader
                     continue;
                 }
 
-                if (reader.ValueSpan.SequenceEqual(CodePropName))
+                if (reader.ValueSpan.SequenceEqual("code"u8))
                 {
-                    if (!reader.Read() || reader.TokenType is not Number) continue;
+                    if (!reader.Read() || reader.TokenType is not Number)
+                    {
+                        continue;
+                    }
+
                     errorCode = reader.GetInt32();
                     leftToRead--;
                 }
-                else if (reader.ValueSpan.SequenceEqual(MessagePropName)
+                else if (reader.ValueSpan.SequenceEqual("message"u8)
                          && reader.Read() && reader.TokenType is JsonTokenType.String)
                 {
                     errorMessage = reader.GetString();
