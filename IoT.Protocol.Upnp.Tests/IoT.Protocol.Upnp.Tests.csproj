@@ -13,8 +13,4 @@
     <ProjectReference Include="../IoT.Protocol.Upnp/IoT.Protocol.Upnp.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Text.Json" />
-  </ItemGroup>
-
 </Project>
