@@ -7,7 +7,6 @@ using static System.Threading.Tasks.TaskCreationOptions;
 
 namespace IoT.Protocol.Yeelight;
 
-[CLSCompliant(false)]
 public sealed class YeelightControlEndpoint : PipeProcessor, IObservable<JsonElement>, IConnectedEndpoint<Command, JsonElement>
 {
     private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> completions = new();

@@ -30,40 +30,40 @@ public abstract class UdpEnumerator<TThing> : IAsyncEnumerable<TThing>
 
         ConfigureSocket(socket, out var receiveEndPoint);
 
+#pragma warning disable CA2025 // Do not pass 'IDisposable' instances into unawaited tasks
         var auxWorker = StartAuxiliaryWorkerAsync(socket, cancellationToken);
+#pragma warning restore CA2025 // Do not pass 'IDisposable' instances into unawaited tasks
 
         using var memory = MemoryPool<byte>.Shared.Rent(socket.ReceiveBufferSize);
         var buffer = memory.Memory;
 
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            bool success;
-            TThing instance;
-
-            try
-            {
-                var result = await socket.ReceiveFromAsync(buffer, SocketFlags.None, receiveEndPoint, cancellationToken).ConfigureAwait(false);
-                success = TryParseDatagram(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, out instance);
-            }
-            catch (OperationCanceledException)
-            {
-                // expected external cancellation signal
-                yield break;
-            }
-
-            if (success)
-            {
-                yield return instance;
-            }
-        }
-
         try
         {
-            await auxWorker.ConfigureAwait(false);
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                bool success;
+                TThing instance;
+
+                try
+                {
+                    var result = await socket.ReceiveFromAsync(buffer, SocketFlags.None, receiveEndPoint, cancellationToken).ConfigureAwait(false);
+                    success = TryParseDatagram(buffer[..result.ReceivedBytes], (IPEndPoint)result.RemoteEndPoint, out instance);
+                }
+                catch (OperationCanceledException)
+                {
+                    // expected external cancellation signal
+                    yield break;
+                }
+
+                if (success)
+                {
+                    yield return instance;
+                }
+            }
         }
-        catch (OperationCanceledException)
+        finally
         {
-            // Expected
+            await auxWorker.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         }
     }
 

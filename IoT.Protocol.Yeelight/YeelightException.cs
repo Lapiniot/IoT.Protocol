@@ -2,7 +2,6 @@ using IoT.Protocol.Exceptions;
 
 namespace IoT.Protocol.Yeelight;
 
-[CLSCompliant(true)]
 public sealed class YeelightException : ProtocolException
 {
     public YeelightException() { }

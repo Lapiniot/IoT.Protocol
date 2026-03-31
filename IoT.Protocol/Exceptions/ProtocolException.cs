@@ -1,6 +1,5 @@
 namespace IoT.Protocol.Exceptions;
 
-[CLSCompliant(true)]
 public abstract class ProtocolException : Exception
 {
     protected ProtocolException(int code, string message, Exception? innerException) :

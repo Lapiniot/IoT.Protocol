@@ -22,7 +22,7 @@ public sealed class LumiControlEndpoint(IPEndPoint endpoint) : ActivityObject, I
 
     private TimeSpan CommandTimeout { get; } = TimeSpan.FromSeconds(10);
 
-    private static bool TryParseResponse(Span<byte> span, out string id, out JsonElement response)
+    private static bool TryParseResponse(ReadOnlySpan<byte> span, out string id, out JsonElement response)
     {
         var json = JsonSerializer.Deserialize(span, JsonContext.Default.JsonElement);
 
@@ -45,7 +45,7 @@ public sealed class LumiControlEndpoint(IPEndPoint endpoint) : ActivityObject, I
     public Task<JsonElement> InvokeAsync(string command, string sid, CancellationToken cancellationToken = default) =>
         InvokeAsync(new Dictionary<string, object> { { "cmd", command }, { "sid", sid } }, cancellationToken);
 
-    private void OnDataAvailable(Span<byte> span)
+    private void OnDataAvailable(ReadOnlySpan<byte> span)
     {
         if (!TryParseResponse(span, out var id, out var response)) return;
 
