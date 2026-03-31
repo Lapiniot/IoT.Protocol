@@ -1,9 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
-using OOs.Net.Sockets;
-using OOs.Policies;
 using System.Text.Json;
-using System.Diagnostics.CodeAnalysis;
+using OOs.Net.Sockets;
+using OOs.Resilience;
 using static System.Net.Sockets.AddressFamily;
 using static OOs.Net.NetworkInterfaceExtensions;
 

@@ -2,9 +2,9 @@
 using System.Net.Sockets;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using OOs.Policies;
 using static System.Text.Encoding;
 using static OOs.Net.Sockets.SocketBuilderExtensions;
+using OOs.Resilience;
 
 namespace IoT.Protocol.Upnp;
 

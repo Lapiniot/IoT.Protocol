@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\IoT.Protocol.Upnp\IoT.Protocol.Upnp.csproj" />
+    <ProjectReference Include="../OOs.Common/OOs.Common.IO.Pipelines/OOs.Common.IO.Pipelines.csproj" />
+    <ProjectReference Include="../IoT.Protocol.Upnp/IoT.Protocol.Upnp.csproj" />
   </ItemGroup>
 
   <ItemGroup>
